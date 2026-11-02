@@ -42,7 +42,7 @@ UPSTREAM_BASE = "https://iterorganization.github.io/JOREK"
 ASSET_DIRS = ["_includes", "_sass"]
 # 不参与本地构建的路径
 EXCLUDE = ["tools", "i18n", ".venv", "Gemfile", "Gemfile.lock", "README.md",
-           "TRANSLATING.md", "_site", ".git"]
+           "TRANSLATING.md", "MAINTAINING.md", "_site", ".git"]
 
 MARKER = "<!-- untranslated-notice -->"
 

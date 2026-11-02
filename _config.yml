@@ -49,6 +49,7 @@ exclude:
   - Gemfile
   - Gemfile.lock
   - README.md
+  - MAINTAINING.md
   - TRANSLATING.md
   - _site
   - .git
