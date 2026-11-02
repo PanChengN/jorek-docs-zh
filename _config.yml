@@ -2,8 +2,8 @@ title: JOREK 中文文档
 description: JOREK 非线性扩展 MHD 代码中文文档（基于官方 Wiki 翻译）
 theme: just-the-docs
 
-url: "https://panchengn.github.io"
-baseurl: "/jorek-docs-zh"
+url: "https://iterorganization.github.io"
+baseurl: "/JOREK"
 
 search_enabled: true
 

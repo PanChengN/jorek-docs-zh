@@ -34,7 +34,9 @@ TITLES_FILE = ROOT / "i18n" / "titles.yml"
 UPSTREAM_BASE = "https://iterorganization.github.io/JOREK"
 
 # 原样复制的素材目录（保证版式、配色、图标与原站一致）
-ASSET_DIRS = ["_includes", "_sass", "assets"]
+# 注意：除了顶层的 assets/，各页面子目录下也有 assets/（页面级图片），
+# 必须一并复制，否则图片会 404、版式与英文站不一致。
+ASSET_DIRS = ["_includes", "_sass"]
 # 不参与本地构建的路径
 EXCLUDE = ["tools", "i18n", ".venv", "Gemfile", "Gemfile.lock", "README.md",
            "TRANSLATING.md", "_site", ".git"]
@@ -132,11 +134,27 @@ def build_page(rel: Path, titles: dict[str, str]) -> tuple[str, str]:
 
 def copy_assets(dry: bool) -> list[str]:
     copied = []
+    # 1) 主题相关目录：_includes/、_sass/
     for d in ASSET_DIRS:
         src_root = UPSTREAM / d
         if not src_root.exists():
             continue
         for f in src_root.rglob("*"):
+            if not f.is_file():
+                continue
+            rel = f.relative_to(UPSTREAM)
+            dst = ROOT / rel
+            if dst.exists() and filecmp.cmp(f, dst, shallow=False):
+                continue
+            copied.append(rel.as_posix())
+            if not dry:
+                dst.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(f, dst)
+    # 2) 所有 assets/ 目录（顶层与页面级图片、附件）
+    for src_dir in UPSTREAM.rglob("assets"):
+        if not src_dir.is_dir():
+            continue
+        for f in src_dir.rglob("*"):
             if not f.is_file():
                 continue
             rel = f.relative_to(UPSTREAM)
