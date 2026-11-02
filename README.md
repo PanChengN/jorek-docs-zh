@@ -40,6 +40,8 @@ bundle exec jekyll serve     # http://127.0.0.1:4000/jorek-docs-zh/
 
 若在论文等成果中使用 JOREK，请遵循官方[发表规则](https://iterorganization.github.io/JOREK/publication_rules.html)并引用 `CITATION.cff` 所列文献；引用本站译文不能替代引用原作品。
 
-## 维护
+## 说明
 
-上游更新同步、验收脚本、已知的上游缺陷清单，见 [MAINTAINING.md](MAINTAINING.md)。翻译规范见 [TRANSLATING.md](TRANSLATING.md)。
+- 本仓库只包含站点本身（页面、图片、样式、配置与许可证）。上游同步、翻译校验等维护脚本不随仓库发布。
+- 译文与上游英文站逐页对应；因上游文档自身缺陷导致的占位页、失效链接、缺失图片均按原样保留，未擅自改写。
+- 若发现译文错误，欢迎提 Issue。

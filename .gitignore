@@ -8,3 +8,11 @@ vendor/bundle/
 
 # 本地路径配置（不入库）
 upstream.local.yml
+
+# 维护工具与翻译工作文件：仅本地保留，不随仓库发布
+/tools/
+/i18n/
+/.upstream-baseline
+/MAINTAINING.md
+/TRANSLATING.md
+/upstream.local.yml
