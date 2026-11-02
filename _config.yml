@@ -1,5 +1,5 @@
 title: JOREK 中文文档
-description: JOREK 非线性扩展 MHD 代码中文文档（基于官方 Wiki 翻译）
+description: JOREK 非线性扩展 MHD 代码文档的社区中文译本（非官方，仅供学习交流）
 theme: just-the-docs
 
 url: "https://panchengn.github.io"
@@ -21,7 +21,7 @@ kramdown:
     mdash: "---"
     ndash: "--"
 
-footer_content: "JOREK 文档中文版（非官方译本）· 原文版权归 JOREK 团队所有 · LGPL-3.0"
+footer_content: "非官方社区译本，仅供学习交流 · 原文版权归 JOREK 团队所有 · LGPL-3.0"
 
 aux_links:
   "JOREK Website":

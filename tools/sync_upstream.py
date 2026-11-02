@@ -180,12 +180,12 @@ def write_config(dry: bool) -> None:
     src = (UPSTREAM / "_config.yml").read_text(encoding="utf-8")
     out = src.replace("title: JOREK Wiki", "title: JOREK 中文文档")
     out = out.replace("description: JOREK project documentation",
-                      "description: JOREK 非线性扩展 MHD 代码中文文档（基于官方 Wiki 翻译）")
+                      "description: JOREK 非线性扩展 MHD 代码文档的社区中文译本（非官方，仅供学习交流）")
     out = out.replace('remote_theme: just-the-docs/just-the-docs@v0.10.0',
                       'theme: just-the-docs')
     out = out.replace('  - jekyll-remote-theme\n', '')
     out = out.replace('footer_content: "JOREK Documentation"',
-                      'footer_content: "JOREK 文档中文版（非官方译本）· 原文版权归 JOREK 团队所有 · LGPL-3.0"')
+                      'footer_content: "非官方社区译本，仅供学习交流 · 原文版权归 JOREK 团队所有 · LGPL-3.0"')
     out = out.replace('back_to_top_text: "Back to top"', 'back_to_top_text: "返回顶部"')
     # 关键：上游的 url/baseurl 指向官方站点，必须换成中文站自己的，
     # 否则所有导航链接都会带上 /JOREK 前缀而失效。

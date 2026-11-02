@@ -1,11 +1,11 @@
 # JOREK 中文文档
 
-[JOREK](https://www.jorek.eu/) 非线性扩展 MHD 代码官方 Wiki 的中文版。
+[JOREK](https://www.jorek.eu/) 非线性扩展 MHD 代码文档的中文译本，**仅供学习与技术交流**，非官方、不用于商业目的。
 
 - 英文原站：<https://iterorganization.github.io/JOREK/>
 - 源码仓库：<https://github.com/iterorganization/JOREK>
 
-> **非官方翻译。** 本站由社区翻译维护，与 JOREK 团队无关。技术内容以[英文原站](https://iterorganization.github.io/JOREK/)为准；发现译文错误请提 Issue，不要以此向 JOREK 团队提问。原文版权归 JOREK 团队所有，遵循 LGPL-3.0。
+> **非官方社区译本。** 本站为个人学习与技术交流而制作，与 JOREK 团队无关，不用于任何商业目的。技术内容以[英文原站](https://iterorganization.github.io/JOREK/)为准；发现译文错误请提 Issue，不要以此向 JOREK 团队提问。原文版权归 JOREK 团队所有，遵循 LGPL-3.0。
 
 ## 设计原则
 
