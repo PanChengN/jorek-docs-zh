@@ -114,7 +114,7 @@ $$ \begin{align*}
 + \frac{1}{R}\left(\partial_1 V_2 - \partial_2 V_1 \right)~\mathbf{a}_3 \\
   \Delta U &= \nabla\cdot\nabla U = \frac{1}{R}\partial_1(R \partial_1 U) + \partial_{2,2}U + \frac{1}{R^2}\partial_{3,3}U \\
   \Delta_\text{pol}U &= \nabla\cdot\nabla_\text{pol} U = \frac{1}{R}\partial_1(R \partial_1 U) + \partial_{2,2}U \\
-  \Delta^*U &= R^2 \nabla\cdot\left(\frac{1}{R^2}\nabla_\text{pol} U\right)=R~\partial_1\left(\frac{1}{R}\partial_1 U\right)+\partial_{2,2} U \\
+  \Delta^\astU &= R^2 \nabla\cdot\left(\frac{1}{R^2}\nabla_\text{pol} U\right)=R~\partial_1\left(\frac{1}{R}\partial_1 U\right)+\partial_{2,2} U \\
   [A,B] &= e_3 \cdot (\nabla A \times\nabla B) = \partial_1 A~\partial_2 B - \partial_2 A~\partial_1 B\\
   \nabla \cdot \mathbf{\Pi} &= \left[\partial_R \Pi^{RR}+\partial_Z \Pi^{ZR}+\frac{1}{R}\partial_\phi \Pi^{\phi R}+\frac{1}{R}\left(\Pi^{RR}-\Pi^{\phi\phi}\right)\right] \mathbf{e}_R\\
   &+ \left[\partial_R \Pi^{RZ}+\partial_Z \Pi^{ZZ}+\frac{1}{R}\partial_\phi \Pi^{\phi Z}+\frac{1}{R}\Pi^{RZ}\right]\mathbf{e}_Z\\

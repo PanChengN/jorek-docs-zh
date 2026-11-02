@@ -165,7 +165,7 @@ newton_eps_f       = 1.d-6   !< tolerance for final Newton step
 newton_max_iter    = 20      !< maximum number of Newton iterations
 ```
 
-GMRES 迭代上限照常由 `gmres_max_iter` 设定。变量 `newton_alpha` 与 `newton_gamma` 对应式 (9)，可保持不变。式 (4) 中 $k=0$ 步的起始值为 $\delta u_0=\delta u^n\times\mathtt{newton\_start}$。
+GMRES 迭代上限照常由 `gmres_max_iter` 设定。变量 `newton_alpha` 与 `newton_gamma` 对应式 (9)，可保持不变。式 (4) 中 $k=0$ 步的起始值为 $\delta u_0=\delta u^n\times\mathtt{newton\\_start}$。
 
 在多数测试算例中，`newton_eps_0/newton_eps_f = 10..1000` 可带来快速收敛。一般而言要求 `newton_eps_f > gmres_tol`，而 `newton_eps_f/gmres_tol = 10..100` 可得到物理上合理的结果。此处 `gmres_tol = 1.d-5...1.d-8` 是标准情形下会设定的容差。参数 `newton_max_iter` 设定 Newton 迭代的最大次数；达到该次数后计算即停止。
 
@@ -200,8 +200,8 @@ newton_adapt_time = .true.
 
 时间步根据收敛情况自适应调整：
 
-- **快速收敛：** 若 $\sum_k \mathtt{iter\_gmres}\leq\mathtt{gmres\_max\_iter}/2$，则对 $n+1\to n+2$ 用 `tstep = tstep*newton_alpha_dt` 增大时间步。
-- **收敛缓慢：** 若 $\sum_k \mathtt{iter\_gmres}>\mathtt{gmres\_max\_iter}/2$，则对 $n+1\to n+2$ 用 `tstep = tstep*newton_beta_dt` 减小时间步。
+- **快速收敛：** 若 $\sum_k \mathtt{iter\\_gmres}\leq\mathtt{gmres\\_max\\_iter}/2$，则对 $n+1\to n+2$ 用 `tstep = tstep*newton_alpha_dt` 增大时间步。
+- **收敛缓慢：** 若 $\sum_k \mathtt{iter\\_gmres}>\mathtt{gmres\\_max\\_iter}/2$，则对 $n+1\to n+2$ 用 `tstep = tstep*newton_beta_dt` 减小时间步。
 - **不收敛：** 用 `tstep = tstep*newton_gamma_dt` 重新计算第 $n\to n+1$ 步。
 
 此处 $k$ 为 Newton 迭代序号。存在硬编码的最小时同步 `t_min = 0.001`。若以 `tstep = t_min` 仍无法收敛，则中止计算。参数 `newton_alpha_dt`、`newton_beta_dt` 与 `newton_gamma_dt` 应针对具体算例主动调优。

@@ -57,8 +57,8 @@ render_with_liquid: false
 
 ## 其中已定义：
 
-* **$n_{0}[m^{-3}]$**: $= \text{central\_density } 10^{20}$。central_density 在 `preset_parameters.f90` 中有默认值，应在输入文件中指定。
-* **$\rho_{0}[kg~m^{-3}]$**: $= \text{central\_mass}*m_{AMU}*n_0$。central_mass 在 `preset_parameters.f90` 中有默认值，应在输入文件中指定。 
+* **$n_{0}[m^{-3}]$**: $= \text{central\\_density } 10^{20}$。central_density 在 `preset_parameters.f90` 中有默认值，应在输入文件中指定。
+* **$\rho_{0}[kg~m^{-3}]$**: $= \text{central\\_mass}*m_{AMU}*n_0$。central_mass 在 `preset_parameters.f90` 中有默认值，应在输入文件中指定。 
 * **$\gamma$**: $= \text{GAMMA}$。GAMMA 在 `preset_parameters.f90` 中的默认值为 $5/3$。 
 * **$\mu_{imp}$**: `m_i_over_m_imp` $= m_{i}/m_{imp}$。由杂质种类确定。
 

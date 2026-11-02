@@ -179,19 +179,19 @@ implicit_heat_source = 0.d0
 implicit_heat_source = 1.d0 ! Emergency numerical stabilization only
 ```
 
-对单温度表述，定义 $T_*=\texttt{T_min_neg}$。除弱形式与归一化因子外，所添加的源具有如下形式
+对单温度表述，定义 $T_\ast=\texttt{T_min_neg}$。除弱形式与归一化因子外，所添加的源具有如下形式
 
 $$
 S_{\mathrm{impl}}(T) = a(\gamma-1)\left[
-\frac{T_*}{2}\left(1+
-\exp\left(\frac{\min(T,T_*)-T_*}{T_*/2}\right)\right)
--\min(T,T_*)
+\frac{T_\ast}{2}\left(1+
+\exp\left(\frac{\min(T,T_\ast)-T_\ast}{T_\ast/2}\right)\right)
+-\min(T,T_\ast)
 \right],
 $$
 
-其中 $a=\texttt{implicit_heat_source}$。当 $T>T_*$ 时该项为零。该项被一致地包含在非线性残差及其雅可比矩阵中，这正是它被称为*隐式*的原因；但这并不使它成为物理的或能量守恒的源。
+其中 $a=\texttt{implicit_heat_source}$。当 $T>T_\ast$ 时该项为零。该项被一致地包含在非线性残差及其雅可比矩阵中，这正是它被称为*隐式*的原因；但这并不使它成为物理的或能量守恒的源。
 
-在双温度表述中，同一表达式分别作用于 $T_i$ 与 $T_e$，对每种粒子取 $T_*=\texttt{T_min_neg}/2$。
+在双温度表述中，同一表达式分别作用于 $T_i$ 与 $T_e$，对每种粒子取 $T_\ast=\texttt{T_min_neg}/2$。
 
 在考虑使用该源之前，应先尝试通过减小时间步、检查非线性收敛、提高空间分辨率，以及复核物理源、边界条件与输运或稳定化系数来消除负温度偏离。若出于诊断或恢复目的临时需要该源：
 

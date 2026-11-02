@@ -73,13 +73,13 @@ render_with_liquid: false
 
 其中 $\mathbf{v}_{imp}$ 是由 $S_{\rho_{imp}}$ 源项注入的杂质的速度。注意右端出现了 $-\left(\partial_t \rho + \nabla \cdot (\rho \mathbf{v})\right) \mathbf{v}$ 这一项。该项保证动量守恒，目前（21/08/18）JOREK 的其他模型中尚无此项，但将来可能会加入。
 
-约化 MHD 涡量方程由将算子 $\nabla\phi\cdot\nabla\times(R^2...)$ 作用于动量方程得到。不含 $-\left(\partial_t \rho + \nabla \cdot (\rho \mathbf{v})\right) \mathbf{v}$ 项时的结果见[此处](reduced_mhd)。该项在涡量方程右端给出一个附加项 $-\nabla \cdot \left[ R^2 (\partial_t \rho + \nabla \cdot (\rho \mathbf{v})) \nabla_{pol} u \right] $（我们忽略了 $- (\partial_t \rho + \nabla \cdot (\rho \mathbf{v})) v_{||}\mathbf{B} $ 的贡献）。在弱形式下，该项变为 $ \int - u^* \nabla \cdot \left[ R^2 (\partial_t \rho + \nabla \cdot (\rho \mathbf{v})) \nabla_{pol} u \right] dV$（其中 $u^*$ 为检验函数），分部积分后可化为 $ \int R^2 (\partial_t \rho + \nabla \cdot (\rho \mathbf{v})) (\nabla u^* \cdot \nabla_{pol} u) dV $。为实现该项，需要展开 $\nabla \cdot (\rho \mathbf{v})$，展开过程见[此处](div_rho_v)。
+约化 MHD 涡量方程由将算子 $\nabla\phi\cdot\nabla\times(R^2...)$ 作用于动量方程得到。不含 $-\left(\partial_t \rho + \nabla \cdot (\rho \mathbf{v})\right) \mathbf{v}$ 项时的结果见[此处](reduced_mhd)。该项在涡量方程右端给出一个附加项 $-\nabla \cdot \left[ R^2 (\partial_t \rho + \nabla \cdot (\rho \mathbf{v})) \nabla_{pol} u \right] $（我们忽略了 $- (\partial_t \rho + \nabla \cdot (\rho \mathbf{v})) v_{||}\mathbf{B} $ 的贡献）。在弱形式下，该项变为 $ \int - u^\ast \nabla \cdot \left[ R^2 (\partial_t \rho + \nabla \cdot (\rho \mathbf{v})) \nabla_{pol} u \right] dV$（其中 $u^\ast$ 为检验函数），分部积分后可化为 $ \int R^2 (\partial_t \rho + \nabla \cdot (\rho \mathbf{v})) (\nabla u^\ast \cdot \nabla_{pol} u) dV $。为实现该项，需要展开 $\nabla \cdot (\rho \mathbf{v})$，展开过程见[此处](div_rho_v)。
 
 #### 电流的定义（式 3）
 
 该方程与其他 JOREK [约化 MHD 模型](reduced_mhd) 中的相同：
 \begin{aligned}
-  j = \Delta^*\psi
+  j = \Delta^\ast\psi
 \end{aligned}
 
 #### 涡量的定义（式 4）

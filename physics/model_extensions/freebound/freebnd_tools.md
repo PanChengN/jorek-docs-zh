@@ -62,7 +62,7 @@ $$\begin{align}
 \mathrm{d}Z_{\text{der}} &= \frac{Z_{\text{axis}}(t_n) - Z_{\text{axis}}(t_{n-1})}{\Delta t}\\
 \mathrm{d}Z_{\text{integral}} &+= \left(Z_{\text{axis}}(t_n) - Z_{\text{ref}}(t_{n})\right)\Delta t \\
 \Delta I &= K_P \, \mathrm{d}Z_{\text{err}} + K_D \, \mathrm{d}Z_{\text{der}} + K_I \, \mathrm{d}Z_{\text{integral}}\\
-I(i) &= I(i) + \mathrm{vert\_FB\_amp\_ts}(i) \, \Delta I  
+I(i) &= I(i) + \mathrm{vert\\_FB\\_amp\\_ts}(i) \, \Delta I  
 \end{align}$$
 
 它具有以下特性，参数列于下表：

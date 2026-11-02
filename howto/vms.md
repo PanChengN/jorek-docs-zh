@@ -64,22 +64,22 @@ $$
 该偏微分方程组的 Galerkin 有限元方法（FEM）为
 
 $$
-\int \boldsymbol{w}^*\cdot\mathcal{R}(\boldsymbol{w})\,d\Omega=0.
+\int \boldsymbol{w}^\ast\cdot\mathcal{R}(\boldsymbol{w})\,d\Omega=0.
 $$
 
 VMS 稳定化的有限元表述为
 
 $$
-\int \boldsymbol{w}^*\cdot\mathcal{R}(\boldsymbol{w})\,d\Omega
+\int \boldsymbol{w}^\ast\cdot\mathcal{R}(\boldsymbol{w})\,d\Omega
 -\int
-\mathcal{L}^\mathrm{T}\boldsymbol{w}^*
+\mathcal{L}^\mathrm{T}\boldsymbol{w}^\ast
 \cdot\mathbb{T}\mathcal{R}(\boldsymbol{w})\,d\Omega'
 =0.
 $$
 
 第一项为有限元弱形式，第二项为 VMS 稳定化。
 
-> **实现说明：** 在隐式方法中，假定 $\mathcal{L}^\mathrm{T}\boldsymbol{w}^*$ 取上一时间步的值，因此不计入其雅可比矩阵。
+> **实现说明：** 在隐式方法中，假定 $\mathcal{L}^\mathrm{T}\boldsymbol{w}^\ast$ 取上一时间步的值，因此不计入其雅可比矩阵。
 
 ## 残差与实际困难
 

@@ -31,7 +31,7 @@ $$
 \mathrm{d}Z_\text{der} &= \frac{Z_\text{axis}(t_n) - Z_\text{axis}(t_{n-1})}{\Delta t}\\
 \mathrm{d}Z_\text{integral} +&= \left(Z_\text{axis}(t_n) - Z_\text{ref}(t_{n})\right)\Delta t \\\\
 \Delta I &=   K_\text{P}\,\mathrm{d}Z_\text{err} + K_\text{D}\,\mathrm{d}Z_\text{der}   + K_\text{I} \,\mathrm{d}Z_\text{integral}\\
-I(i) &=  I(i) + \mathrm{vert\_FB\_amp\_ts}(i)\,\Delta I  
+I(i) &=  I(i) + \mathrm{vert\\_FB\\_amp\\_ts}(i)\,\Delta I  
 \end{align}
 $$
 

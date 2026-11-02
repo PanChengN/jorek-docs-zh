@@ -18,9 +18,9 @@ $$\begin{equation*}
 $$\begin{equation*}\begin{split}
 \mathbf{W}_u & =-\nabla\times\left(R^2\nabla u\times\nabla\phi\right) \\
   &= -\nabla R^2\times(\nabla u\times\nabla\phi)-R^2\nabla\times(\nabla u\times\nabla\phi) \\
-  &= -2\nabla R\times(\partial_2 u\mathbf{a}^1-\partial_1 u\mathbf{a}^2)+R^2\Delta^*u\nabla\phi-\nabla_\text{pol}\partial_3 u \\
-  &= +2R\partial_1 u\nabla\phi+R^2\Delta^*u\nabla\phi-\nabla_\text{pol}\partial_3 u \\
-  &= \left(2R\partial_1 u + R^2\Delta^* u\right)\nabla\phi - \nabla_\text{pol}\partial_3 u  \\
+  &= -2\nabla R\times(\partial_2 u\mathbf{a}^1-\partial_1 u\mathbf{a}^2)+R^2\Delta^\astu\nabla\phi-\nabla_\text{pol}\partial_3 u \\
+  &= +2R\partial_1 u\nabla\phi+R^2\Delta^\astu\nabla\phi-\nabla_\text{pol}\partial_3 u \\
+  &= \left(2R\partial_1 u + R^2\Delta^\ast u\right)\nabla\phi - \nabla_\text{pol}\partial_3 u  \\
   &= R^2\Delta_\text{pol} u\nabla\phi - \nabla_\text{pol}\partial_3 u
 \end{split}\end{equation*}$$
 
@@ -59,7 +59,7 @@ $$\begin{equation*}\begin{split}
   &= F\nabla_\text{pol}v_{||}\times\nabla\phi+\nabla_\text{pol}v_{||}\times(\nabla\psi\times\nabla\phi)+\partial_3 v_{||}F \nabla\phi\times\nabla\phi+\partial_3 v_{||}\nabla\phi\times(\nabla\psi\times\nabla\phi)+v_{||}\mathbf{j}
 \end{split}\end{equation*}$$
 
-乘以 $\cdot\nabla\phi$ 后可得（计入 JOREK 中电流的定义 $j:=\Delta^*\psi$）：
+乘以 $\cdot\nabla\phi$ 后可得（计入 JOREK 中电流的定义 $j:=\Delta^\ast\psi$）：
 
 $$\begin{equation*}\begin{split}
 \mathbf{W}_{v_{||}} \cdot \nabla \phi &= \left( \nabla \times\left( v_{||}\mathbf{B} \right) \right) \cdot \nabla \phi

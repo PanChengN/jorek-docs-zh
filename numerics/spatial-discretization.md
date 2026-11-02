@@ -18,10 +18,10 @@ JOREK 的离散方法在两篇论文中有详尽描述：[O. Czarny, G. Huysmans
 两种离散结合后写成：
 
 $$
-\mathbf{X}(R,Z,\phi) = \left(\sum_{l=1}^{N_{tor}} Z_l(\phi) \left (\sum_{i = 1}^{N_{vert}}\sum_{j = 1}^{\text{dof_per_vertex}} h^{ij} \vec{u}^{ij} b^*_{i,j}(R,Z)\right) \right ) \tag{1}
+\mathbf{X}(R,Z,\phi) = \left(\sum_{l=1}^{N_{tor}} Z_l(\phi) \left (\sum_{i = 1}^{N_{vert}}\sum_{j = 1}^{\text{dof_per_vertex}} h^{ij} \vec{u}^{ij} b^\ast_{i,j}(R,Z)\right) \right ) \tag{1}
 $$
 
-内层括号为极向离散，使用基函数 $b^*_i$；$Z_l$ 则是环向离散的基函数。
+内层括号为极向离散，使用基函数 $b^\ast_i$；$Z_l$ 则是环向离散的基函数。
 
 
 ## 极向平面上的二维贝塞尔有限元 <a id="2d-bezier-finite-elements-in-the-poloidal-plane"></a>

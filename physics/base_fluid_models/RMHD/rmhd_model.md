@@ -44,13 +44,13 @@ $$\begin{equation*}
 等离子体电流的[归一化](../../normalization.md)为 $\mathbf{j}_\text{SI}=\mathbf{j}/\mu_0$。环向电流密度 $j$（由于因子 R 的存在，它并非真正的电流密度）定义为
 
 $$\begin{equation*}
-  j \equiv - R~\mathbf{j}\cdot\mathbf{e}_\phi = - \mathbf{j}\cdot\mathbf{a}_3 = \Delta^*\psi
+  j \equiv - R~\mathbf{j}\cdot\mathbf{e}_\phi = - \mathbf{j}\cdot\mathbf{a}_3 = \Delta^\ast\psi
 \end{equation*}$$
 
 [推导概要见此](expressions_and_derivations/j_psi.md)。因此物理分量 $j_\phi$ 为
 
 $$\begin{equation*}
-  j_\phi = -\frac{j}{R} = -\frac{\Delta^*\psi}{R}
+  j_\phi = -\frac{j}{R} = -\frac{\Delta^\ast\psi}{R}
 \end{equation*}$$
 
 尽管未用 JOREK 变量表示，电流的 R 分量与 Z 分量同样存在（见[此处](expressions_and_derivations/j_psi.md)）：
@@ -127,18 +127,18 @@ $$\begin{equation*}
 | $\nabla\times\nabla\phi\equiv 0$ | |
 | $\nabla\cdot\nabla\phi\equiv 0$ | |
 | $\nabla a\cdot\nabla\phi=\frac{1}{R^2}\partial_3 a$ | 对任意标量 $a$、$b$ |
-| $\Delta_\text{pol} u=\Delta^* u+\frac{2}{R}\partial_1 u$ | |
+| $\Delta_\text{pol} u=\Delta^\ast u+\frac{2}{R}\partial_1 u$ | |
 | $\nabla a\times\nabla\phi = \frac{1}{R}(\partial_2 a\mathbf{a}_1 - \partial_1 a\mathbf{a}_2)$ | |
 | $\nabla\phi\times(\nabla a\times\nabla\phi)=\frac{1}{R^2}\nabla_\text{pol}a$ | |
 | $(\nabla a\times\nabla\phi)\times(\nabla b\times\nabla\phi) = \frac{1}{R}[a,b]\nabla\phi$ | |
-| $\nabla\times(\nabla a\times\nabla\phi)=-\Delta^* a\nabla\phi + \frac{1}{R^2}\nabla_\text{pol}\partial_3 a$ | |
+| $\nabla\times(\nabla a\times\nabla\phi)=-\Delta^\ast a\nabla\phi + \frac{1}{R^2}\nabla_\text{pol}\partial_3 a$ | |
 | $\mathbf{B}\cdot\nabla a=\frac{F}{R^2}\partial_3 a+\frac{1}{R}[a,\psi]$ | |
 | $\nabla a\cdot\nabla b = \nabla_\text{pol}a\cdot\nabla_\text{pol}b+\frac{1}{R^2}\partial_3 a\partial_3 b$ | |
 | $\nabla\phi\cdot(\nabla C\times \nabla D)=\frac{1}{R}[C,D]$ | 对任意矢量 $\mathbf{C}$、$\mathbf{D}$ |
 | $\mathbf{B}\cdot(\mathbf{C}\times\mathbf{D})=\frac{F}{R}[C,D]-\frac{C}{R}[\nabla\psi,D]+\frac{D}{R}[\nabla\psi,C]$ | |
-| $\mathbf{j} \equiv \nabla F\times\nabla\phi + \frac{1}{R^2}\partial_3(\nabla_\text{pol}\psi)-\Delta^*\psi~\nabla\phi$ | [见此处](expressions_and_derivations/j_psi.md) |
-| $j \equiv -\mathbf{j}\cdot\mathbf{a}_3=\Delta^*\psi$ | [见此处](expressions_and_derivations/j_psi.md) |
-| $\mathbf{j}\times\mathbf{B}= -\frac{F}{R^2}\nabla_\text{pol}F+\frac{1}{R}\nabla\phi[F,\psi]-\frac{\Delta^*\psi}{R^2}\nabla_\text{pol}\psi+\frac{1}{R^2}\nabla_\text{pol}\partial_3\psi\times\mathbf{B}$ | [见此处](expressions_and_derivations/j_cross_b.md) |
+| $\mathbf{j} \equiv \nabla F\times\nabla\phi + \frac{1}{R^2}\partial_3(\nabla_\text{pol}\psi)-\Delta^\ast\psi~\nabla\phi$ | [见此处](expressions_and_derivations/j_psi.md) |
+| $j \equiv -\mathbf{j}\cdot\mathbf{a}_3=\Delta^\ast\psi$ | [见此处](expressions_and_derivations/j_psi.md) |
+| $\mathbf{j}\times\mathbf{B}= -\frac{F}{R^2}\nabla_\text{pol}F+\frac{1}{R}\nabla\phi[F,\psi]-\frac{\Delta^\ast\psi}{R^2}\nabla_\text{pol}\psi+\frac{1}{R^2}\nabla_\text{pol}\partial_3\psi\times\mathbf{B}$ | [见此处](expressions_and_derivations/j_cross_b.md) |
 | $\mathbf{v}\times\mathbf{B} = \frac{1}{R}\mathbf{a}_3 [\psi,u]+F\nabla_\text{pol} u$ | [见此处](expressions_and_derivations/v_cross_b.md) |
 
 ## 方程
@@ -191,18 +191,18 @@ $$\begin{equation*}\begin{split}
                         -\partial_{xy}P_i\left(\partial_{xx}U  -\partial_{yy}U  \right)\right] \\
   & - \frac{1}{R} \left[R^{2},p\right] + \frac{1}{R} \left[\psi,j\right]
     - \frac{F_{o}}{R^2}\frac{\partial j}{\partial\phi}
-    + \mu \nabla^{2}\left(\omega + \omega^*\right)
+    + \mu \nabla^{2}\left(\omega + \omega^\ast\right)
 \end{split}\end{equation*}$$
 
-其中 $\omega^*$ 是涡量的抗磁部分（[定义见此](expressions_and_derivations/omega_star.md)）。
-注意，在方程中包含 $\omega^*$ 非常重要。在代码中，我们把总涡量定义为
+其中 $\omega^\ast$ 是涡量的抗磁部分（[定义见此](expressions_and_derivations/omega_star.md)）。
+注意，在方程中包含 $\omega^\ast$ 非常重要。在代码中，我们把总涡量定义为
 
 $$\begin{equation*}
-  W = \omega + \omega^*
+  W = \omega + \omega^\ast
 \end{equation*}$$
 
-注意，在上述方程中引入这一新变量意味着必须从项 $\left[R^4\rho\omega,U\right]$ 中分离出 $\omega^*$。
-理想情况下还需从项 $\tau_{IC}R^4[\omega,P_i]$ 中分离出 $\omega^*$，但这会产生 $\tau_{IC}^2$ 量级的项，该量级被认为足够小而可以忽略。所得方程为（采用总涡量 $W$ 的新定义）：
+注意，在上述方程中引入这一新变量意味着必须从项 $\left[R^4\rho\omega,U\right]$ 中分离出 $\omega^\ast$。
+理想情况下还需从项 $\tau_{IC}R^4[\omega,P_i]$ 中分离出 $\omega^\ast$，但这会产生 $\tau_{IC}^2$ 量级的项，该量级被认为足够小而可以忽略。所得方程为（采用总涡量 $W$ 的新定义）：
 
 $$\begin{equation*}\begin{split}
 \nabla\cdot\left[R^2\rho\nabla_{pol}\left(\frac{\partial U}{\partial t}\right)\right] = 

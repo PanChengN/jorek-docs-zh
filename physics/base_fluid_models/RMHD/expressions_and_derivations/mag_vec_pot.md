@@ -20,12 +20,12 @@ $$\begin{equation*}
 $$\begin{equation*}\begin{split}
 \nabla\times\mathbf{A}
  &= \nabla\times(\nabla\alpha\times\nabla\phi)+\nabla\times(\psi\nabla\phi) \\
- &= -\Delta^*\alpha\nabla\phi+\frac{1}{R^2}\nabla_\text{pol}\underbrace{\partial_3\alpha}_{\equiv 0} + \nabla\psi\times\nabla\phi + \psi\underbrace{\nabla\times\nabla\phi}_{\equiv 0} \\
- &= -\Delta^*\alpha\nabla\phi+\nabla\psi\times\nabla\phi
+ &= -\Delta^\ast\alpha\nabla\phi+\frac{1}{R^2}\nabla_\text{pol}\underbrace{\partial_3\alpha}_{\equiv 0} + \nabla\psi\times\nabla\phi + \psi\underbrace{\nabla\times\nabla\phi}_{\equiv 0} \\
+ &= -\Delta^\ast\alpha\nabla\phi+\nabla\psi\times\nabla\phi
 \end{split}\end{equation*}$$
 
 由于该式必须与磁场表达式 $\mathbf{B}=F\nabla\phi+\nabla\psi\times\nabla\phi$ 一致，可导出如下条件：
 
 $$\begin{equation*}
-  F\equiv-\Delta^*\alpha
+  F\equiv-\Delta^\ast\alpha
 \end{equation*}$$

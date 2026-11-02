@@ -30,7 +30,7 @@ $$\begin{equation*}
 环向涡量 $W$ 可分为两大部分：
 
 $$\begin{equation*}
-  W = \omega + \omega^*
+  W = \omega + \omega^\ast
 \end{equation*}$$
 
 其中 $\omega$ 是与 $E \times B$ 流相关的标准涡量：
@@ -39,10 +39,10 @@ $$\begin{equation*}
   \omega = \nabla \cdot \nabla_{pol} u
 \end{equation*}$$
 
-而 $\omega^*$ 是与抗磁流及平行速度项相关的部分：
+而 $\omega^\ast$ 是与抗磁流及平行速度项相关的部分：
 
 $$\begin{equation*}
-  \omega^* = \nabla \cdot \left( \frac{\tau_{IC}}{\rho} \nabla_{pol} p_i - v_{||} \frac{1}{R^2} \nabla_{pol} \psi \right)
+  \omega^\ast = \nabla \cdot \left( \frac{\tau_{IC}}{\rho} \nabla_{pol} p_i - v_{||} \frac{1}{R^2} \nabla_{pol} \psi \right)
 \end{equation*}$$
 
 这些项的完整推导（包括与陀螺黏性张量相关项的抵消）见[涡量推导](omega_deriv.md)页与 [RMHD 模型](../rmhd_model.md)页。

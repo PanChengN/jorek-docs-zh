@@ -91,7 +91,7 @@ $$R = \sum_{m,n} a_{mn}\cos(m\theta - n\zeta),\quad z = \sum_{m,n} b_{mn}\sin(m\
 
 另一种做法是，它可以使用给定的 VMEC 文件来提取这些信息（iota、压力、总环向磁通以及边界的 Fourier 模）。Wendelstein 7-A 的平衡就是这样做的，因为这些平衡是按给定的环向电流剖面计算的。
 
-VMEC 中求解的未知量是标记为 $s$ 的磁面几何 $R(s,\theta,\zeta),Z(s,\theta,\zeta)$ 以及势 $\lambda(s,\theta,\zeta)$，由此得到 PEST 直线磁力线极向角 $\theta^*=\theta+\lambda$。
+VMEC 中求解的未知量是标记为 $s$ 的磁面几何 $R(s,\theta,\zeta),Z(s,\theta,\zeta)$ 以及势 $\lambda(s,\theta,\zeta)$，由此得到 PEST 直线磁力线极向角 $\theta^\ast=\theta+\lambda$。
 
 在 GVEC 中，未知量为 $(X_1,X_2,\lambda)$。这是因为环向映射 $(R,Z,\phi)->(x,y,z)$ 被推广到了任意的其他解析映射。在环向映射的默认情形下，未知量与 VMEC 中相同，因此 $R=X_1,Z=X_2$ 以及 $\lambda$。
 
