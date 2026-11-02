@@ -6,7 +6,6 @@ parent: "Running JOREK"
 ---
 
 - 在算例目录中运行该脚本，即可绘制例如模拟期间或模拟之后的**能量时间曲线**。
-- 例如（点击可放大）：![](energies.png?400)
 - 该脚本需要较新版本的 gnuplot（在许多机器上可直接使用，或通过 'module' 命令加载）
 - 还可以绘制**增长率**（`plot_live_data.sh -q g`）、与**时间步**对应的模拟时间（`plot_live_data.sh -q t`）以及**输入剖面**（`plot_live_data.sh -q i`），今后也很容易继续扩展
 - **用 `plot_live_data.sh -l` 列出所有可绘制的量**
@@ -45,7 +44,7 @@ w &\equiv \frac{\rho}{2}|\mathbf{v}|^2 + \frac{p}{\gamma-1}+\frac{|\mathbf{B}|^2
  \mathbf{\Gamma} &\equiv \left[ \frac{\rho}{2}|\mathbf{v}|^2  + \frac{\gamma}{\gamma-1}p \right]\mathbf{v} + \frac{\mathbf{q}}{\gamma-1} + \mathbf{E}\times\mathbf{B} 
 \end{align}
 
-式 \eqref{eq:energy_density} 的右端项（$\tau_{nc}$）表示非守恒项，例如源项（如加热源）与汇项（如辐射）。耗散项（如电阻项与黏性项）原则上不应出现在（$\tau_{nc}$）中。不过，例如当 $\eta \neq \eta_{ohmic}$ 时，一部分损失的磁能不会通过欧姆加热项转化为热能，从而产生一个非守恒项。式 \eqref{eq:energy_density} 的推导概述见下面的 ![slides ](artola_energy_conservation_diagnostics.pdf)。能量守恒诊断基于式 \eqref{eq:energy_density} 在 JOREK 计算域上的体积分，即
+式 \eqref{eq:energy_density} 的右端项（$\tau_{nc}$）表示非守恒项，例如源项（如加热源）与汇项（如辐射）。耗散项（如电阻项与黏性项）原则上不应出现在（$\tau_{nc}$）中。不过，例如当 $\eta \neq \eta_{ohmic}$ 时，一部分损失的磁能不会通过欧姆加热项转化为热能，从而产生一个非守恒项。式 \eqref{eq:energy_density} 的推导概述原以单独文档提供（该附件在上游已缺失）。能量守恒诊断基于式 \eqref{eq:energy_density} 在 JOREK 计算域上的体积分，即
 
 \begin{equation}
 \label{eq:total_energy_ev}
@@ -64,9 +63,9 @@ E_{tot} &\equiv \int_V w dV
 
   jorek_folder/util/plot_live_data.sh -q energy_conservation
 
-若能量守恒良好，两条曲线应当重合，如下例所示。
+若能量守恒良好，两条曲线应当重合（原站此处有示例图，图片在上游已缺失）。
 
-![](example_energy_conservation1.png?nolink)
+<!-- 原站引用的图/附件已缺失：上游仓库与旧 wiki 均无此文件，故移除引用 -->
 
 也可以用下面的命令绘制各类能量及其时间导数
 
@@ -125,6 +124,6 @@ E_{tot} &\equiv \int_V w dV
   jorek_folder/util/plot_live_data.sh -q mag_energy_balance
 
   ```
-![](screenshot_from_2020-04-19_13-20-17.png?800)
+<!-- 原站引用的图/附件已缺失：上游仓库与旧 wiki 均无此文件，故移除引用 -->
 
-磁能方程及所绘制的各项可在文档 ![](mag_energy_evolution.pdf) 中找到（也可以查看对应的 ![ pull request](https://git.iter.org/projects/STAB/repos/jorek/pull-requests/376/overview) ）
+磁能方程及所绘制的各项可在文档  中找到（也可以查看对应的 ![ pull request](https://git.iter.org/projects/STAB/repos/jorek/pull-requests/376/overview) ）

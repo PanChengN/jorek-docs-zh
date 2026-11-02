@@ -17,13 +17,13 @@ render_with_liquid: false
 
 ## README
 
-- （针对 Leonardo）CINECA 于 2025 年 2 月 18 日举办的网络研讨会幻灯片 ![slides_qa.pdf](/slides_qa.pdf){.align-center}
+- （针对 Leonardo）CINECA 于 2025 年 2 月 18 日举办的网络研讨会幻灯片
 - CINECA 帮助台电子邮箱：superc@cineca.it
 - 与 EUROFUSION TSVV-F 项目相关的本项目名称为：**FUPA1_REDISMHD**
 - 文档：
   <https://docs.hpc.cineca.it/hpc/pitagora.html#pitagora-card>
 - Cineca 提供的幻灯片（访问方式、模块等）：
-  <https://learn.cineca.it/course/view.php?id=2121>![pitagora_ef_new.pdf](/pitagora_ef_new.pdf){.align-center}c/pitagora.html#pitagora-card)`
+  <https://learn.cineca.it/course/view.php?id=2121>
 
 ## 登录
 

@@ -340,7 +340,7 @@ egrep -i 'info\(2|time iterat|time step :|min,max deltas' logfile
 
 `intear` 测试算例中 `./util/plot_live_data.sh` 输出的示例：
 
-<img src="assets/running_jorek_for_the_first_time/tutorial_intear-energies-example.png" alt="Alt text" width="600">
+<img src="assets/running_jorek_for_the_first_time/tutorial_intear-energies-example-600.PNG" alt="Alt text" width="600">
 
 
 在仿真运行时按下 `u` 应当会更新图像。你可以用鼠标右键放大，并用 `l` 在对数 y 轴与普通 y 轴之间切换。还有更多的量可供绘制：
@@ -374,7 +374,7 @@ cp jorekXXXXX.h5 jorek_restart.h5
 
 `intear` 测试算例的 VTK 图示例（用 `-no0` 选项生成的电流密度扰动）：
 
-<img src="assets/running_jorek_for_the_first_time/tutorial_intear-current-pert.png" alt="Alt text" width="600">
+<img src="assets/running_jorek_for_the_first_time/tutorial_intear-current-pert.jpg" alt="Alt text" width="600">
 
 ### jorek2_postproc {#jorek2_postproc}
 工具 `jorek2_postproc` 可以对仿真的许多方面做快速分析。你可以通过调用下面的命令以交互方式运行它：

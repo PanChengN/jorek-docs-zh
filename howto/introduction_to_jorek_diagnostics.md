@@ -87,7 +87,7 @@ $$
 ```
 
 # jorek2vtk {#jorek2vtk}
-<img align="right" src="assets/introduction_to_jorek_diagnostics/jorek2vtk-example.png" alt="jorek2vtk example" width="400">
+<!-- 原站引用的图/附件已缺失：上游仓库与旧 wiki 均无此文件，故移除引用 -->
 
 你在教程 [首次运行 JOREK](running_jorek_for_the_first_time.md) 中已经接触过 `jorek2vtk`。这里补充一些信息。提醒一下，需要通过 `make -j 8 jorek2vtk` 编译该诊断工具。务必使用与主程序相同的硬编码参数。要把 `.h5` 重启文件真正转换为 `.vtk` 文件，只需运行
 
@@ -139,7 +139,7 @@ $$
 
 # jorek2vtk_3d
 
-<img align="right" src="assets/introduction_to_jorek_diagnostics/jorek2vtk3d-example.png" alt="jorek2vtk_3d example" width="400">
+<!-- 原站引用的图/附件已缺失：上游仓库与旧 wiki 均无此文件，故移除引用 -->
 
 编译与用法同 jorek2vtk 几乎相同，但有几点区别：
 
@@ -247,7 +247,7 @@ done
 
 # jorek2_target2vtk
 
-<img align="right" src="assets/introduction_to_jorek_diagnostics/Target-example.png" alt="Target example" width="400">
+<img align="right" src="assets/introduction_to_jorek_diagnostics/target-example.png" alt="Target example" width="400">
 
 可将偏滤器靶板上的靶板热流写出为 VTK 文件以便绘图。编译：
 

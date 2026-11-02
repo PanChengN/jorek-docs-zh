@@ -346,7 +346,7 @@ Bernstein 多项式基是贝塞尔有限元框架的基础。在 JOREK 中，它
 
 > **关于贝塞尔曲线的直观理解**：贝塞尔曲线由法国工程师 Pierre Bézier 发明，构造它们的直观方式是通过 [de Casteljau 算法](https://en.wikipedia.org/wiki/De_Casteljau%27s_algorithm)。可以把贝塞尔曲线看作递归施加的线性插值（图形学术语中称为 LERP）。首先以参数 `t` 对每两个相邻控制点做线性插值，于是得到 `n` 个点。然后对这些新的"导出"控制点以参数 `t` 重复同样操作，直至只剩一个点。这个点就是 $\mathbf{P}(t)$。下图展示了上述过程：
 > 
-> <img src="assets/spatial-discretization/bezier_curve.png" width="500">
+> <img src="spatial-discretization/assets/spatial-discretization/bezier_curve.png" width="500">
 
 > **关于维数的重要说明**：需要强调，点 $\mathbf{P}_i$ 可以属于**任意** $m$（只要 $m > 1$）的空间 $\mathbb{R}^m$。通常想到的贝塞尔曲线有 $\mathbf{P}_i \in \mathbb{R}^2$，但也完全可以有 $\mathbf{P}_i \in \mathbb{R}^{100}$！事实上在 JOREK 中最小的空间是 $\mathbb{R}^8$，因为至少使用 $6$ 个变量。
 
@@ -360,7 +360,7 @@ $$\{B_{i}(s)B_{j}(t)\}_{i = 0\ldots n,j = 0\ldots n}$$
 
 $$\mathbf{P}(s,t) = \sum_{i = 0}^{n}\sum_{j = 0}^{n}B_{i}^{n}(s)B_{j}^{n}(t)$$
 
-<img src="assets/spatial-discretization/bezier_surface.png" width="500">
+<img src="spatial-discretization/assets/spatial-discretization/bezier_surface.png" width="500">
 
 ### 从贝塞尔曲面到贝塞尔有限元
 

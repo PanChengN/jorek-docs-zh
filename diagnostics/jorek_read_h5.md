@@ -35,11 +35,9 @@ grid = f.to_vtk(n_sub=3, phi=[0,180], n_plane=3, quadratic=False, bezier=False)
 Bezier 几何最为复杂，但它能在可视化平台（如 **paraview**）中，用同样多的点提高非线性细分层级，因为它用 Bezier 多项式从初始控制点插值出更多点。  
 这里所用的 RZ 平面内控制点计算方式在*论文*中有说明。二维时，这些控制点用于构造 [bezier quadrilateral](https/*vtk.org/doc/nightly/html/classvtkbezierquadrilateral.html.md)。结果是每个单元由 4x4 个节点构成。二维与三维单元所用的节点排布见[此 pdf](https/*staging.coreform.com/papers/implementation-of-rational-bezier-cells-into-vtk-report.pdf.md)。
 
-转到三维时，[bezier hexahedron](https/*vtk.org/doc/nightly/html/classvtkbezierhexahedron.html.md) 由 3 个平面、每面 4x4 个点构成，即每个单元 48 个节点。由于我们的单元不是 *pdf* 中的 4x4x4，我们只是跳过不存在的节点。单元形状的各向异性结构由 `SetHigherOrderDegrees()` 指定，形如 `[3,3,2]`，写在 *jorek_read_h5.py// 中。（尽管单元由 4x4x3 个点构成，每个维度上给出的数目要少 1。）下面给出了示例单元的图、其顶视图与侧视图以及它的点，并作为 ![ VTK file for ParaView](vtk_bezier_hexahedron.zip?linkonly) 提供。
+转到三维时，[bezier hexahedron](https/*vtk.org/doc/nightly/html/classvtkbezierhexahedron.html.md) 由 3 个平面、每面 4x4 个点构成，即每个单元 48 个节点。由于我们的单元不是 *pdf* 中的 4x4x4，我们只是跳过不存在的节点。单元形状的各向异性结构由 `SetHigherOrderDegrees()` 指定，形如 `[3,3,2]`，写在 *jorek_read_h5.py// 中。（尽管单元由 4x4x3 个点构成，每个维度上给出的数目要少 1。）原站此处还附有示例单元的图、顶视图、侧视图，以及可直接用 ParaView 打开的 VTK 文件；这些附件在上游已缺失。
 
-![](points_and_surface.png?800)
-![](side_view.png?430)
-![](top_view.png?430)
+<!-- 原站引用的图/附件已缺失：上游仓库与旧 wiki 均无此文件，故移除引用 -->
 
 RZ 平面内的控制点仍用先前的办法计算，而环向方向则改用另一种方法。由于圆弧只能用有理二次 Bezier 曲线表示，这些控制点必须带有有理权重。如前所述，单元由 3 个平面构成，其中中间平面必须带有有理权重。若第一个与第三个平面之间的夹角为 *2α*（第二个平面位于 α 处），则权重按 `w=cos(α)` 计算，第二个平面内各点的新半径（极角不变）按 `R=r/cos(α)` 计算。在顶视图中可以看到带权重的控制点位置。有理二次 Bezier 曲线的说明见[此指南](https://ctan.math.illinois.edu/macros/latex/contrib/lapdf/rcircle.pdf)。
 
