@@ -21,8 +21,11 @@ import subprocess
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _paths import upstream_repo  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent.parent
-REPO = ROOT.parent / "01_源码" / "JOREK"      # 上游仓库的本地克隆
+REPO = upstream_repo()      # 上游仓库的本地克隆
 BASELINE = ROOT / ".upstream-baseline"
 BRANCH = "origin/develop"
 
@@ -118,8 +121,8 @@ def main() -> int:
             print(f"  [应移除] {p}" + ("（中文站仍有）" if (ROOT / p).exists() else ""))
 
         print("\n同步步骤：")
-        print("  1. 更新本地副本：cd 01_源码/JOREK && git pull")
-        print("  2. 覆盖 Wiki 副本：rsync -a --delete 01_源码/JOREK/docs/ 02_技术文档/官方Wiki源码/")
+        print("  1. 更新本地副本：git -C <上游仓库> pull")
+        print("  2. 覆盖 Wiki 副本：rsync -a --delete <上游仓库>/docs/ <本地 Wiki 副本>/")
         print("  3. 补新增页面：python3 tools/sync_upstream.py --new")
         print("  4. 重译变更页面，运行 tools/verify_site.py 验收")
         print("  5. 记录基线：python3 tools/check_upstream.py --accept")

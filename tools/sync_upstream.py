@@ -28,8 +28,11 @@ from pathlib import Path
 
 import yaml
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _paths import upstream_docs  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent.parent
-UPSTREAM = ROOT.parent / "02_技术文档" / "官方Wiki源码"
+UPSTREAM = upstream_docs()
 TITLES_FILE = ROOT / "i18n" / "titles.yml"
 UPSTREAM_BASE = "https://iterorganization.github.io/JOREK"
 

@@ -5,7 +5,7 @@
 ## 一、动手前
 
 1. 读 [`i18n/glossary.md`](i18n/glossary.md)，术语照它写，不要自创。
-2. 打开对应的英文原文：<https://iterorganization.github.io/JOREK/>，或本地 `../02_技术文档/官方Wiki源码/` 下的同名文件。
+2. 打开对应的英文原文：<https://iterorganization.github.io/JOREK/>，或本地上游文档副本（路径见下文「上游路径配置」）下的同名文件。
 3. 确认目标文件里是否有 `<!-- untranslated-notice -->`——有，说明还没人翻译；没有，说明已有译文，改动前先看清楚。
 
 ## 二、绝对不能改的东西
@@ -48,17 +48,41 @@
 ## 五、提交前自检
 
 ```bash
+# 上游文档目录（若未设环境变量，见 upstream.local.yml）
+UP="${JOREK_DOCS_DIR:-../upstream/docs}"
+
 # 1. 提示块应已删除（无输出即通过）
 grep -rl 'untranslated-notice' <你改的页面>
 
 # 2. 代码块数量应与原文一致
-grep -c '^```' <你的页面> ../02_技术文档/官方Wiki源码/<同名页面>
+grep -c '^```' <你的页面> "$UP/<同名页面>"
 
 # 3. 公式块数量应与原文一致
-grep -c '\$\$' <你的页面> ../02_技术文档/官方Wiki源码/<同名页面>
+grep -c '\$\$' <你的页面> "$UP/<同名页面>"
 
 # 4. 本地构建不应报错
 bundle exec jekyll build
 ```
 
 然后在浏览器里打开该页，确认排版与原站一致。
+
+## 六、上游路径配置
+
+维护脚本需要知道上游 JOREK 仓库及其 `docs/` 副本放在哪里。三种方式，优先级从高到低：
+
+1. 环境变量：`export JOREK_DOCS_DIR=/path/to/JOREK/docs`、`export JOREK_REPO=/path/to/JOREK`
+2. 本地配置 `upstream.local.yml`（已在 `.gitignore` 中，不会提交）：
+
+   ```yaml
+   docs_dir: ../upstream/docs
+   repo:     ../upstream/repo
+   ```
+
+3. 通用默认值：`../upstream/docs` 与 `../upstream/repo`
+
+推荐做法：
+
+```bash
+git clone https://github.com/iterorganization/JOREK.git ../upstream/repo
+ln -s ../upstream/repo/docs ../upstream/docs
+```

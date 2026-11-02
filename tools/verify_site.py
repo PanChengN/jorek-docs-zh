@@ -19,8 +19,11 @@ import re
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _paths import upstream_docs  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent.parent
-UP = ROOT.parent / "02_技术文档" / "官方Wiki源码"
+UP = upstream_docs()
 SKIP_DIRS = {"i18n", "tools", "_site"}
 SKIP_FILES = {"README.md", "TRANSLATING.md", "NOTICE.md", "THIRD_PARTY_LICENSES.md"}
 
