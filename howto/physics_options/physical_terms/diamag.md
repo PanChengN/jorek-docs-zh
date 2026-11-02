@@ -7,29 +7,22 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 含抗磁漂移项运行
 
-原文页面：[Run with Diamagnetic Drift](https://iterorganization.github.io/JOREK/howto/physics_options/physical_terms/diamag.html)　·　源文件：`howto/physics_options/physical_terms/diamag.md`
-</div>
-
-# Running with Diamagnetic Drift Terms
-
-- Diamagnetic drift terms are currently implemented in models 303, 333, 400, 500, 555, and **600**.
-- To switch the terms on, set the input parameter `tauIC` in the namelist input file to the correct value:
+- 抗磁漂移项目前在模型 303、333、400、500、555 以及 **600** 中实现。
+- 要开启这些项，在 namelist 输入文件中把输入参数 `tauIC` 设为正确的值：
 
 $$
 \tau_\text{IC} = \frac{m_\text{ion}}{2e\,F_0\sqrt{\mu_0\rho_0}}
 $$
 
-- This expression assumes $T_\text{ion}=T_\text{el}$, which accounts for the factor of two in the denominator.
-- By default, the diamagnetic terms are switched off: `tauIC` is preset to zero.
-- According to the definition above, the `tauIC` input parameter is always defined as for a single-temperature model.
+- 该表达式假定 $T_\text{ion}=T_\text{el}$，分母中的因子 2 即由此而来。
+- 默认情况下抗磁项处于关闭状态：`tauIC` 预置为零。
+- 按上述定义，`tauIC` 输入参数始终按单温度模型的形式给出。
 
-## Examples
+## 示例
 
-For an ASDEX Upgrade deuterium plasma with $n_0=10^{20}\,\mathrm{m}^{-3}$ and $F_0=4.2$, the correct value of `tauIC` is $3.8\times10^{-3}$:
+对 $n_0=10^{20}\,\mathrm{m}^{-3}$、$F_0=4.2$ 的 ASDEX Upgrade 氘等离子体，`tauIC` 的正确取值为 $3.8\times10^{-3}$：
 
 $$
 \begin{aligned}
@@ -41,13 +34,13 @@ m_D &= 3.344\times10^{-27}\,\mathrm{kg}, \\
 \end{aligned}
 $$
 
-For a deuterium plasma, the expression can be written as:
+对氘等离子体，该表达式可写为：
 
 $$
 \tau_\text{IC} = \frac{1.61\times10^8}{F_0\sqrt{n_0}}.
 $$
 
-## Some estimates
+## 一些估算
 
-- The **diamagnetic velocity** is $\mathbf{v}_\text{dia}=-(\nabla p\times\mathbf{B})/(qnB^2)$, with magnitude $v_\text{dia}=|\nabla p|/(qnB)$, where $q$ is the particle's electric charge and $n$ is the particle density.
-- The **diamagnetic frequency** is given by $\tau_\text{dia}=v_D/C$, where $C\approx2\pi r$ is the poloidal circumference of the flux surface under consideration. At the edge of an ASDEX Upgrade plasma, $C\approx4\,\mathrm{m}$.
+- **抗磁速度**为 $\mathbf{v}_\text{dia}=-(\nabla p\times\mathbf{B})/(qnB^2)$，其大小为 $v_\text{dia}=|\nabla p|/(qnB)$，其中 $q$ 为粒子电荷，$n$ 为粒子数密度。
+- **抗磁频率**由 $\tau_\text{dia}=v_D/C$ 给出，其中 $C\approx2\pi r$ 为所考虑磁面的极向周长。在 ASDEX Upgrade 等离子体边界处，$C\approx4\,\mathrm{m}$。

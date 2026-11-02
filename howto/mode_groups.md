@@ -7,13 +7,6 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 预条件器中的模族
 
-原文页面：[Run with Mode Groups in Preconditioner](https://iterorganization.github.io/JOREK/howto/mode_groups.html)　·　源文件：`howto/mode_groups.md`
-</div>
-
-# Mode Families in the Preconditioner
-
-See the [Mode Family Distribution section of the solver documentation](../numerics/solver.md#mode-family-distribution) for the available distribution strategies, overlapping families, weights, and MPI-rank allocation.
+关于可用的分配策略、重叠模族、权重与 MPI 进程分配，参见求解器文档中的 [模族分配一节](../numerics/solver.md#mode-family-distribution)。

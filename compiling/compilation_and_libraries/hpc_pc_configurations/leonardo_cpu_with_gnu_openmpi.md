@@ -7,14 +7,7 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
-
-原文页面：[Leonardo with GNU OpenMPI](https://iterorganization.github.io/JOREK/compiling/compilation_and_libraries/hpc_pc_configurations/leonardo_cpu_with_gnu_openmpi.html)　·　源文件：`compiling/compilation_and_libraries/hpc_pc_configurations/leonardo_cpu_with_gnu_openmpi.md`
-</div>
-
-# Compiling JOREK on Leonardo-CPU with Intel and Oneapi
+# 在 Leonardo-CPU 上使用 Intel 与 Oneapi 编译 JOREK
   ## bashrc
   ```bash
   module load gcc/12.2.0

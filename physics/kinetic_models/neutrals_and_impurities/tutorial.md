@@ -6,40 +6,33 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 含动理学中性粒子与杂质运行
+本教程说明如何在 JOREK 仿真中引入动理学中性粒子和/或杂质。假定用户已熟悉如何单独运行 JOREK 算例，参见 [[running_jorek_for_the_first_time|首次运行 JOREK]]。
 
-原文页面：[Run with kinetic neutrals and impurities](https://iterorganization.github.io/JOREK/physics/kinetic_models/neutrals_and_impurities/tutorial.html)　·　源文件：`physics/kinetic_models/neutrals_and_impurities/tutorial.md`
-</div>
+## 1. 可执行文件与输入文件
+目前只能在名为 kinetic_develop 的分支上进行仿真（该分支将合并到 develop）。检出该分支，在 **`Makefile.inc`** 中选择 **`model600`**，并用你偏好的模型设置编译 kinetic_main。需要注意的是，使用这些粒子运行需要选项 `with_vpar=.true.`。该模型同时支持单温与双温设置，也支持 `ntor=1` 或更高值。
 
-# Run with kinetic neutrals and impurities
-This tutorial shows how to include kinetic neutrals and/or impurities in JOREK simulations. We assume that the user is already familiar with running standalone JOREK simulations, see [[running_jorek_for_the_first_time|Running JOREK for the first time]].
+原子物理过程的反应速率从 OpenADAS 文件中提取，本教程所需的文件见：
 
-## 1. Executable and input files
-At the moment, simulations are only possible on a branch called kinetic_develop (to be merged into develop). Checkout this branch, choose **`model600`** in your **`Makefile.inc`** and compile kinetic_main with your preferred model settings. It has to be noted that the option `with_vpar=.true.` is needed to run with these particles. The model supports both one- and two-temperature settings and `ntor=1` or higher, as well.
+插值背景场需要形式为 jorek_restart.h5 的 JOREK 重启文件。
 
-The reaction rates for the atomic physics processes are extracted from OpenADAS files, the ones required for this tutorial are found here:
-
-A jorek restart files in the form of jorek_restart.h5 is needed to interpolate the background fields.
-
-# 2. Including neutral particles
-To include neutral particles of species deuterium, the following lines have to be added to your namelist:
+# 2. 引入中性粒子
+要引入氘种类的中性粒子，需在 namelist 中加入以下行：
 ```
 restart_particles =.f.
 tstep_particles = 5.d-7
 
 deuterium_adas = .t.
 ```
-where `tstep_particles` defines the particle step size (for each fluid step) in seconds and `restart_particles` is no particle restart file is available. Otherwise set to .t. and have a **`part_restart.h5`** ready. Set `deuterium_adas=.t.` to X.
+其中 `tstep_particles` 定义粒子步长（每个流体步）以秒计，`restart_particles` 表示没有可用的粒子重启文件。否则设为 .t. 并准备好 **`part_restart.h5`**。将 `deuterium_adas=.t.` 设为 X。
 
-We define valves, and initialize our particles inside the valves defined by polygons or circles:
+我们定义阀门，并在由多边形或圆定义的阀门内部初始化粒子：
 ```
 valves(1)%type = "poly"
 valves(1)%poly_R = 3.86d0, 3.9d0, 3.86d0, 3.9d0
 valves(1)%poly_Z = 0.1d0,  0.1d0,  0.0d0, 0.0d0
 ```
-Next, the deuterium particle group is initialized with id (chosen freely), charge number, atomic mass, coupling scheme, the number of particles to be allocated and particle type:
+接下来初始化氘粒子组，给出 id（可自由选择）、电荷数、原子质量、耦合方案、要分配的粒子数以及粒子类型：
 ```
 ! Deuterium Neutrals (D01)
 part_group_configs(1)%id = "D01"
@@ -51,7 +44,7 @@ part_group_configs(1)%type = "particle_kinetic_leapfrog" ! only supported type f
 part_group_configs(1)%atom_data_suffix = "12_h"          ! ending of corresponding adas .dat files
 ```
 
-To choose which atomic physics to include:
+要选择引入哪些原子物理过程：
 ```
 part_group_configs(1)%use_kin_puffing = .t.
 part_group_configs(1)%use_kin_cx = .t.
@@ -60,12 +53,12 @@ part_group_configs(1)%use_kin_recombination = .t.
 part_group_configs(1)%use_kin_radiation = .t.
 ```
 
-For the particle-wall interaction we choose reflection here:
+对于粒子–壁相互作用，此处选择反射：
 ```
 part_group_configs(1)%wall_act_configs(1)%type = "reflection"
 ```
 
-The background fluid interacts with the wall, too and can lead to new neutrals:
+背景流体也会与壁相互作用，并可产生新的中性粒子：
 ```
 fluid_configs(1)%Z=-2
 fluid_configs(1)%wall_act_configs(1)%type="wall recomb"
@@ -73,23 +66,23 @@ fluid_configs(1)%wall_act_configs(1)%target_group_id="D01"
 fluid_configs(1)%wall_act_configs(1)%supers_num_wall=200
 ```
 
-The puffing pattern/rate from the valve for D is set by:
+D 从阀门注入的模式/速率由下式设定：
 ```
 part_group_configs(1)%puff_ctrl(1)%times = 0.
 part_group_configs(1)%puff_ctrl(1)%rates = 1.d20 !< constant puffing rate
 part_group_configs(1)%puff_ctrl(1)%supers_num_puff = 40
 ```
 
-Now run like you would usually do with JOREK, but this time using kinetic_main. The files reuired for this tutorial can be found here:
+现在照常运行 JOREK，但这次使用 kinetic_main。本教程所需的文件见：
 
-Let's complicate things a bit and include neutral-neutral collisions with:
+我们稍微复杂化一点，引入中性粒子间碰撞：
 ```
 part_group_configs(1)%use_kin_neutral_coll   = .t.
 part_group_configs(1)%neutral_coll_dTw = 2.d-10, 273, 0.66
 ```
 
-# 3. Including impurities
-In the following example, we will include nitrogen impurities (along with the previously described neutrals), seeded from the same valve as deuterium. Similarly to neutrals, in the namelist we set:
+# 3. 引入杂质
+在下面的示例中，我们将引入氮杂质（与前面描述的中性粒子一起），从与氘相同的阀门播撒。与中性粒子类似，在 namelist 中设置：
 ```
 ! Nitrogen Impurities (N01)
 part_group_configs(2)%id = "N01"
@@ -109,10 +102,10 @@ part_group_configs(2)%puff_ctrl(1)%rates = 1.d19
 part_group_configs(2)%puff_ctrl(1)%supers_num_puff = 20
 ```
 
-Now we can run with both neutrals and impurities.
+现在就可以同时带中性粒子和杂质运行了。
 
-# 4. Tips and tricks
-  * When other impurity species are needed, one has to change the parameters `Z`, `mass`, `atom_data_suffix` and have the corresponding ADAS files.
-  * If the SOL is of interest it is recommended to enable `grid_to_wall` and set natural boundary conditions, using:
-  * To include particle projections in vtks, use the flag `-proj jorek`, with **`convert2vtk.sh`**
-  * Excessive radiation can lead to negative temperatures and numerical problems, make sure that you don't use unreasonable puffing rates, then look into one of the workarounds at [[corr_neg|The following functionality allows to "correct" negative densities or temperatures in order to avoid floating point exceptions]].
+# 4. 技巧与提示
+  * 需要其他杂质种类时，必须修改参数 `Z`、`mass`、`atom_data_suffix`，并具备相应的 ADAS 文件。
+  * 若关注刮削层（SOL），建议启用 `grid_to_wall` 并设置自然边界条件，使用：
+  * 要在 vtk 中包含粒子投影，请在使用 **`convert2vtk.sh`** 时加上标志 `-proj jorek`
+  * 过强的辐射会导致负温度和数值问题，确保不使用不合理的注入速率，然后可查看 [[corr_neg|以下功能允许对负密度或负温度进行"修正"，以避免浮点异常]] 中的一种变通办法。

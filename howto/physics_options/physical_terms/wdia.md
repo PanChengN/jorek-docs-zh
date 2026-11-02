@@ -7,43 +7,36 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 如何在黏性项中计入抗磁漂移
 
-原文页面：[Include Diamagnetic Drift in Viscosity](https://iterorganization.github.io/JOREK/howto/physics_options/physical_terms/wdia.html)　·　源文件：`howto/physics_options/physical_terms/wdia.md`
-</div>
-
-# How to include diamagnetic drift in the viscosity term
-
-- **When is this useful?** When using diamagnetic terms with low resistivity.
-- **Implemented for:** Models 303, 307, 333, 500, and 600.
-- **How is it activated?** Set `Wdia = .true.` in the namelist input file. The contribution also requires nonzero `tauIC` and `visco` values.
+- **何时有用？** 在低电阻率条件下使用抗磁项时。
+- **已实现于：** 模型 303、307、333、500 和 600。
+- **如何激活？** 在 namelist 输入文件中设置 `Wdia = .true.`。该贡献还要求 `tauIC` 与 `visco` 取非零值。
 
 
-# Viscous diamagnetic term derivation
+# 黏性抗磁项的推导
 
-In the current equations, we have the viscous term as
+在当前的方程中，黏性项写为
 
 $$
 -\int \mu \nabla v \cdot \nabla W \, dV,
 $$
 
-so that the actual physics term, before integration by parts, is
+因此在分部积分之前，实际的物理项为
 
 $$
 +\int v \, \nabla \cdot \left(\mu \nabla W\right)\, dV.
 $$
 
-That is, the viscosity is inside the divergence.
+也就是说，黏性位于散度算子内部。
 
-For the viscous diamagnetic term, in weak form, we start with
+对黏性抗磁项，在弱形式下，出发点为
 
 $$
 \int v \, \nabla \cdot \left(\mu \nabla W_{\mathrm{dia}}\right)\, dV.
 $$
 
-Integration by parts gives
+分部积分给出
 
 $$
 -\int \mu \nabla v \cdot \nabla W_{\mathrm{dia}}\, dV
@@ -54,13 +47,13 @@ $$
 \right)\, dV.
 $$
 
-Assuming the boundary term vanishes,
+假定边界项为零，
 
 $$
 -\int \mu \nabla v \cdot \nabla W_{\mathrm{dia}}\, dV.
 $$
 
-A second integration by parts gives
+再次分部积分给出
 
 $$
 +\int
@@ -76,7 +69,7 @@ W_{\mathrm{dia}}\, dV
 \right)\, dV.
 $$
 
-Again assuming the boundary term vanishes, the final form is
+再次假定边界项为零，最终形式为
 
 $$
 +\int
@@ -87,7 +80,7 @@ W_{\mathrm{dia}}
 \, dV.
 $$
 
-Expanding the divergence,
+展开散度，
 
 $$
 +\int
@@ -101,7 +94,7 @@ W_{\mathrm{dia}}
 \, dV.
 $$
 
-If $\mu$ depends on temperature,
+若 $\mu$ 依赖于温度，
 
 $$
 \nabla \mu
@@ -109,7 +102,7 @@ $$
 \frac{\partial \mu}{\partial T}\nabla T,
 $$
 
-and therefore
+因而
 
 $$
 +\int
@@ -124,15 +117,15 @@ W_{\mathrm{dia}}
 \, dV.
 $$
 
-## JOREK implementation
+## JOREK 中的实现
 
-In JOREK, with
+在 JOREK 中，取
 
 $$
 dV = R\,\mathrm{xjac},
 $$
 
-the corresponding terms are
+相应的项为
 
 $$
 +
@@ -145,7 +138,7 @@ v_x T_x + v_y T_y
 \mathrm{xjac},
 $$
 
-and
+以及
 
 $$
 +
@@ -160,7 +153,7 @@ v_{yy}
 \mathrm{xjac}.
 $$
 
-Here,
+其中，
 
 $$
 W_{\mathrm{dia}}

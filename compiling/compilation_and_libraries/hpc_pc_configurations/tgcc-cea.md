@@ -7,41 +7,34 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 在 TGCC（CEA）上运行 JOREK
 
-原文页面：[TGCC-CEA](https://iterorganization.github.io/JOREK/compiling/compilation_and_libraries/hpc_pc_configurations/tgcc-cea.html)　·　源文件：`compiling/compilation_and_libraries/hpc_pc_configurations/tgcc-cea.md`
-</div>
+## 获取访问权限
 
-# Running JOREK on TGCC (CEA)
-
-## Getting Access
-
-1. Currently limited to CEA staff, under a single project (PI: Marina Becoulet).
-2. French research teams can ask for resources through GENCI via DARI calls: <http://www.edari.fr>
-3. Scientists and researchers from academia and industry can ask for resources through PRACE.
+1. 目前仅限 CEA 员工使用，且隶属于单一项目（PI：Marina Becoulet）。
+2. 法国研究团队可通过 GENCI、经由 DARI 申请机时：<http://www.edari.fr>
+3. 学术界与工业界的科研人员可通过 PRACE 申请机时。
 
 ## README
 
-- TGCC documentation is available here: <https://www-hpc.cea.fr/tgcc-public/en/html/tgcc-public.html>
-- Information on the cluster: <https://www-hpc.cea.fr/en/TGCC.html>
+- TGCC 文档见：<https://www-hpc.cea.fr/tgcc-public/en/html/tgcc-public.html>
+- 集群信息见：<https://www-hpc.cea.fr/en/TGCC.html>
 
-## Login
+## 登录
 
 ```bash
 ssh -Y <user>@irene-fr.ccc.cea.fr
 ```
 
-## Software Available
+## 可用软件
 
-As usual, `module avail`, `module load`, `module list`, and `module show` allow access to the available software.
+与通常一样，`module avail`、`module load`、`module list` 与 `module show` 可用于访问可用软件。
 
-## Compiling JOREK
+## 编译 JOREK
 
-Below are some examples of the `.bashrc` and `Makefile.inc` setup.
+下面给出 `.bashrc` 与 `Makefile.inc` 配置的一些示例。
 
-- Add the following lines to your `.bashrc` file:
+- 在 `.bashrc` 文件中添加以下行：
 
 ```bash
 module purge
@@ -62,7 +55,7 @@ module load hwloc/2.5.0
 module load nedit
 ```
 
-- Example `Makefile.inc`:
+- `Makefile.inc` 示例：
 
 ```makefile
 # Makefile.inc file for compiling JOREK on the TGGC supercomputer from CEA
@@ -177,37 +170,37 @@ DEFINES += -DUSE_STRUMPACK
 EXTRA_FLAGS += -std=c++11 -cxxlib
 ```
 
-## File Systems
+## 文件系统
 
-The following storage areas are available: `HOME`, `WORK`, and `SCRATCH`.
+可用的存储区域有：`HOME`、`WORK` 与 `SCRATCH`。
 
-- To reach your `WORK` area, go to:
+- 要进入 `WORK` 区域，请转到：
 
 ```text
 /ccc/work/cont003/gen15002/
 ```
 
-and create your own folder.
+并创建你自己的目录。
 
-- To reach your `SCRATCH` area, go to:
+- 要进入 `SCRATCH` 区域，请转到：
 
 ```text
 /ccc/scratch/cont003/gen15002/
 ```
 
-and create your own folder.
+并创建你自己的目录。
 
-- To store simulation files in compressed form, go to:
+- 若要以压缩形式存放松散的模拟文件，请转到：
 
 ```text
 /ccc/store/cont003/gen15002/
 ```
 
-and create your own folder.
+并创建你自己的目录。
 
-## Batch System
+## 批处理系统
 
-### Basic commands
+### 基本命令
 
 ```bash
 sbatch <jobscript>                              # Submit a job script
@@ -219,7 +212,7 @@ squeue -u <username>                            # List all own jobs
 scancel <jobid>                                 # Delete a queued or running batch job
 ```
 
-### Example job script
+### 作业脚本示例
 
 ```bash
 #!/bin/bash
@@ -259,6 +252,6 @@ echo "To get the number of nodes used :         BRIDGE_MSUB_NNODE=${BRIDGE_MSUB_
 ccc_mprun ./jorek_model600 < in_n0 > logrun
 ```
 
-## Accounting
+## 机时核算
 
-The command `ccc_myproject` gives information about the accounting of your project(s).
+命令 `ccc_myproject` 可给出你的项目的机时核算信息。

@@ -6,146 +6,102 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
-
-原文页面：[Solver and Preconditioner](https://iterorganization.github.io/JOREK/numerics/solver.html)　·　源文件：`numerics/solver.md`
-</div>
-
-# JOREK Solver
-The implicit time integration scheme implemented by JOREK leads to a **large** and **sparse** linear system of the general form
+# JOREK 求解器
+JOREK 实现的隐式时间积分格式会导出一个**大型**且**稀疏**的线性系统，其一般形式为
 
 $$A\,x = b.$$
 
-The matrix $A$ is assembled in a distributed block-COO format (which can be converted to a distributed block-CSR format on demand) and is partitioned by **toroidal Fourier harmonics** and **finite-element nodes**. The solver infrastructure exploits this block structure at both the factorisation and the preconditioning level.
+矩阵 $A$ 以分布式块 COO 格式组装（可按需转换为分布式块 CSR 格式），并按**环向傅里叶谐波**与**有限元节点**分块。求解器基础设施在分解层面与预条件层面都利用了这种块结构。
 
-Two high-level solution strategies are supported:
+支持两种高层求解策略：
 
-| | **Direct solve** | **Iterative solve** |
+| | **直接求解** | **迭代求解** |
 |---|---|---|
-| Input flag | `gmres = .false.` | `gmres = .true.` |
-| Method | Sparse LU factorisation of $A$ | GMRES (or BiCGSTAB) with block preconditioner |
-| Strengths | Robust; insensitive to conditioning | Lower memory; scales to large problems |
-| Weaknesses | Memory and fill-in grow rapidly | Convergence depends on preconditioner |
-| Typical use | Small-to-moderate problems | Large / production runs |
+| 输入开关 | `gmres = .false.` | `gmres = .true.` |
+| 方法 | $A$ 的稀疏 LU 分解 | GMRES（或 BiCGSTAB）加块预条件器 |
+| 优势 | 稳健；对条件数不敏感 | 内存占用更低；可扩展到大规模问题 |
+| 劣势 | 内存与填充元增长迅速 | 收敛性依赖预条件器 |
+| 典型用途 | 中小规模问题 | 大规模／生产算例 |
 
-Both strategies support multiple third-party libraries as back-ends and can optionally offload the matrix–vector products to GPU hardware.
+两种策略都支持多种第三方库作为后端，并可选择将矩阵—向量乘积卸载到 GPU 硬件上执行。
 
-The main entry point is `solve_sparse_system()` in
-`solvers/mod_sparse.f90`.
-
----
-
-## Direct Solvers
-
-When `gmres = .false.` in the input file, the system is passed directly to one
-of the supported sparse-direct libraries.  The library is selected at compile
-time via flags (`USE_MUMPS`, `USE_PASTIX`, `USE_STRUMPACK`) and at
-runtime by the corresponding `use_*` input flags.
-
-
-> <b><font color="red">Hint</font></b>:
-> Factorization of large sparse matrices is an expensive operation and will create a lot of fill-in resulting in increased memory requirements. Thus, for most cases use of the **iterative solver** is recommended! 
+主入口为
+`solvers/mod_sparse.f90` 中的 `solve_sparse_system()`。
 
 ---
 
-## Iterative Solvers
+## 直接求解器
 
-When `gmres = .true.`, a Krylov iterative method is used, preconditioned by the
-**block harmonic preconditioner** described in the next section.
+当输入文件中 `gmres = .false.` 时，系统被直接交给所支持的某个稀疏直接法依赖库。该库在编译期通过编译标志（`USE_MUMPS`、`USE_PASTIX`、`USE_STRUMPACK`）选择，在运行期通过相应的 `use_*` 输入开关选择。
+
+
+> <b><font color="red">提示</font></b>：
+> 大型稀疏矩阵的分解是开销很大的操作，会产生大量填充元，从而提高内存需求。因此，多数情况下建议使用**迭代求解器**！
+
+---
+
+## 迭代求解器
+
+当 `gmres = .true.` 时，使用 Krylov 迭代方法，并由下一节介绍的**块谐波预条件器**做预条件。
 
 ### GMRES
 
-Left-preconditioned restarted GMRES is implemented in `solvers/mod_gmres.f90`. (A more modern implementation avaliable in selected branches is implemented in `solvers/mod_gmres2.f90`).
+左预条件重启 GMRES 实现在 `solvers/mod_gmres.f90` 中。（部分分支中提供了更现代的实现在 `solvers/mod_gmres2.f90` 中）。
 
-The algorithm applies the preconditioner $M^{-1}$ to both the initial residual
-and to each new Krylov vector.  Orthogonalisation is performed by a
-Gram–Schmidt variant (classical or modified, with or without
-re-orthogonalisation, controlled at compile time).  Givens rotations maintain
-the upper Hessenberg in triangular form in-place.  After each restart the
-solution is updated as $x \leftarrow x + V y$, where $y$ minimises the
-preconditioned residual over the current Krylov subspace.
+该算法把预条件器 $M^{-1}$ 同时施加到初始残差和每个新的 Krylov 向量上。正交化由 Gram–Schmidt 变体完成（经典或修正版本，是否重正交在编译期控制）。Givens 旋转就地将上 Hessenberg 矩阵保持为三角形式。每次重启之后，解按 $x \leftarrow x + V y$ 更新，其中 $y$ 在当前 Krylov 子空间上极小化预条件后的残差。
 
-Convergence is declared when
+当
 
 $$\frac{\|r_k\|}{\|r_0\|} < \texttt{gmres_tol}$$
 
-or when the absolute residual drops below a secondary threshold.
+成立，或绝对残差降到次级阈值以下时，判定为收敛。
 
-Key input parameters:
+关键输入参数：
 
-| Parameter | Default | Description |
+| 参数 | 默认值 | 说明 |
 |---|---|---|
-| `gmres_m` | 40 | Restart dimension |
-| `gmres_max_iter` | 400 | Maximum number of outer (restarted) iterations |
-| `gmres_tol` | — | Relative residual tolerance |
+| `gmres_m` | 40 | 重启维数 |
+| `gmres_max_iter` | 400 | 外部（重启）迭代的最大次数 |
+| `gmres_tol` | — | 相对残差容差 |
 
 ### BiCGSTAB
 
-BiCGSTAB (in `solvers/mod_bicgstab.f90`) is an
-alternative that requires no restart and uses $O(n)$ memory independent of the
-iteration count.  It applies the preconditioner **twice per iteration** (once
-for the search direction, once for the stabilizer), which is more expensive per
-step than GMRES but avoids restarting costs.  Enable it at compile time with the
-`USE_BICGSTAB` preprocessor flag.
+BiCGSTAB（位于 `solvers/mod_bicgstab.f90`）是一种替代方案，它无需重启，内存占用为 $O(n)$ 且与迭代次数无关。它**每次迭代施加两次**预条件器（一次用于搜索方向，一次用于稳定化因子），因此单步开销高于 GMRES，但避免了重启开销。在编译期用 `USE_BICGSTAB` 预处理宏启用。
 
-> <b><font color="red">Hint:</font></b> Use of BiSCSTAB is generally not recommended.
+> <b><font color="red">提示：</font></b> 通常不建议使用 BiSCSTAB。
 
 ---
 
-## Preconditioner
+## 预条件器
 
-**Preconditioning** is essential in solving linear systems using iterative methods. The matrices resulting from the MHD formulations in JOREK are highly ill-conditioned and iterative methods do not converge without a proper preconditioner.  
-We choose a preconditioner$M$ such that we solve the modified left preconditioned system
+**预条件**在用迭代方法求解线性系统时是必不可少的。JOREK 中 MHD 格式所产生的矩阵条件数极高，若没有合适的预条件器，迭代方法不会收敛。
+选择预条件器 $M$，使求解的是修正后的左预条件系统
 
 $$M^{-1}A x = M^{-1}b,$$
 
-where $M$ is "cheap" to invert and $M^{-1}A$ is a reasonably good approximation of the identity.
-There exist many "standard" techniques that can be applied to general systems without considering the original problem. These, of course, have the benefit of being "plug-and-play" and work reasonably well for a wide range of problems. When going into very ill-conditioned problems we find most of these approaches to have little to no effect. These cases require more advanced study to create tailored preconditioners to obtain good convergence.
+其中 $M$ 求逆"便宜"，而 $M^{-1}A$ 是单位阵的相当好的近似。
+存在许多"标准"技术，可以在不考虑原始问题的情况下应用于一般系统。这些技术当然具有"即插即用"的优点，并在很广的问题范围内表现尚可。但在处理条件数极高的问题时，会发现其中大多数方法效果甚微乃至无效。这类情形需要更深入的研究，构造量身定制的预条件器才能获得良好的收敛。
 
-The _block harmonic_ preconditioner in JOREK exploits the **toroidal Fourier structure** of
-the MHD system to construct a preconditioner $M$ whose application requires only
-independent sparse-direct solves on smaller sub-systems, one per **mode family**.
+JOREK 中的_块谐波_预条件器利用 MHD 系统的**环向傅里叶结构**，构造出一个预条件器 $M$，其作用只需在更小的子系统上做彼此独立的稀疏直接求解，每个**模群**一个子系统。
 
-The preconditioner is set up and applied by
-`solvers/mod_preconditioner.f90`.
+预条件器由 `solvers/mod_preconditioner.f90` 建立并施加。
 
-### Concept
+### 概念
 
-For a purely axisymmetric geometry, toroidal harmonics decouple completely: the
-mode-$n$ rows of the system matrix have no coupling to mode-$m \ne n$ columns.
-JOREK's matrix does contain inter-harmonic coupling terms (from inter-harmonic coupling terms in the system),
-but in many cases the dominant, physics-relevant coupling is intra-harmonic.  The
-preconditioner $M$ is therefore built by **grouping the toroidal modes into
-families** and assembling one block-diagonal preconditioner matrix per family
-that retains all intra-family coupling while discarding the inter-family terms.
-Each mode family is then factorised independently by the selected direct-solver
-library.
+对于纯轴对称几何，环向谐波完全解耦：系统矩阵中模数为 $n$ 的行与模数 $m \ne n$ 的列之间没有耦合。
+JOREK 的矩阵确实包含谐波间耦合项（源自系统中的谐波间耦合项），但在许多情况下，占主导的、与物理相关的耦合是谐波内耦合。因此，预条件器 $M$ 的构造方式是**把环向模数分组为模群**，并为每个模群组装一个块对角预条件矩阵，该矩阵保留全部群内耦合、丢弃群间耦合项。随后每个模群由所选直接求解库独立分解。
 
-### Mode Family Distribution
+### 模群分配 {#mode-family-distribution}
+环向模数 $0, 1, 2, 3, \ldots$ 被划分为若干模群。有两种策略可用：
 
-Toroidal modes $0, 1, 2, 3, \ldots$ are partitioned into mode families.
-Two strategies are available:
+- **自动**（`autodistribute_modes = .true.`）：模数 0（轴对称）自成一个模群；其余模数两两配对为 $(n_1, n_2), (n_3, n_4), \ldots$
+- **手动**：用户显式指定 `n_mode_families`、`modes_per_family(:)` 和 `mode_families_modes(:,:)`。
 
-- **Automatic** (`autodistribute_modes = .true.`): mode 0 (axisymmetric) forms
-  its own family; remaining modes are paired as $(n_1, n_2), (n_3, n_4), \ldots$
-- **Manual**: the user specifies `n_mode_families`, `modes_per_family(:)`, and
-  `mode_families_modes(:,:)` explicitly.
+#### 重叠模群
 
-#### Overlapping Mode Families
+手动划分的模群不必构成互不相交的分划：同一个环向模数可以出现在多个模群中。属于某一模群的所有模数之间的耦合都保留在该模群的预条件块中，当重要的谐波间耦合本来会被丢弃时，这可改善 GMRES 的收敛性。
 
-Manual families do not have to form a disjoint partition: the same toroidal
-mode can appear in more than one family. Couplings between all modes belonging
-to a family are retained in that family's preconditioner block, which can
-improve GMRES convergence when important inter-harmonic couplings would
-otherwise be discarded.
-
-When families overlap, their solutions contain contributions to the same rows
-of the global solution vector. JOREK combines these contributions using the
-factor assigned to each family in `weights_per_family`. The weights should be
-chosen consistently with the overlap; in the example below every mode belongs
-to two families, so every family has weight $0.5$:
+当模群重叠时，它们的解都会对全局解向量的同一批行产生贡献。JOREK 用 `weights_per_family` 中为每个模群指定的因子把这些贡献组合起来。权重应与重叠方式保持一致；在下面的例子中，每个模数属于两个模群，因此每个模群的权重都是 $0.5$：
 
 ```fortran
 autodistribute_modes = .false.
@@ -161,118 +117,91 @@ mode_families_modes(5,:) = 6, 7
 weights_per_family = 0.5, 0.5, 0.5, 0.5, 0.5
 ```
 
-The values in `mode_families_modes` are the one-based `i_tor` mode indices used
-internally by JOREK. Increasing the number of modes per family retains more of
-the original matrix coupling, but also produces larger and more expensive
-blocks to factorise.
+`mode_families_modes` 中的数值是 JOREK 内部使用的、以 1 为基的 `i_tor` 模数索引。增加每个模群中的模数会保留更多原始矩阵耦合，但也会产生更大、分解开销更高的块。
 
-MPI ranks are distributed among families in the same way:
+MPI 进程也以同样的方式在各模群之间分配：
 
-- **Automatic** (`autodistribute_ranks = .true.`): ranks are distributed as
-  equally as possible across families.
-- **Manual**: specified via `ranks_per_family(:)`.
+- **自动**（`autodistribute_ranks = .true.`）：进程尽可能均匀地分配到各模群。
+- **手动**：通过 `ranks_per_family(:)` 指定。
 
-Because families can have very different block sizes, an equal rank
-distribution may give poor load balance. A useful starting heuristic is to
-assign ranks approximately in proportion to the square of the number of modes
-in each family. For the five overlapping families above, one possible setup is:
+由于各模群的块大小可能差别很大，均分进程可能造成负载不均衡。一个有用的起步经验法则是，按各模群中模数数目的平方大致成比例地分配进程。对于上面五个重叠模群，一种可行的设置为：
 
 ```fortran
 autodistribute_ranks = .false.
 ranks_per_family = 2, 8, 16, 16, 4
 ```
 
-The total number of MPI ranks used for the run must equal the sum of
-`ranks_per_family`. The optimal distribution depends on the matrix structure,
-the direct solver, and the machine, so this initial allocation may require
-tuning.
+算例使用的 MPI 进程总数必须等于 `ranks_per_family` 之和。最优分配取决于矩阵结构、直接求解器和机器，因此这一初始分配可能需要调整。
 
-For further details, see [Holod et al., *Enhanced preconditioner for JOREK MHD
+更多细节见 [Holod et al., *Enhanced preconditioner for JOREK MHD
 solver*, Plasma Physics and Controlled Fusion **63**, 114002
-(2021)](https://iopscience.iop.org/article/10.1088/1361-6587/ac206b).
+(2021)](https://iopscience.iop.org/article/10.1088/1361-6587/ac206b)。
 
 <div style="display: flex; justify-content: space-evenly; align-items: flex-start; text-align: center;">
   
   <figure style="width: 30%; margin: 0;">
     <img src="assets/solver/pc_matrix.png" alt="Single block harmonic" style="width: 100%;">
-    <figcaption><i>Single harmonic pair per block</i></figcaption>
+    <figcaption><i>每个块包含单个谐波对</i></figcaption>
   </figure>
 
   <figure style="width: 31.5%; margin: 0;">
     <img src="assets/solver/pc_matrix_coupled.png" alt="Grouped block harmonic" style="width: 100%;">
-    <figcaption><i>Grouped harmonic families</i></figcaption>
+    <figcaption><i>分组后的谐波模群</i></figcaption>
   </figure>
 
 </div>
 
-### Preconditioner Solve Workflow
+### 预条件器求解流程
 
-Each GMRES / BiCGSTAB preconditioner application performs the following steps:
+每次 GMRES／BiCGSTAB 施加预条件器都执行以下步骤：
 
-1. **Scatter RHS** — extract the rows belonging to this mode family from the
-   global residual vector (via pre-computed `row_index` mapping).
-2. **Solve** — the family's direct solver (MUMPS / PaStiX / STRUMPACK)
-   factorises or reuses, and solves the preconditioner matrix for the local
-   RHS.
-3. **Gather solution** — contributions from all families are reduced by
-   `MPI_AllReduce` (sum) into the global solution vector; each family's rows are
-   weighted by `row_factor` (normally 1, or set from `weights_per_family` for
-   manually defined families).
+1. **散射右端项**——从全局残差向量中取出属于本模群的行（通过预先计算好的 `row_index` 映射）。
+2. **求解**——该模群的直接求解器（MUMPS／PaStiX／STRUMPACK）分解新的矩阵或复用已有分解，并针对本地右端项求解预条件矩阵。
+3. **收集解**——所有模群的贡献通过 `MPI_AllReduce`（求和）归约进全局解向量；每个模群的行按 `row_factor` 加权（通常为 1；对手动定义的模群则由 `weights_per_family` 设定）。
 
-### Factorisation Reuse
+### 分解复用
 
-Refactoring the preconditioner at every time step is expensive. Thus, we can reuse the factorized preconditioner matrices over multiple timesteps, where they still provide a good approximation of the linear system.  JOREK reuses the existing factorisation (the `solve_only` path) when:
+在每个时间步都重新分解预条件器开销很大。因此，可以在多个时间步上复用已分解的预条件矩阵，此时它们仍能给出线性系统的良好近似。JOREK 在下列条件下复用已有分解（`solve_only` 路径）：
 
 $$\texttt{iter_gmres} + \texttt{iter_prev} \le 2 \times \texttt{iter_precon}
 \quad \text{and} \quad
 \texttt{n_since_update} < \texttt{max_steps_noUpdate}$$
 
-where `iter_precon` and `max_steps_noUpdate` are input parameters.  When
-neither condition is satisfied, the preconditioner matrix is reassembled and
-refactorised.
+其中 `iter_precon` 与 `max_steps_noUpdate` 是输入参数。当两个条件都不满足时，预条件矩阵会被重新组装并重新分解。
 
-### Preconditioner Matrix Assembly
+### 预条件矩阵组装
 
-Two assembly strategies are available (selected by compile-time flag
-`DIRECT_CONSTRUCTION`):
+有两种组装策略可用（由编译期标志 `DIRECT_CONSTRUCTION` 选择）：
 
-- **Direct construction**: each MPI rank assembles its part of the
-  preconditioner matrix directly at the finite-element level, without the
-  distribution step.
-- **Distributed construction**: the full system matrix is communicated via
-  `MPI_ALLTOALLV` to the rank groups that own each mode family, which then
-  extract their rows locally.
+- **直接构造**：每个 MPI 进程直接在有限元层面组装其所属的那部分预条件矩阵，不经过分发步骤。
+- **分布式构造**：完整系统矩阵通过 `MPI_ALLTOALLV` 传送到拥有各模群的进程组，这些进程组再在本地提取各自的行。
 
 ---
 
-## PETSc Integration
+## PETSc 集成
 
-> **Note:** PETSc-based solver paths are under active development.
-> This section will be expanded once the implementation stabilises.
+> **说明：** 基于 PETSc 的求解路径正在积极开发中。
+> 待实现稳定后，本节将予以扩充。
 
-When compiled with `USE_PETSC`, an alternative solver path is
-available that uses PETSc's KSP framework for both direct and iterative solves.
-The PETSc integration layer lives in `solvers/mod_petsc.f90` and exposes:
+使用 `USE_PETSC` 编译时，可使用一条替代求解路径，它借助 PETSc 的 KSP 框架进行直接求解与迭代求解。PETSc 集成层位于 `solvers/mod_petsc.f90`，对外提供：
 
-- A persistent `KSP` context that is reused across time steps.
-- An MPIBAIJ system matrix that can be filled from JOREK's native BCSR data.
-- Plug-in preconditioners implemented as PETSc `PCSHELL` or `PCFIELDSPLIT`
-  objects.
+- 跨越时间步持续复用的一个持久 `KSP` 上下文。
+- 可由 JOREK 原生 BCSR 数据填充的 MPIBAIJ 系统矩阵。
+- 以 PETSc `PCSHELL` 或 `PCFIELDSPLIT` 对象实现的插件式预条件器。
 
-Details of the PETSc-based preconditioners and their configuration will be
-documented separately.
+基于 PETSc 的预条件器及其配置的细节将另行说明。
 
 ---
 
-## Further reading
+## 延伸阅读
 
-#### JOREK solver and numerical methods
-- Y. Saad, *Iterative Methods for Sparse Linear Systems*, 2nd ed., SIAM (2003). [Freely available from the author.](https://www-users.cse.umn.edu/~saad/IterMethBook_2ndEd.pdf)
+#### JOREK 求解器与数值方法
+- Y. Saad, *Iterative Methods for Sparse Linear Systems*, 2nd ed., SIAM (2003). [可向作者免费获取。](https://www-users.cse.umn.edu/~saad/IterMethBook_2ndEd.pdf)
 - T. A. Davis, *Direct Methods for Sparse Linear Systems*, SIAM (2006).
 - I. Holod *et al.*, "Enhanced preconditioner for JOREK MHD solver," arXiv:2101.08646 (2021).
 - A. Quinlan, V. Dwarka, I. Holod, M. Hoelzl, "Towards Robust Solvers for Nuclear Fusion Simulations Using JOREK: A Numerical Analysis Perspective," arXiv:2308.16124 (2023).
 
-#### Direct Solver back-ends
+#### 直接求解器后端
 - **MUMPS** — [mumps-solver.org](https://mumps-solver.org/)
 - **PaStiX** — [solverstack.gitlabpages.inria.fr/pastix](https://solverstack.gitlabpages.inria.fr/pastix/)
 - **STRUMPACK** — [portal.nersc.gov/project/sparse/strumpack](https://portal.nersc.gov/project/sparse/strumpack/)

@@ -7,18 +7,11 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+## 掠射角下 Vpar 边界条件的平滑
 
-原文页面：[Vpar smoothing at grazing angles](https://iterorganization.github.io/JOREK/howto/physics_options/boundary_conditions/vpar_smooth.html)　·　源文件：`howto/physics_options/boundary_conditions/vpar_smooth.md`
-</div>
+可使用平滑函数来平滑平行速度边界条件（Mach=1）中的跳变，这类跳变出现在 $\mathbf{B} \cdot \mathbf{n} \approx 0$ 的位置。更多信息见 [1]（第 2.1.1 小节）。
 
-## Vpar boundary condition smoothing at grazing angles
-
-A smoothing function can be applied to smooth the jumps in parallel velocity boundary condition (Mach=1), which happens where $\mathbf{B} \cdot \mathbf{n} \approx 0$. More information can be found in [1] (subsection 2.1.1).
-
-To use this function, include `vpar_smoothing` in your input file and set proper values for `vpar_smoothing_coef(1)`, `vpar_smoothing_coef(2)` and `vpar_smoothing_coef(3)`. Here is an example used in [1]:
+要使用该功能，请在输入文件中加入 `vpar_smoothing`，并为 `vpar_smoothing_coef(1)`、`vpar_smoothing_coef(2)` 和 `vpar_smoothing_coef(3)` 设置合适的值。以下是 [1] 中使用的示例：
 
 ```fortran
 vpar_smoothing = .t.

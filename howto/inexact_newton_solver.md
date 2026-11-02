@@ -7,24 +7,17 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 非精确 Newton 求解器
 
-原文页面：[Run with Non-Linear Time-Stepping (Newton)](https://iterorganization.github.io/JOREK/howto/inexact_newton_solver.html)　·　源文件：`howto/inexact_newton_solver.md`
-</div>
+## 概述
 
-# Inexact Newton Solver
+在 JOREK 中建立并求解物理方程的标准做法是：每个时间步对物理变量线性化一次方程，然后按 [JOREK 求解器](../numerics/solver.html) 所述求解所得的线性系统 $Ax=b$。当时间步较大或处于非线性阶段时，该方法可能不再适用。因此，希望有一种至少在原则上能够非线性求解物理方程的方法。这可以通过非精确 Newton 方法实现，该方法此前已在 JOREK 中部分实现 [参考文献 1](#ref-1)。求解器对当前计算阶段是线性还是非线性的敏感性，也使自适应时间步成为可能。
 
-## Overview
+## 非精确 Newton 方法
 
-The standard method of setting up and solving the physical equations in JOREK is to linearize the equations with respect to the physical variables once per time step and proceed as described in [JOREK Solver](../numerics/solver.html) to solve the resulting linear system $Ax=b$. This method may not be valid for large time steps or in the nonlinear phase. It is therefore desirable to have a method that, at least in principle, can solve the physical equations nonlinearly. This can be achieved using an inexact Newton method, which has previously been implemented to some extent in JOREK [reference 1](#ref-1). The solver's sensitivity to whether the current phase of the run is linear or nonlinear also makes it possible to implement adaptive time stepping.
+### Newton 方法
 
-## The Inexact Newton Method
-
-### Newton's method
-
-Write the nonlinear system of time-linearized physical equations as
+将时间线性化后的物理方程所构成的非线性系统写为
 
 $$
 F(u^{n+1})=F(u^{n+1};u^n,u^{n-1})
@@ -32,7 +25,7 @@ F(u^{n+1})=F(u^{n+1};u^n,u^{n-1})
 \tag{1}
 $$
 
-By abuse of notation, $F$ implicitly depends on $u^n,u^{n-1}$, while $G$ and $b$ depend on the choice of time-integration method through the parameters $\theta$ and $\xi$; see [Time Integration](../numerics/time-integration.html) and page 23 of [reference 1](#ref-1). The standard method linearizes Eq. (1) at $u^n$ and solves
+为符号简洁起见（滥用记号），$F$ 隐含依赖 $u^n,u^{n-1}$，而 $G$ 与 $b$ 通过参数 $\theta$ 与 $\xi$ 依赖于时间积分方法的选取；参见 [时间积分](../numerics/time-integration.html) 以及 [参考文献 1](#ref-1) 第 23 页。标准方法在 $u^n$ 处对式 (1) 线性化并求解
 
 $$
 F^{\prime}(u^{n})\delta u^{n+1}
@@ -41,7 +34,7 @@ F^{\prime}(u^{n})\delta u^{n+1}
 \tag{2}
 $$
 
-Here, $\delta u^{n+1}:=u^{n+1}-u^n$ corresponds to the sought solution vector $x$, and
+此处，$\delta u^{n+1}:=u^{n+1}-u^n$ 对应所求的解向量 $x$，且
 
 $$
 F^{\prime}(u^n)
@@ -52,9 +45,9 @@ F^{\prime}(u^n)
 \tag{3}
 $$
 
-Thus, the standard method linearizes once and solves for $\delta u^{n+1}$ to compute the physical variables at step $n+1$.
+因此，标准方法只线性化一次，通过求解 $\delta u^{n+1}$ 得到第 $n+1$ 步的物理变量。
 
-Newton's method solves Eq. (1) iteratively. For a given time step $n\to n+1$, compute a series $\{u_k\}_{k\in\mathbb{N}}$ such that $u_k\to u^{n+1}$ as $k\to\infty$. Linearize Eq. (1) at $u_{k=0}=u^n+\delta u_0$, using an initial estimate $\delta u_0$:
+Newton 方法迭代求解式 (1)。对给定的时间步 $n\to n+1$，构造序列 $\{u_k\}_{k\in\mathbb{N}}$，使得 $k\to\infty$ 时 $u_k\to u^{n+1}$。以初始估计 $\delta u_0$ 在 $u_{k=0}=u^n+\delta u_0$ 处线性化式 (1)：
 
 $$
 F(u_{1})\simeq F(u_0)+(u_{1}-u_0)F^{\prime}(u_0)
@@ -66,16 +59,16 @@ F^{\prime}(u_0)\delta u_{1}
 \tag{4}
 $$
 
-Here, $u_{k=1}=u_{k=0}+\delta u_{k=1}$ is the next estimate for the physical variables at $n+1$. At each iteration $k$, the linear system is
+此处，$u_{k=1}=u_{k=0}+\delta u_{k=1}$ 是 $n+1$ 处物理变量的下一次估计。在每次迭代 $k$ 中，线性系统为
 
 $$
 F^{\prime}(u_k)\delta u_{k+1}=-F(u_k),
 \tag{5}
 $$
 
-where $F(u_k)=F(u_k;u^n,u^{n+1})$.
+其中 $F(u_k)=F(u_k;u^n,u^{n+1})$。
 
-The Jacobian $F^{\prime}(u^n)=G^{\prime}(u^n)$ and the right-hand side of Eq. (2) are constructed in `call construct_matrix(...)`. In Eq. (4), only $G(u_k)$ needs to be updated. Because $G$ is not accessible independently in the code, write the right-hand side of Eq. (5) as
+雅可比矩阵 $F^{\prime}(u^n)=G^{\prime}(u^n)$ 与式 (2) 的右端项在 `call construct_matrix(...)` 中构造。在式 (4) 中，只需更新 $G(u_k)$。由于代码中无法独立访问 $G$，将式 (5) 的右端项写为
 
 $$
 -F(u_k)
@@ -84,7 +77,7 @@ $$
 \tag{6}
 $$
 
-and hence
+因而
 
 $$
 F^{\prime}(u_k)\delta u_{k+1}
@@ -95,11 +88,11 @@ F^{\prime}(u_k)\delta u_{k+1}
 \tag{7}
 $$
 
-For each step $k$, the Jacobian $F^{\prime}(u_k)$ is computed through `construct_matrix`. The $k$-th right-hand side is obtained by subtracting $F^{\prime}(u_k)\delta u_k^n$ from the $n$-th right-hand side, after which a solver is called. Once convergence is achieved, $u^{n+1}=u_k=u^n+\delta u_k^n$.
+对每一步 $k$，雅可比矩阵 $F^{\prime}(u_k)$ 通过 `construct_matrix` 计算。第 $k$ 个右端项由第 $n$ 个右端项减去 $F^{\prime}(u_k)\delta u_k^n$ 得到，随后调用求解器。一旦达到收敛，$u^{n+1}=u_k=u^n+\delta u_k^n$。
 
-### The “inexact” part
+### “非精确”的部分
 
-Only an inexact Newton method can be used because the linear system $Ax=b$ in Eq. (7) can only be solved to a finite tolerance. For convergence, the sequence of residuals of the solutions of Eq. (7) must satisfy
+只能使用非精确 Newton 方法，因为式 (7) 中的线性系统 $Ax=b$ 只能求解到有限容差。为保证收敛，式 (7) 各次求解的残差序列必须满足
 
 $$
 \frac{\left|F^{\prime}(u_k)\delta u_{k+1}+F(u_k)\right|}
@@ -110,7 +103,7 @@ $$
 \tag{8}
 $$
 
-The tolerances $\{\epsilon_k\}$ must be chosen accordingly; see [reference 2](#ref-2). Otherwise, $\delta u_{k+1}=0$ for all $k$ would be an acceptable solution. Analogous to [reference 1](#ref-1), set
+容差 $\{\epsilon_k\}$ 必须据此选取；参见 [参考文献 2](#ref-2)。否则，对所有 $k$ 取 $\delta u_{k+1}=0$ 都会成为可接受的解。类比 [参考文献 1](#ref-1)，令
 
 $$
 \epsilon_k
@@ -121,23 +114,23 @@ $$
 \tag{9}
 $$
 
-where the usual values are $\gamma=0.5$ and $\alpha=2$. Iterations are only sensible while Eq. (8) is satisfied, or while the right-hand side in Eq. (7) decreases, $|F(u_k)|<|F(u_{k-1})|$. In practice, the computation is aborted if $|F(u_k)|>|F(u_{k-1})|$ for two consecutive iterates.
+其中常用取值为 $\gamma=0.5$、$\alpha=2$。只有在式 (8) 得到满足，或式 (7) 右端项下降（$|F(u_k)|<|F(u_{k-1})|$）时，继续迭代才有意义。实际计算中，若连续两次迭代都出现 $|F(u_k)|>|F(u_{k-1})|$，则中止计算。
 
-## Usage
+## 用法
 
-To use the implemented inexact Newton method, check out the relevant feature branch:
+要使用已实现的非精确 Newton 方法，先检出相应的功能分支：
 
 ```bash
 git checkout feature/nlin_tstep
 ```
 
-Add the following line to `Makefile.inc`:
+在 `Makefile.inc` 中添加以下行：
 
 ```makefile
 USE_NEWTON = 1
 ```
 
-The module in `solvers/mod_inexact_newton.f90` is loaded in the main program:
+`solvers/mod_inexact_newton.f90` 中的模块在主程序中加载：
 
 ```fortran
 program JOREK2
@@ -149,7 +142,7 @@ implicit none
 ...
 ```
 
-The `inexact_newton` subroutine is called in the solver section of `jorek2_main.f90`:
+`inexact_newton` 子程序在 `jorek2_main.f90` 的求解器部分被调用：
 
 ```fortran
 #ifdef USE_NEWTON
@@ -161,7 +154,7 @@ The `inexact_newton` subroutine is called in the solver section of `jorek2_main.
 #endif
 ```
 
-The behavior of the inexact Newton method is governed by input variables:
+非精确 Newton 方法的行为由输入变量控制：
 
 ```fortran
 newton_start       = 5.d-1   !< start value, delta_k = deltas*newton_start
@@ -172,25 +165,25 @@ newton_eps_f       = 1.d-6   !< tolerance for final Newton step
 newton_max_iter    = 20      !< maximum number of Newton iterations
 ```
 
-The upper limit of GMRES iterations is set by `gmres_max_iter` as usual. The variables `newton_alpha` and `newton_gamma` correspond to Eq. (9) and can be left unchanged. The starting value for the $k=0$ step in Eq. (4) is $\delta u_0=\delta u^n\times\mathtt{newton\_start}$.
+GMRES 迭代上限照常由 `gmres_max_iter` 设定。变量 `newton_alpha` 与 `newton_gamma` 对应式 (9)，可保持不变。式 (4) 中 $k=0$ 步的起始值为 $\delta u_0=\delta u^n\times\mathtt{newton\_start}$。
 
-In most tested cases, `newton_eps_0/newton_eps_f = 10..1000` leads to fast convergence. In general, `newton_eps_f > gmres_tol`, while `newton_eps_f/gmres_tol = 10..100` leads to physically sensible results. Here, `gmres_tol = 1.d-5...1.d-8` is the tolerance that would be set for the standard case. The parameter `newton_max_iter` sets the maximum number of Newton iterations; the run stops once it is reached.
+在多数测试算例中，`newton_eps_0/newton_eps_f = 10..1000` 可带来快速收敛。一般而言要求 `newton_eps_f > gmres_tol`，而 `newton_eps_f/gmres_tol = 10..100` 可得到物理上合理的结果。此处 `gmres_tol = 1.d-5...1.d-8` 是标准情形下会设定的容差。参数 `newton_max_iter` 设定 Newton 迭代的最大次数；达到该次数后计算即停止。
 
-## Adaptive Time Stepping
+## 自适应时间步
 
-To use adaptive time stepping, check out the corresponding feature branch:
+要使用自适应时间步，检出相应的功能分支：
 
 ```bash
 git checkout feature/nlin_tstep_adaptive
 ```
 
-Again, add this line to `Makefile.inc`:
+同样，在 `Makefile.inc` 中添加该行：
 
 ```makefile
 USE_NEWTON = 1
 ```
 
-The additional input parameters are:
+附加的输入参数为：
 
 ```fortran
 newton_adapt_time = .false. !< switch for adaptive time stepping
@@ -199,25 +192,25 @@ newton_beta_dt    = 0.95    !< slow convergence: decrease tstep
 newton_gamma_dt   = 0.75    !< non-convergence: retry with a smaller tstep
 ```
 
-Activate the feature with:
+用以下设置启用该功能：
 
 ```fortran
 newton_adapt_time = .true.
 ```
 
-The time step is adapted according to convergence:
+时间步根据收敛情况自适应调整：
 
-- **Fast convergence:** If $\sum_k \mathtt{iter\_gmres}\leq\mathtt{gmres\_max\_iter}/2$ , increase the time step for $n+1\to n+2$ with `tstep = tstep*newton_alpha_dt`.
-- **Slow convergence:** If $\sum_k \mathtt{iter\_gmres}>\mathtt{gmres\_max\_iter}/2$, decrease the time step for $n+1\to n+2$ with `tstep = tstep*newton_beta_dt`.
-- **No convergence:** Recompute the step $n\to n+1$ with `tstep = tstep*newton_gamma_dt`.
+- **快速收敛：** 若 $\sum_k \mathtt{iter\_gmres}\leq\mathtt{gmres\_max\_iter}/2$，则对 $n+1\to n+2$ 用 `tstep = tstep*newton_alpha_dt` 增大时间步。
+- **收敛缓慢：** 若 $\sum_k \mathtt{iter\_gmres}>\mathtt{gmres\_max\_iter}/2$，则对 $n+1\to n+2$ 用 `tstep = tstep*newton_beta_dt` 减小时间步。
+- **不收敛：** 用 `tstep = tstep*newton_gamma_dt` 重新计算第 $n\to n+1$ 步。
 
-Here, $k$ is the Newton-iteration index. There is a hard-coded minimum time step, `t_min = 0.001`. The computation is aborted if convergence cannot be achieved with `tstep = t_min`. The parameters `newton_alpha_dt`, `newton_beta_dt`, and `newton_gamma_dt` should be actively fine-tuned for the case.
+此处 $k$ 为 Newton 迭代序号。存在硬编码的最小时同步 `t_min = 0.001`。若以 `tstep = t_min` 仍无法收敛，则中止计算。参数 `newton_alpha_dt`、`newton_beta_dt` 与 `newton_gamma_dt` 应针对具体算例主动调优。
 
-## Limitations
+## 限制
 
-Only `jorek_model = 199, 303, 501, 502, 600, 710, 711, 712` have been included and tested. In principle, a new model can be added by including all new parameters in the corresponding `models/modelXYZ/initialise_parameters.f90`.
+目前只纳入并测试了 `jorek_model = 199, 303, 501, 502, 600, 710, 711, 712`。原则上，只要把所有新参数加入相应的 `models/modelXYZ/initialise_parameters.f90`，即可添加新模型。
 
-## References
+## 参考文献
 
 1. <a id="ref-1"></a>Franck, E., Hoelzl, M., Lessig, A., & Sonnendrucker, E. (2014). “Energy Conservation and numerical stability for the reduced MHD models of the non-linear JOREK code.” *Mathematical Modelling and Numerical Analysis*, 49, 1331–1365. [arXiv:1408.2099v3](https://arxiv.org/abs/1408.2099)
 2. <a id="ref-2"></a>Dembo, R. S., Eisenstat, S. C., & Steihaug, T. (1982). “Inexact Newton Methods.” *SIAM Journal on Numerical Analysis*, 19(2), 400–408. [doi:10.1137/0719025](https://doi.org/10.1137/0719025)

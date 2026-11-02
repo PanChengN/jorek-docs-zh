@@ -7,28 +7,21 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 电流表达式的推导
 
-原文页面：[Current Expression](https://iterorganization.github.io/JOREK/physics/base_fluid_models/RMHD/expressions_and_derivations/j_psi.html)　·　源文件：`physics/base_fluid_models/RMHD/expressions_and_derivations/j_psi.md`
-</div>
-
-# Derivation of the Current Expression
-
-The derivation of the expression $j=\Delta^*\psi$ is sketched in the following. Starting point is the definition of the magnetic field
+下面概述表达式 $j=\Delta^*\psi$ 的推导。出发点是磁场的定义
 
 $$\begin{equation}
   \mathbf{B} = F\nabla\phi+\nabla\psi\times\nabla\phi
 \end{equation}$$
 
-The plasma current is given by
+等离子体电流由下式给出
 
 $$\begin{equation}
   \mathbf{j} = \nabla\times\mathbf{B}.
 \end{equation}$$
 
-So,
+因此，
 
 $$\begin{equation}\begin{split}
   \mathbf{j}
@@ -41,7 +34,7 @@ $$\begin{equation}\begin{split}
    &= \left(\frac{1}{R}\partial_2 F+\frac{1}{R^2}\partial_{1,3}\psi\right)\mathbf{a}^1+\left(-\frac{1}{R}\partial_1 F+\frac{1}{R^2}\partial_{2,3}\psi\right)\mathbf{a}^2-\Delta^*\psi~\mathbf{a}^3
 \end{split}\end{equation}$$
 
-The physical toroidal component of the current is given by
+电流的物理环向分量由下式给出
 
 $$\begin{equation}
 j_\phi
@@ -50,7 +43,7 @@ j_\phi
   = -\frac{1}{R}\Delta^*\psi
 \end{equation}$$
 
-and the JOREK variable $j$ is given by
+而 JOREK 变量 $j$ 由下式给出
 
 $$\begin{equation}
   j = -R~j_\phi = \Delta^*\psi

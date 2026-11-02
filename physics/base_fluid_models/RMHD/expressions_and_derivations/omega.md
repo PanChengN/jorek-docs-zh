@@ -7,20 +7,13 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
-
-原文页面：[Vorticity Expression](https://iterorganization.github.io/JOREK/physics/base_fluid_models/RMHD/expressions_and_derivations/omega.html)　·　源文件：`physics/base_fluid_models/RMHD/expressions_and_derivations/omega.md`
-</div>
-
-# Derivation of the Vorticity Expression
+# 涡量表达式的推导
 
 $$\begin{equation*}
 \mathbf{W}=\nabla\times\mathbf{v}=\nabla\times\left(-R^2\nabla u\times\nabla\phi+v_{||}B\right)
 \end{equation*}$$
 
-## First Part (depending on $u$)
+## 第一部分（依赖于 $u$）
 
 $$\begin{equation*}\begin{split}
 \mathbf{W}_u & =-\nabla\times\left(R^2\nabla u\times\nabla\phi\right) \\
@@ -31,13 +24,13 @@ $$\begin{equation*}\begin{split}
   &= R^2\Delta_\text{pol} u\nabla\phi - \nabla_\text{pol}\partial_3 u
 \end{split}\end{equation*}$$
 
-When multiplied by $\cdot\nabla\phi$, one gets
+乘以 $\cdot\nabla\phi$ 后可得
 
 $$\begin{equation*}
   \omega\equiv \mathbf{W}_u\cdot\nabla\phi=\Delta_\text{pol}u
 \end{equation*}$$
 
-or:
+或：
 
 $$\begin{equation*} \begin{split}
 \mathbf{W}_u\cdot\nabla\phi&=\left(\nabla \times\left(- R^2 \nabla u \times \nabla \phi \right)\right) \cdot \nabla \phi =
@@ -46,7 +39,7 @@ $$\begin{equation*} \begin{split}
 \end{split}
 \end{equation*}$$
 
-with diamagnetic flow:
+考虑抗磁流时：
 
 $$\begin{equation*} \begin{split}
 \mathbf{W}_u\cdot\nabla\phi&=\left(\nabla \times\left(- R^2 \nabla u \times \nabla \phi -R^2 \frac{\tau_{IC}}{\rho} \nabla p \times \nabla \phi \right)\right) \cdot \nabla \phi \\
@@ -57,7 +50,7 @@ $$\begin{equation*} \begin{split}
 \end{split}
 \end{equation*}$$
 
-## Second Part (depending on $v_{||}$)
+## 第二部分（依赖于 $v_{||}$）
 
 $$\begin{equation*}\begin{split}
 \mathbf{W}_{v_{||}} &= \nabla\times(v_{||}\mathbf{B}) \\
@@ -66,7 +59,7 @@ $$\begin{equation*}\begin{split}
   &= F\nabla_\text{pol}v_{||}\times\nabla\phi+\nabla_\text{pol}v_{||}\times(\nabla\psi\times\nabla\phi)+\partial_3 v_{||}F \nabla\phi\times\nabla\phi+\partial_3 v_{||}\nabla\phi\times(\nabla\psi\times\nabla\phi)+v_{||}\mathbf{j}
 \end{split}\end{equation*}$$
 
-When multiplied by $\cdot\nabla\phi$, one gets (taking into account the definition of the current in JOREK: $j:=\Delta^*\psi$):
+乘以 $\cdot\nabla\phi$ 后可得（计入 JOREK 中电流的定义 $j:=\Delta^*\psi$）：
 
 $$\begin{equation*}\begin{split}
 \mathbf{W}_{v_{||}} \cdot \nabla \phi &= \left( \nabla \times\left( v_{||}\mathbf{B} \right) \right) \cdot \nabla \phi
@@ -76,28 +69,28 @@ $$\begin{equation*}\begin{split}
 =  -  \frac{1}{R^2}\left( \nabla v_{||} \cdot \nabla_\text{pol} \psi + v_{||} j \right)
 \end{split}\end{equation*}$$
 
-## Third Part (depending on $v_{neo}$)
+## 第三部分（依赖于 $v_{neo}$）
 
-This derivation is exactly the same as for the $\vec{E}\times\vec{B}$ one above, just replacing $u$ with $T$:
+该推导与上文 $\vec{E}\times\vec{B}$ 部分的推导完全相同，只是把 $u$ 替换为 $T$：
 
 $$\begin{equation*}\begin{split}
 \mathbf{W}_{neo} & =-\tau_{ic}\nabla\times\left(R^2\nabla T\times\nabla\phi\right) \\
   &= \tau_{ic}R^2\Delta_\text{pol} T\nabla\phi - \nabla_\text{pol}\partial_3 T
 \end{split}\end{equation*}$$
 
-When multiplied by $\cdot\nabla\phi$, one gets
+乘以 $\cdot\nabla\phi$ 后可得
 
 $$\begin{equation*}
   \omega_{neo} \equiv \mathbf{W}_{neo}\cdot\nabla\phi = \tau_{ic}\Delta_\text{pol}T
 \end{equation*}$$
 
-or:
+或：
 
 $$\begin{equation*}
   \mathbf{W}_{neo}\cdot\nabla\phi = \tau_{ic}\nabla\cdot\nabla_{pol} T
 \end{equation*}$$
 
-## Combined
+## 合并
 
 $$\begin{equation*}\begin{split}
 \mathbf{W} \cdot \nabla \phi &= \nabla \cdot \left(\nabla_\text{pol}u +\frac{\tau_{IC}}{\rho} \nabla_\text{pol} p - v_{||} \frac{1}{R^2} \nabla_\text{pol} \psi + \tau_{ic}\nabla_{pol} T\right)

@@ -7,14 +7,7 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
-
-原文页面：[Example SCOTCH Configuration](https://iterorganization.github.io/JOREK/compiling/compilation_and_libraries/exp_scotch.html)　·　源文件：`compiling/compilation_and_libraries/exp_scotch.md`
-</div>
-
-# Example configuration file for Scotch 5.1.12b
+# Scotch 5.1.12b 的配置示例文件
 
 ```make
 EXE		=
@@ -40,6 +33,6 @@ RANLIB		= ranlib
 YACC		= bison -pscotchyy -y -b y
 ```
 
-Note: it may be necessary to alter `LDFLAGS` to include `-lpthread`, see Scotch bugtracker [#15048](https://gforge.inria.fr/tracker/?func=detail&atid=1079&aid=15048&group_id=248).
+注意：可能需修改 `LDFLAGS` 以包含 `-lpthread`，见 Scotch 问题跟踪系统 [#15048](https://gforge.inria.fr/tracker/?func=detail&atid=1079&aid=15048&group_id=248)。
 
-Set `prefix` to install in a non-standard path here.
+若要安装到非标准路径，在此设置 `prefix`。

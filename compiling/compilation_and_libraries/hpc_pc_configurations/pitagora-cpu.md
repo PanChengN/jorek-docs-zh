@@ -7,40 +7,29 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 在 CINECA 托管的 Pitagora CPU 分区上运行 JOREK
 
-原文页面：[Pitagora-CPU](https://iterorganization.github.io/JOREK/compiling/compilation_and_libraries/hpc_pc_configurations/pitagora-cpu.html)　·　源文件：`compiling/compilation_and_libraries/hpc_pc_configurations/pitagora-cpu.md`
-</div>
+## 获取访问权限
 
-# Running JOREK on Pitagora CPU partition hosted by CINECA
-
-## Getting Access
-
-1.  Account Creation via <https://userdb.hpc.cineca.it/> - Create New
-    User
-2.  Then fill out the HPC-Related information and upload your scanned
-    ID/passport
-3.  Contact the respective PI to add you to the project
+1.  通过 <https://userdb.hpc.cineca.it/> 创建账号——选择 Create New User
+2.  然后填写 HPC 相关信息，并上传身份证件/护照的扫描件
+3.  联系相应的 PI 将你加入项目
 
 ## README
 
-- (For Leonardo) - Slides of the webinar offered by CINECA on the 18th
-  of February, 2025 ![slides_qa.pdf](/slides_qa.pdf){.align-center}
-- E-Mail Address of CINECA Helpdesk: superc@cineca.it
-- The present project related to the EUROFUSION TSVV-F project is called: **FUPA1_REDISMHD**
-- Documentation:
+- （针对 Leonardo）CINECA 于 2025 年 2 月 18 日举办的网络研讨会幻灯片 ![slides_qa.pdf](/slides_qa.pdf){.align-center}
+- CINECA 帮助台电子邮箱：superc@cineca.it
+- 与 EUROFUSION TSVV-F 项目相关的本项目名称为：**FUPA1_REDISMHD**
+- 文档：
   <https://docs.hpc.cineca.it/hpc/pitagora.html#pitagora-card>
-- Slides from Cineca (access, modules, etc):
+- Cineca 提供的幻灯片（访问方式、模块等）：
   <https://learn.cineca.it/course/view.php?id=2121>![pitagora_ef_new.pdf](/pitagora_ef_new.pdf){.align-center}c/pitagora.html#pitagora-card)`
 
-## Login
+## 登录
 
     ssh -Y <user>@login.pitagora.cineca.it
 
-which establishes a connection to one of the available login nodes. You
-can also indicate explicitly the login nodes:
+该命令与某个可用的登录节点建立连接。也可以显式指定登录节点：
 
     login01-ext.pitagora.cineca.it
     login02-ext.pitagora.cineca.it
@@ -49,49 +38,43 @@ can also indicate explicitly the login nodes:
     login05-ext.pitagora.cineca.it
     login06-ext.pitagora.cineca.it
 
-Login nodes with odd number (01,03,05) are similar to the CPU partition
-of the compute nodes: 2 × AMD EPYC 9745
-(<https://www.amd.com/en/products/processors/server/epyc/9005-series/amd-epyc-9745.html>),
-128 cores total, 768 GiB DDR5 RAM.
+编号为奇数的登录节点（01、03、05）与计算节点的 CPU 分区类似：2 × AMD EPYC 9745
+(<https://www.amd.com/en/products/processors/server/epyc/9005-series/amd-epyc-9745.html>)，
+共 128 核，768 GiB DDR5 内存。
 
-Login nodes with even number (02,04,06) match the compute nodes with
-GPU: 2 × Intel Xeon Gold 6548Y+
-(<https://www.intel.com/content/www/us/en/products/sku/237564/intel-xeon-gold-6548y-processor-60m-cache-2-50-ghz/specifications.html>),
-32 cores total, 512 GiB DDR5 RAM, 1 × NVIDIA H100 NVL GPU
-(<https://www.nvidia.com/en-us/data-center/h100/>).
+编号为偶数的登录节点（02、04、06）与配备 GPU 的计算节点一致：2 × Intel Xeon Gold 6548Y+
+(<https://www.intel.com/content/www/us/en/products/sku/237564/intel-xeon-gold-6548y-processor-60m-cache-2-50-ghz/specifications.html>)，
+共 32 核，512 GiB DDR5 内存，1 × NVIDIA H100 NVL GPU
+(<https://www.nvidia.com/en-us/data-center/h100/>)。
 
-Compile your code on the correct login if you want it to be executed on
-a specific compute node partition.
+若希望代码在特定的计算节点分区上执行，请在相应的登录节点上编译。
 
-## Software Available
+## 可用软件
 
-As usual `module avail/load/list/show` allows to access the available
-software.
+与通常一样，`module avail/load/list/show` 可用于访问可用软件。
 
-Some non-preinstalled softwares (gnuplot, paraview, visit) are available
-at /pitagora_work/FUPA1_MHD/JOREK_LIBRARIES/.
+部分未预装的软件（gnuplot、paraview、visit）位于 /pitagora_work/FUPA1_MHD/JOREK_LIBRARIES/。
 
-To use the gnuplot, set:
+如需使用 gnuplot，请设置：
 
     export PATH=/pitagora_work/FUPA1_MHD/JOREK_LIBRARIES/gnuplot/bin:$PATH
 
-The visit and paraview (copied from Viper) work well on Intel CPU nodes
-(login02/04/06), but fail to start on AMD CPU nodes (login01/03/05).
+visit 与 paraview（从 Viper 复制而来）在 Intel CPU 节点（login02/04/06）上可正常工作，但在 AMD CPU 节点（login01/03/05）上无法启动。
 
-The visit can be enabled by:
+可通过以下方式启用 visit：
 
     export PATH=/pitagora_work/FUPA1_MHD/JOREK_LIBRARIES/mpcdf/soft/RHEL_9/packages/x86_64/visit/3.4.2/bin:$PATH
 
-The paraview can be enabled by two steps:
+paraview 可通过两步启用：
 
     export PATH=/pitagora_work/FUPA1_MHD/JOREK_LIBRARIES/mpcdf/soft/RHEL_9/packages/x86_64/paraview/5.11.2/bin:$PATH
     alias paraview='paraview --mesa' # to disable hardware rendering, as H100 is only for computing
 
-## Compiling JOREK with INTEL oneapi
+## 使用 INTEL oneAPI 编译 JOREK
 
-Below are some examples of the .bashrc and Makefile.inc setup.
+下面给出 `.bashrc` 与 Makefile.inc 配置的一些示例。
 
-- Add the following lines to your `.bashrc` file
+- 在 `.bashrc` 文件中添加以下行
 
 <!-- -->
 
@@ -102,17 +85,11 @@ Below are some examples of the .bashrc and Makefile.inc setup.
     module load intel-oneapi-mkl/2024.0.0--intel-oneapi-mpi--2021.12.1
     module load hdf5/1.14.3--intel-oneapi-mpi--2021.12.1--oneapi--2024.1.0
 
-- The **Makefile.inc** example (note that PaStiX and STRUMPACK should
-  not be chosen simultaneously).
-- Note that there are two sets of libraries compiled on AMD and Intel
-  login nodes, respectively.
-- Pastix is recompiled with intel-oneapi-compilers-classic (icc and
-  ifort), Strumpack is recompiled with intel-oneapi-compilers (icx and
-  ifx). Therefore, STRUMPACK is recommended.
-- The MUMPS (use_MUMPS) and the 64-bit (USE_INTSIZE64) libraries have
-  not been recompiled yet.
-- Only the full MHD models (without particle) have been tested so far
-  (until 02.06.2025) for these libraries.
+- **Makefile.inc** 示例（注意 PaStiX 与 STRUMPACK 不应同时选用）。
+- 注意 AMD 与 Intel 登录节点上各有一套已编译的依赖库。
+- PaStiX 使用 intel-oneapi-compilers-classic（icc 与 ifort）重新编译，Strumpack 使用 intel-oneapi-compilers（icx 与 ifx）重新编译，因此推荐使用 STRUMPACK。
+- MUMPS（use_MUMPS）与 64 位（USE_INTSIZE64）依赖库尚未重新编译。
+- 截至目前（2025-06-02），这些依赖库仅测试了完整 MHD 模型（不含粒子）。
 
 ``` Make
 MODEL             = model711
@@ -223,11 +200,11 @@ HDF5LIB     = -L$(HDF5_HOME)/lib -lhdf5_hl_fortran -lhdf5_hl -lhdf5_fortran -lhd
 
 ```
 
-## Compiling JOREK with GNU openmp
+## 使用 GNU OpenMP 编译 JOREK
 
-Below are some examples of the .bashrc and Makefile.inc setup.
+下面给出 `.bashrc` 与 Makefile.inc 配置的一些示例。
 
-\* Add the following lines to your `.bashrc` file
+\* 在 `.bashrc` 文件中添加以下行
 
     module purge
 
@@ -319,12 +296,11 @@ HDF5LIB     = -L${HDF5_HOME}/lib -lhdf5_hl_fortran -lhdf5_hl -lhdf5_fortran -lhd
 
 ```
 
-## Compiling STARWALL with INTEL oneapi
+## 使用 INTEL oneAPI 编译 STARWALL
 
-Below are the .bashrc and config.in files required to compile STARWALL
-(tested by D. Bonfiglio).
+编译 STARWALL 所需的 `.bashrc` 与 config.in 文件如下（由 D. Bonfiglio 测试）。
 
-- Add the following lines to your `.bashrc` file
+- 在 `.bashrc` 文件中添加以下行
 
 <!-- -->
 
@@ -334,7 +310,7 @@ Below are the .bashrc and config.in files required to compile STARWALL
     module load intel-oneapi-compilers
     module load intel-oneapi-mkl/2024.0.0--intel-oneapi-mpi--2021.12.1
 
-- Compile STARWALL (make clean; make -j 8) using this `config.in` file
+- 使用下面的 `config.in` 文件编译 STARWALL（make clean; make -j 8）
 
 ``` config.in
 # config.in file for the LINUX systems
@@ -380,19 +356,12 @@ $(OBJ_DIR)/%.o: %.f90
         $(FC) -fpp $(FPPFLAGS) $(FFLAGS) -c -o $@ $<
 ```
 
-### Example job script
+### 作业脚本示例
 
-- The sbatch with a job script seems still not working perfectly (until
-  02.07.2025), which returns the following error information: *"sbatch:
-  error: Batch job submission failed: Unexpected message received" if
-  there are some loaded modules*.
-- Please run ***module purge*** before submitting the job via sbatch.
-- Load all the modules you need inside the jobscript itself.
-- (kuan-wen) For kinetic-MHD codes that uses STRUMPACK as the solver,
-  the total number of MPI ranks must be the power of 2. E.g. 2\^6=64.
-  Otherwise, the solver will hang forever after the particle loop and
-  projection step, because STRUMPACK uses distributed symbolic
-  factorization.
+- 截至 2025-07-02，配合作业脚本使用 sbatch 似乎仍不能完美工作：若已加载某些模块，会返回如下错误信息：*"sbatch: error: Batch job submission failed: Unexpected message received"*。
+- 通过 sbatch 提交作业前请先执行 ***module purge***。
+- 在作业脚本内部加载所需的全部模块。
+- （kuan-wen）对于以 STRUMPACK 为求解器的动理学 MHD 程序，MPI 进程总数必须为 2 的幂，例如 2\^6=64。否则求解器会在粒子循环与投影步骤之后永久挂起，因为 STRUMPACK 使用分布式符号分解。
 
 ``` bash
 #!/bin/bash
@@ -432,35 +401,28 @@ export FI_PROVIDER=MLX
 mpirun -np $SLURM_NTASKS ./jorek_model711 < ./input | tee logfile
 ```
 
-- Alternatively, the test job can also be submitted via salloc
-  interactively, such as:
+- 也可以交互式地通过 salloc 提交测试作业，例如：
 
 ``` bash
 salloc --nodes=5 --ntasks=80 --cpus-per-task=16 --partition=cpu bash -c 'export OMP_NUM_THREADS=16; mpirun -np 80 ./jorek_model711 < ./input | tee logfile'
 ```
 
-\<color #ed1c24\> If your simulations are hanging at the matrix
-factorization when using Intel and STRUMPACK, try adding the following
-line to your jobscript: \</color\>
+\<color #ed1c24\> 若使用 Intel 与 STRUMPACK 时模拟在矩阵分解处挂起，请尝试在作业脚本中添加以下行： \</color\>
 
 ``` bash
 unset UCX_TLS
 ```
 
-*Use with care, in a few cases this was seen to change simulation
-results!*
+*请谨慎使用——在少数情况下观察到这会改变模拟结果！*
 
-## Accounting
+## 机时核算
 
-\<color #ed1c24\> Please be mindful about the CPU consumption, we're
-burning up too fast so far! You can check the usage with the saldo
-commands below. \</color\>
+\<color #ed1c24\> 请注意 CPU 消耗，目前我们消耗得太快了！可用下面的 saldo 命令查看用量。 \</color\>
 
-To check the used resources on Leonardo DCGP, use
+要查看 Leonardo DCGP 上已使用的资源，请使用
 
 `saldo -b –dcgp`
 
-To check more details (containing the usage of all the users) one can
-use
+要查看更详细的信息（包含所有用户的用量），可以使用
 
 `saldo -ra PROJECT_NAME –dcgp`

@@ -5,50 +5,43 @@ render_with_liquid: false
 parent: "General"
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
-
-原文页面：[jorek2_fast_camera](https://iterorganization.github.io/JOREK/diagnostics/jorek2_fast_camera.html)　·　源文件：`diagnostics/jorek2_fast_camera.md`
-</div>
-
 ## jorek2_fast_camera
 
-### Parallelisation
-This diagnostic is parallelised in the number of lines-of-sight (ie. the number of pixels).  
-Hence to run it, you need to use a lot of MPI processes (not threads). 
+### 并行化
+该诊断按视线数目（即像素数）并行。  
+因此运行时需要使用大量 MPI 进程（而不是线程）。
 
-### ADAS data
-There is one file needed to run the diagnostic: my_pec.dat, which needs to be in the running directory.  
-This file contains the ADAS emission for the Dalpha lines, which is determined by the electron density and temperature.  
-This is one of the main improvement that can be brought to this code: to use the exact ADAS data, for Dalpha, but potentially for impurity radiation as well.  
-Otherwise, just the jorek_restart.h5 file is needed.
+### ADAS 数据
+运行该诊断需要一个文件：my_pec.dat，它必须位于运行目录中。  
+该文件包含 Dalpha 谱线的 ADAS 发射率，其值由电子密度与温度决定。  
+这是本代码可以做出的主要改进之一：使用精确的 ADAS 数据，目前针对 Dalpha，但未来也可能用于杂质辐射。  
+除此之外，只需要 jorek_restart.h5 文件。
 
-### Camera view and geometry
-The diagnostic is currently set up for the MAST fast camera view.  
-This can be changed inside the file itself (`jorek/diagnostics/jorek2_fast_camera.f90`), with the following parameters:  
-`pixel_dim` : size of pixels  
-`n_pixels_hor` : number of horizontal pixels  
-`n_pixels_ver` : number of vertical pixels  
-`X_cam` : camera position  
-`Y_cam` : camera position  
-`Z_cam` : camera position  
-`focus` : focal length of lens  
-`toroidal_angle_location` : toroidal angle position (easier than using X,Y,Z, so that Z can always be zero)  
-`angle_hor` : orientation of camera (horizontal)  
-`angle_ver` : orientation of camera (vertical)  
-`light_saturation` : factor to change maximum saturation of camera (otherwise highest pixel light will be used)  
-`colormap` : normally just Black-and-white, but can also use heatmap or rainbow...  
+### 相机视角与几何
+该诊断目前按 MAST 快相机的视角设置。  
+可以在文件本身（`jorek/diagnostics/jorek2_fast_camera.f90`）中修改，涉及以下参数：  
+`pixel_dim` ：像素尺寸  
+`n_pixels_hor` ：水平像素数  
+`n_pixels_ver` ：垂直像素数  
+`X_cam` ：相机位置  
+`Y_cam` ：相机位置  
+`Z_cam` ：相机位置  
+`focus` ：镜头焦距  
+`toroidal_angle_location` ：环向角位置（比直接用 X,Y,Z 更方便，这样 Z 可以始终取零）  
+`angle_hor` ：相机朝向（水平）  
+`angle_ver` ：相机朝向（垂直）  
+`light_saturation` ：改变相机最大饱和度的因子（否则会采用最亮像素的光强）  
+`colormap` ：通常只用黑白，但也可以用热力图或彩虹色……  
 ''''  
   
 
-All input parameters can be set either in the code `jorek2_fast_camera.f90` before compilation, or at run-time, in the input file `fast_cam.nml`, which must be placed in the running directory.  
-Examples of these files for JET and MAST can be found in `jorek/util/fast_camera/`
+所有输入参数既可在编译前于代码 `jorek2_fast_camera.f90` 中设置，也可在运行时于输入文件 `fast_cam.nml` 中设置，后者必须放在运行目录中。  
+JET 与 MAST 的这些文件示例可在 `jorek/util/fast_camera/` 中找到
 
 
 
-### Neutrals
-The Dalpha emission uses the neutrals density. If model500 is used, it uses the actual rho_n variable for this, but if we are using model303 for example, the neutrals density is set by hand, inside the code (or inside the `fast_cam.nml` input file):  
+### 中性粒子
+Dalpha 发射用到中性粒子密度。若使用 model500，则程序为此使用真实的 rho_n 变量；但例如使用 model303 时，中性粒子密度是在代码内（或在 `fast_cam.nml` 输入文件内）手工设定的：  
 `  rhon_prof(1) = 1.d-3  ! Core value [10^20 m^(-3)]`  
 `  rhon_prof(2) = 1.d-1  ! SOL value [10^20 m^(-3)]`  
 `  rhon_prof(3) = 3.d-1  ! Lower-divertor value [10^20 m^(-3)]`  
@@ -61,33 +54,33 @@ The Dalpha emission uses the neutrals density. If model500 is used, it uses the 
 `  rhon_prof(10)= +0.05  ! Upper-divertor tanh position relative to Z_xpoint(2) [m]`  
 
 
-### Line-of-sight integration
-The integration along a line of sight is done with the step specified by the user (in meters), eg.  
+### 视线积分
+沿视线的积分采用用户指定的步长（单位为米），例如  
 `step   = 1.d-3`  
-But it is possible to use a varying integration step-length, which depends on whether we are entering the plasma core (low emission on MAST), or whether we are at the plasma edge (at the moment `psi_n=0.6`).  
-This is completely arbitrary, and can be switched on by the user, by changing the variable  
+但也可以使用变化的积分步长，其取值取决于我们是进入等离子体芯部（MAST 上发射较低），还是位于等离子体边界处（目前取 `psi_n=0.6`）。  
+这完全是人为设定的，用户可以通过修改变量来启用  
 `go_faster_in_core = .true.`  
 
 
-### Output format
-At the moment, the output is written simply as a .ppm image, which is a very simple format to write.  
-It may be desirable to use a .vtk output format as well, or maybe h5...  
+### 输出格式
+目前输出仅写为 .ppm 图像，这是一种非常简单的格式。  
+可能更希望同时支持 .vtk 输出格式，或者 h5……  
 
 
-### Reflections
-At present reflections are included only for a toroidally symmetric wall.  
-This can be done by specifying the limiter contour in the JOREK input file:  
+### 反射
+目前只对环向对称的壁包含反射。  
+做法是在 JOREK 输入文件中指定限制器轮廓：  
 `n_limiter`  
 `R_limiter(:)`  
 `Z_limiter(:)`  
-and by setting the reflections flag and reflective coefficient in the code (or the `fast_cam.nml` input file):  
+并在代码中（或 `fast_cam.nml` 输入文件中）设置反射标志与反射系数：  
 `include_reflections`  
 `reflective_coefficient`  
-Only the first reflection is taken into account.  
-Developing the code to include reflection on CAD structures would require more work, but the line-of-sight structuration in the code is now ready to do this relatively easily.
+只计入第一次反射。  
+要把代码扩展到能包含 CAD 结构上的反射还需要更多工作，但目前代码中的视线结构已经准备好，可以相对容易地实现这一点。
 
 
-### Example
-Here are examples of the fast camera on MAST, and the wide-angle view on JET, including reflections  
+### 示例
+下面是 MAST 上快相机的示例，以及 JET 上包含反射的广角视图  
 ![](fast_camera_mast2.png?400)  
 ![](fast_camera_jet2.png?400)

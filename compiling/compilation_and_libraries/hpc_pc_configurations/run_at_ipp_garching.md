@@ -7,29 +7,22 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 在 IPP Garching 运行 JOREK
 
-原文页面：[IPP Garching](https://iterorganization.github.io/JOREK/compiling/compilation_and_libraries/hpc_pc_configurations/run_at_ipp_garching.html)　·　源文件：`compiling/compilation_and_libraries/hpc_pc_configurations/run_at_ipp_garching.md`
-</div>
+## 本地资源
 
-# Run JOREK at IPP Garching
+- [TOK-I Linux 集群](toki.md)
+  - 每节点 768 GB
+  - 每节点 24 核
+  - **小型短时交互作业**
 
-## Local Resources
+- [TOK Linux 集群](tok.md)
+  - 每节点 768 GB
+  - 每节点 256 核
+  - **小／中型作业**
 
-- [TOK-I Linux Cluster](toki.md)
-  - 768 GB/node
-  - 24 cores/node
-  - **small short interactive jobs**
+- [Raven 超级计算机](raven.md)
+  - **大型作业**
 
-- [TOK Linux Cluster](tok.md)
-  - 768 GB/node
-  - 256 cores/node
-  - **small/medium size jobs**
-
-- [Raven Supercomputer](raven.md)
-  - **large jobs**
-
-- [Viper Supercomputer](viper.md)
-  - **large jobs**
+- [Viper 超级计算机](viper.md)
+  - **大型作业**

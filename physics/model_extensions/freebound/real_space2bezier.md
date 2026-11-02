@@ -7,52 +7,46 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
 
-原文页面：[real_space2bezier (Guido's notes)](https://iterorganization.github.io/JOREK/physics/model_extensions/freebound/real_space2bezier.html)　·　源文件：`physics/model_extensions/freebound/real_space2bezier.md`
-</div>
+**来源：** `real_space2bezier.f90`（STARWALL）
 
-**Source:** `real_space2bezier.f90` (STARWALL)
+> **注：** 尚需改写以纳入缩放因子！
 
-> **Note:** To be adapted to include the scale factors!
+## 概述
 
-## Overview
+由于 JOREK 使用贝塞尔有限元，而 STARWALL 使用一组离散点，因此需要在点表示与贝塞尔表示之间进行转换（双向）。
 
-As JOREK works with Bézier finite elements and STARWALL with a set of discrete points, a conversion is needed from points representation to the Bézier representation (and vice versa).
+## 贝塞尔表示
 
-## Bézier Representation
-
-The Bézier representation is defined as:
+贝塞尔表示定义为：
 
 $$f(s) = \sum_{i=1}^{2} \sum_{j=1}^{N} \alpha_{ij} H_{ij}(s)$$
 
-where:
-- $i$ numbers the basis functions (2 basis functions per element)
-- $j$ numbers the nodes
-- $\alpha_{ij}$ are the Bézier coefficients to be determined
-- $H_{ij}(s)$ are the Bézier basis functions
+其中：
+- $i$ 为基函数的编号（每个单元 2 个基函数）
+- $j$ 为节点编号
+- $\alpha_{ij}$ 为待定的贝塞尔系数
+- $H_{ij}(s)$ 为贝塞尔基函数
 
-The target function $g(s)$ is given on $N_g$ discrete points.
+目标函数 $g(s)$ 在 $N_g$ 个离散点上给出。
 
-## Least Squares Fit
+## 最小二乘拟合
 
-The Bézier coefficients $\alpha_{ij}$ are calculated using a least squares fit by minimizing:
+贝塞尔系数 $\alpha_{ij}$ 通过最小二乘拟合求得，即极小化：
 
 $$W = \int \left( f(s) - g(s) \right)^2 ds$$
 
-Setting $\frac{\partial W}{\partial \alpha_{ij}} = 0$, we obtain:
+令 $\frac{\partial W}{\partial \alpha_{ij}} = 0$，可得：
 
 $$\int H_{kl}(s) \sum_{i=1}^{2} \sum_{j=1}^{N} \alpha_{ij} H_{ij}(s) \, ds = \int H_{kl}(s) g(s) \, ds$$
 
-This yields a system of linear equations with coefficients:
+由此得到线性方程组，其系数为：
 
 $$A_{kl,ij} = \int H_{kl}(s) H_{ij}(s) \, ds$$
 
-## Elemental Matrix Contributions
+## 单元矩阵贡献
 
-For a single element, integrating from $s=0$ to $1$:
+对单个单元，从 $s=0$ 积分到 $1$：
 
 $$A_{elm} = \frac{1}{140} \begin{pmatrix}
 52 & 22 & 18 & -13 \\
@@ -61,26 +55,26 @@ $$A_{elm} = \frac{1}{140} \begin{pmatrix}
 -13 & -9 & -22 & 12
 \end{pmatrix}$$
 
-### Regular Periodic Boundaries
+### 规则周期边界
 
-For a regular periodic boundary without corners, elemental matrices are assembled to form repeated identical blocks:
+对于无拐角的规则周期边界，单元矩阵组装成重复的相同分块：
 
 $$\frac{1}{140} \begin{pmatrix}
 18 & 13 & 104 & 0 & 18 & -13 \\
 -13 & -9 & 0 & 24 & 13 & -9
 \end{pmatrix}$$
 
-### Boundaries with Corners
+### 含拐角的边界
 
-Boundaries with corners require special treatment. At a corner node:
-- The node has 3 degrees of freedom
-- Elements sharing a corner have the same coefficient for the first Bézier function
-- The second function (representing the derivative) is independent on the left and right
-- This creates a discontinuity in the derivative along the boundary
+含拐角的边界需特殊处理。在拐角节点处：
+- 该节点有 3 个自由度
+- 共享同一拐角的单元在第一个贝塞尔函数上具有相同系数
+- 第二个函数（表示导数）在左右两侧相互独立
+- 这导致沿边界的导数出现间断
 
-## Discussion Points
+## 讨论要点
 
-- **Integration consistency:** Why integrate the Bézier basis functions exactly when the integral over $g(s)$ is computed discretely? Should both sides of the equation use the same integration accuracy?
-- **Quadrature rule improvement:** STARWALL currently uses equidistantly spaced points (typically 10) inside each boundary element. For better least-square approximation accuracy, consider using 4 Gaussian points per element with 4th-order Gaussian integration instead of 2nd-order trapezoidal integration.
+- **积分一致性：** 为什么在 $g(s)$ 的积分是离散计算的情况下，却要精确积分贝塞尔基函数？方程两端是否应采用相同的积分精度？
+- **求积规则改进：** STARWALL 目前在每个边界单元内使用等距分布的点（通常为 10 个）。为提高最小二乘逼近精度，可考虑对每个单元使用 4 个高斯点、采用 4 阶高斯积分，替代 2 阶梯形积分。
 
-*To be continued...*
+*待续……*

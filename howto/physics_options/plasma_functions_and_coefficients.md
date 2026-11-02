@@ -9,13 +9,6 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 等离子体函数与系数
 
-原文页面：[Plasma Functions and Coefficients](https://iterorganization.github.io/JOREK/howto/physics_options/plasma_functions_and_coefficients.html)　·　源文件：`howto/physics_options/plasma_functions_and_coefficients.md`
-</div>
-
-# Plasma Functions and Coefficients
-
-Configuration of transport coefficients, resistivity, and related plasma functions.
+输运系数、电阻率及相关等离子体函数的配置。

@@ -7,16 +7,9 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# JOREK 中的螺旋度守恒
 
-原文页面：[Helicity Conservation](https://iterorganization.github.io/JOREK/physics/base_fluid_models/RMHD/expressions_and_derivations/helicity_conservation.html)　·　源文件：`physics/base_fluid_models/RMHD/expressions_and_derivations/helicity_conservation.md`
-</div>
-
-# Helicity Conservation in JOREK
-
-Magnetic helicity is defined as:
+磁螺旋度定义为：
 
 $$
 \begin{equation*}
@@ -24,11 +17,11 @@ H=\mathbf{A}\cdot\mathbf{B}.
 \end{equation*}
 $$
 
-It can be shown that in ideal MHD, the volumic integral of $H$ is a conserved quantity if the components of $\mathbf{B}$ and $\mathbf{v}$ normal to the boundary vanish (see for example, Section 2.2 of the book *Nonlinear Magnetohydrodynamics* by D. Biskamp).
+可以证明，在理想 MHD 中，若 $\mathbf{B}$ 与 $\mathbf{v}$ 垂直于边界的分量均为零，则 $H$ 的体积积分为守恒量（例如参见 D. Biskamp 所著 *Nonlinear Magnetohydrodynamics* 一书第 2.2 节）。
 
-In resistive MHD, $H$ is not exactly conserved but it is dissipated at a rate proportional to the plasma resistance (see Section 7.3.1 of Biskamp). During a fast MHD relaxation (like the thermal quench phase of a disruption, for example), it is expected that $H$ will be dissipated much more slowly than magnetic energy, which sets constraints to the global dynamics (see for example [this 2019 PPCF paper](https://iopscience.iop.org/article/10.1088/1361-6587/aaf293) by A. Boozer).
+在电阻 MHD 中，$H$ 并不精确守恒，而是以正比于等离子体电阻的速率耗散（参见 Biskamp 第 7.3.1 节）。在快速的 MHD 弛豫过程中（例如破裂的热淬灭阶段），预期 $H$ 的耗散远慢于磁能，从而对全局动力学施加约束（例如参见 A. Boozer 的[这篇 2019 年 PPCF 论文](https://iopscience.iop.org/article/10.1088/1361-6587/aaf293)）。
 
-In the reduced MHD version of JOREK, an acceptable expression for the vector potential is:
+在 JOREK 的约化 MHD 版本中，矢势可采用如下可接受的表达式：
 
 $$
 \begin{equation*}
@@ -36,7 +29,7 @@ $$
 \end{equation*}
 $$
 
-Indeed,
+确实，
 
 $$
 \begin{equation*}
@@ -44,7 +37,7 @@ $$
 \end{equation*}
 $$
 
-which corresponds to the expression for $\mathbf{B}$ (see [JOREK Reduced MHD Models](../rmhd_model.md)), and
+这与 $\mathbf{B}$ 的表达式相对应（见 [JOREK 约化 MHD 模型](../rmhd_model.md)），并且
 
 $$
 \begin{equation*}
@@ -52,9 +45,9 @@ $$
 \end{equation*}
 $$
 
-which corresponds to the inductive part of the electric field.
+这与电场的感应部分相对应。
 
-The corresponding expression for the helicity is:
+相应的螺旋度表达式为：
 
 $$
 \begin{equation*}
@@ -68,7 +61,7 @@ H &= \mathbf{A} \cdot \mathbf{B} \\
 \end{equation*}
 $$
 
-Let us now consider $\frac{d}{dt}\int H dV$, where the integral is a volumic integral over the computation domain (the latter being fixed in time):
+现在考虑 $\frac{d}{dt}\int H dV$，其中积分是计算域（该域在时间上固定）上的体积积分：
 
 $$
 \begin{equation*}
@@ -80,11 +73,11 @@ $$
 \end{equation*}
 $$
 
-where $dS$ is an infinitesimal surface element in the poloidal plane.
+其中 $dS$ 是极向平面内的面元。
 
-The second term can be readily integrated along $Z$ to give boundary terms which vanish if we have $\partial_t \psi = 0$ at the boundary, which is the case for a fixed boundary simulation.
+第二项可沿 $Z$ 直接积分，得到边界项；若边界上 $\partial_t \psi = 0$（固定边界模拟即属此情形），这些边界项为零。
 
-To calculate the first term, we make use of the poloidal flux equation:
+为计算第一项，利用极向磁通方程：
 
 $$
 \begin{equation*}
@@ -92,7 +85,7 @@ $$
 \end{equation*}
 $$
 
-The term in $\partial_\phi u$ will vanish when integrated over $\phi$. As for the Poisson bracket:
+$\partial_\phi u$ 项在沿 $\phi$ 积分时为零。至于泊松括号：
 
 $$
 \begin{equation*}
@@ -103,9 +96,9 @@ $$
 \end{equation*}
 $$
 
-and both of these terms will vanish by integration over $R$ or $Z$ if we have $u=0$ at the boundary, which is the case for a fixed boundary simulation, i.e., the electric potential is constant on an ideally conducting wall corresponding to a vanishing normal velocity component into the wall.
+而若边界上 $u=0$（固定边界模拟即属此情形，即电势在理想导壁上为常数，对应流入壁的法向速度分量为零），这两项在沿 $R$ 或 $Z$ 积分时均为零。
 
-The hyper-resistivity term becomes a boundary integral due to the divergence theorem:
+由散度定理，超电阻项化为边界积分：
 
 $$
 \begin{equation*}
@@ -113,7 +106,7 @@ $$
 \end{equation*}
 $$
 
-where $\mathbf{n}$ is a unit vector normal to the JOREK boundary (pointing outwards the domain). Finally the time derivative of the total helicity is
+其中 $\mathbf{n}$ 是 JOREK 边界的单位法向量（指向域外）。最后，总螺旋度的时间导数为
 
 $$
 \begin{equation*}
@@ -123,4 +116,4 @@ $$
 \end{equation*}
 $$
 
-We therefore recover the classical result that helicity is dissipated at a resistive rate.
+由此重新得到经典结论：螺旋度以电阻速率耗散。

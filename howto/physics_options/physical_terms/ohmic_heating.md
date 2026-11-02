@@ -7,22 +7,15 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+## 模型 199/303/333/400/**600**
 
-原文页面：[Run with Ohmic Heating](https://iterorganization.github.io/JOREK/howto/physics_options/physical_terms/ohmic_heating.html)　·　源文件：`howto/physics_options/physical_terms/ohmic_heating.md`
-</div>
-
-## Models 199/303/333/400/**600**
-
-By default, the Ohmic heating term is switched off in the simulations. **But note that this breaks energy conservation**. When switched on, the following term is added to the energy equation for the electrons
+默认情况下，仿真中欧姆加热项处于关闭状态。**但需注意，这会破坏能量守恒**。开启后，电子能量方程中加入以下项
 $$
 \eta_{ohm}  \, j_{ohm}^2
 $$
-where $j_{ohm}=j-j_{RE}$ is the ohmic current density and $\eta_{ohm}$ is the plasma resistivity. Note that a factor ($\gamma-1$) must be added in the electron pressure form of the equation.   
+其中 $j_{ohm}=j-j_{RE}$ 为欧姆电流密度，$\eta_{ohm}$ 为等离子体电阻率。注意，在方程的电子压力形式中必须补上因子 ($\gamma-1$)。
 
-The Ohmic heating term can be included by adding the following parameters to the input file:
+在输入文件中添加以下参数即可包含欧姆加热项：
 
 ```ini
 # Setting normal resistivity in electric field equation
@@ -34,17 +27,17 @@ eta_ohmic     = 1.d-7
 T_max_eta_ohm = 1.d99
 ```
 
-`eta_ohmic` is the resistivity value, in JOREK units, at the equilibrium plasma core that is used in the Ohmic heating term. 
-Any temperature dependence for the resistivity `eta` is automatically replicated for `eta_ohmic`. The parameters used to setup the ohmic heating resistivity are analogous to that of the [$\eta$ term in the equation for the electric field](../plasma_functions_and_coefficients/spitzer_resistivity.md) (just the suffix "_ohmic" is added). Whenever `eta` differs from `eta_ohmic`, a warning message will appear, since in this case the magnetic energy is not properly transformed into thermal energy.
+`eta_ohmic` 是欧姆加热项中所用的平衡等离子体芯部电阻率值，单位为 JOREK 单位。
+电阻率 `eta` 的任何温度依赖都会自动复制到 `eta_ohmic`。用于设置欧姆加热电阻率的参数与[电场方程中的 $\eta$ 项](../plasma_functions_and_coefficients/spitzer_resistivity.md)类似（只是加上后缀 "_ohmic"）。只要 `eta` 与 `eta_ohmic` 不同，就会出现一条警告信息，因为此时磁能未能正确转化为热能。
 
 
-## Models 710/711/712
+## 模型 710/711/712
 
-Similar to models 199/303/333/400/600, the Ohmic heating term can be included in full MHD models using the `eta_ohmic` parameter in the input file.
+与模型 199/303/333/400/600 类似，full MHD 模型也可以通过输入文件中的 `eta_ohmic` 参数包含欧姆加热项。
 
-The implementation of Ohmic heating terms in full MHD models is different from that in reduced MHD models. For this, the second derivatives of the magnetic vector potential are needed, which requires extending the Fourier spectral method in the $\phi$ direction to include the second derivatives of the basis functions.
+full MHD 模型中欧姆加热项的实现与约化 MHD 模型不同。为此需要磁矢量势的二阶导数，这要求扩展 $\phi$ 方向的 Fourier 谱方法，使其包含基函数的二阶导数。
 
-The components of the current vector $\boldsymbol{J} = \nabla \times \boldsymbol{B}$ are:
+电流矢量 $\boldsymbol{J} = \nabla \times \boldsymbol{B}$ 的各分量为：
 
 $$
 \begin{align*}
@@ -54,7 +47,7 @@ J_\phi ={}& \frac{\partial B_Z}{\partial R} - \frac{\partial B_R}{\partial Z}
 \end{align*}
 $$
 
-These can be further rewritten as $\boldsymbol{J} = \nabla \times \nabla \times \boldsymbol{A}$:
+这些分量可以进一步改写为 $\boldsymbol{J} = \nabla \times \nabla \times \boldsymbol{A}$：
 
 $$
 \begin{align*}
@@ -113,4 +106,4 @@ J_\phi ={}&
 \end{align*}
 $$
 
-For the details of the implementation, please see: [ohmic_heating_in_fmhd.pdf](assets/ohmic_heating/ohmic_heating_in_fmhd.pdf)
+关于实现的细节，请见：[ohmic_heating_in_fmhd.pdf](assets/ohmic_heating/ohmic_heating_in_fmhd.pdf)

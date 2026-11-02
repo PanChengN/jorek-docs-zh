@@ -7,120 +7,111 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 编译 MUMPS
 
-原文页面：[Compile MUMPS](https://iterorganization.github.io/JOREK/compiling/compilation_and_libraries/compiling_mumps.html)　·　源文件：`compiling/compilation_and_libraries/compiling_mumps.md`
-</div>
+本文档是安装 MUMPS 及其依赖（并行版本）的简要指南。
 
-# Compiling MUMPS
-
-This document is a short guide to installing MUMPS and its dependencies (parallel version).
-
-## Dependencies
+## 依赖
 
 - BLAS
 - MPI
 - BLACS
 - ScaLAPACK
 
-You will probably also want to install SCOTCH or METIS for graph partitioning, especially if using Block-Low-Rank compression in MUMPS.
+通常还会安装 SCOTCH 或 METIS 用于图划分，特别是在 MUMPS 中使用 Block-Low-Rank 压缩时。
 
 ## BLAS
 
-Usually BLAS can be installed through your package manager or will already be available as a module.
+BLAS 一般可通过包管理器安装，或已作为模块提供。
 
 ## MPI
 
-MPI comes in different versions (`mpich`, `mpich2`, `openmpi`) and is usually already available on your system, or can be installed through your package manager.
+MPI 有多个版本（`mpich`、`mpich2`、`openmpi`），通常系统上已经具备，也可通过包管理器安装。
 
-## BLACS
+## BLACS {#blacs}
+> BLACS（Basic Linear Algebra Communication Subprograms）项目是一项持续开展的研究，其目标是建立一个面向线性代数的消息传递接口，使其能在各种分布式内存平台上高效、统一地实现。
 
-> The BLACS (Basic Linear Algebra Communication Subprograms) project is an ongoing investigation whose purpose is to create a linear algebra oriented message passing interface that may be implemented efficiently and uniformly across a large range of distributed memory platforms.
+更多信息见 [netlib](http://www.netlib.org/blacs/)。
 
-See [netlib](http://www.netlib.org/blacs/) for more information.
+若系统上还没有 BLACS（例如由 MKL 提供）：
 
-If BLACS is not available on your system already (e.g. through MKL):
-
-- Download the MPI version [here](http://www.netlib.org/blacs/mpiblacs.tgz)
-- Run:
+- 在[此处](http://www.netlib.org/blacs/mpiblacs.tgz)下载 MPI 版本
+- 运行：
   ```bash
   tar zxvf mpiblacs.tgz
   ```
-- Run:
+- 运行：
   ```bash
   cp BMAKES/Bmake.MPI-LINUX Bmake.inc
   ```
-- Edit `Bmake.inc` to set `BTOPdir` correctly
-- See [this page](https://www.open-mpi.org/faq/?category=mpi-apps#blacs) to build with OpenMPI instead of MPICH
-- Build the MPI version:
+- 编辑 `Bmake.inc`，正确设置 `BTOPdir`
+- 若要用 OpenMPI 而非 MPICH 构建，见[此页面](https://www.open-mpi.org/faq/?category=mpi-apps#blacs)
+- 构建 MPI 版本：
   ```bash
   make mpi
   ```
-- Libraries will be placed in `BLACS/LIB`
+- 依赖库将放在 `BLACS/LIB`
 
-## ScaLAPACK
+## ScaLAPACK {#scalapack}
+> ScaLAPACK 是面向并行分布式内存机器的高性能线性代数例程库。ScaLAPACK 可求解稠密与带状线性系统、最小二乘问题、特征值问题以及奇异值问题。
 
-> ScaLAPACK is a library of high-performance linear algebra routines for parallel distributed memory machines. ScaLAPACK solves dense and banded linear systems, least squares problems, eigenvalue problems, and singular value problems.
+若系统上还没有 ScaLAPACK（例如由 MKL 提供）：
 
-If ScaLAPACK is not available on your system already (e.g. through MKL):
-
-- Download [scalapack-2.0.2.tgz](http://www.netlib.org/scalapack/scalapack-2.0.2.tgz) or a newer version
-- Run:
+- 下载 [scalapack-2.0.2.tgz](http://www.netlib.org/scalapack/scalapack-2.0.2.tgz) 或更新版本
+- 运行：
   ```bash
   tar zxvf scalapack-2.0.2.tgz
   ```
-- Ignore the BLACS directory included in the ScaLAPACK install
-- Run:
+- 忽略 ScaLAPACK 安装包中自带的 BLACS 目录
+- 运行：
   ```bash
   cp SLmake.inc.example SLmake.inc
   ```
-- See [this page](https://www.open-mpi.org/faq/?category=mpi-apps#scalapack) for instructions on editing `SLmake.inc`
-- Compile ScaLAPACK:
+- 编辑 `SLmake.inc` 的说明见[此页面](https://www.open-mpi.org/faq/?category=mpi-apps#scalapack)
+- 编译 ScaLAPACK：
   ```bash
   make
   ```
-- The output file will be `libscalapack.a` in the current directory
+- 输出文件为当前目录下的 `libscalapack.a`
 
 ## METIS
 
-> METIS is a set of serial programs for partitioning graphs, partitioning finite element meshes, and producing fill reducing orderings for sparse matrices.
+> METIS 是一组串行程序，用于图划分、有限元网格划分，以及为稀疏矩阵生成减少填充的排序。
 
-- Download [METIS 5.1.0](http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/metis-5.1.0.tar.gz) (serial version) or [ParMETIS 4.0.3](http://glaros.dtc.umn.edu/gkhome/fetch/sw/parmetis/parmetis-4.0.3.tar.gz) (parallel version)
-- See the [METIS website](http://glaros.dtc.umn.edu/gkhome/views/metis) for installation instructions, documentation, and possibly newer versions
-- Run:
+- 下载 [METIS 5.1.0](http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/metis-5.1.0.tar.gz)（串行版本）或 [ParMETIS 4.0.3](http://glaros.dtc.umn.edu/gkhome/fetch/sw/parmetis/parmetis-4.0.3.tar.gz)（并行版本）
+- 安装说明、文档以及可能更新的版本见 [METIS 网站](http://glaros.dtc.umn.edu/gkhome/views/metis)
+- 运行：
   ```bash
   tar xvzf parmetis-4.0.3.tar.gz
   ```
-- Configure:
+- 配置：
   ```bash
   make config prefix=PARMETIS_ROOT
   ```
-  replacing `PARMETIS_ROOT` accordingly
-- Compile:
+  其中 `PARMETIS_ROOT` 按实际情况替换
+- 编译：
   ```bash
   make
   ```
-- Install:
+- 安装：
   ```bash
   make install
   ```
-- Note that if you downloaded ParMETIS but also need METIS, it is placed in the `metis` subdirectory. Go to this subdirectory and simply repeat the steps above (with the root directory changed accordingly).
+- 注意：若下载的是 ParMETIS 但同时也需要 METIS，则后者位于 `metis` 子目录中。进入该子目录，重复上述步骤即可（根目录相应修改）。
 
-## Compiling MUMPS itself
+## 编译 MUMPS 本身
 
-> MUMPS is a parallel sparse direct solver.
+> MUMPS 是一个并行稀疏直接求解器。
 
-It can optionally be used in the JOREK solver and is used in the particle routines for impurity transport.
+它可以在 JOREK 求解器中选择性使用，并用于杂质输运的粒子相关例程。
 
-- [Download the source code here](http://mumps.enseeiht.fr/MUMPS_5.2.0.tar.gz)
-- Unpack with:
+- [在此下载源码](http://mumps.enseeiht.fr/MUMPS_5.2.0.tar.gz)
+- 解包：
   ```bash
   tar zxvf MUMPS_5.2.0.tar.gz
   ```
-- Copy the correct `Makefile.inc` from the `Make.inc` directory for your architecture. These Makefiles also contain instructions on adapting them to your needs. The `INSTALL` file contains further installation instructions.
-- Edit `Makefile.inc` to contain the paths to BLACS and ScaLAPACK, for example:
+- 从 `Make.inc` 目录中复制适配本机架构的 `Makefile.inc`。这些 Makefile 中也包含按需调整的说明。`INSTALL` 文件含有进一步的安装说明。
+- 编辑 `Makefile.inc`，填入 BLACS 与 ScaLAPACK 的路径，例如：
 
 ```makefile
 BLACS_DIR = /home/daan/source/BLACS/LIB
@@ -131,13 +122,13 @@ SCALAP  = -llapack -L$(BLACS_DIR) /home/daan/source/scalapack-2.0.2/libscalapack
 #SCALAP  = -lscalapack -lblacs  -lblacsF77init -lblacsCinit
 ```
 
-- To use SCOTCH ordering, set `LSCOTCHDIR` to scotch with `esmumps`
-  - For SCOTCH compilation, see the [main compilation guide](./compiling.md)
-  - See [this page](http://mumps.enseeiht.fr/index.php?page=faq#2) for information on SCOTCH ordering
-- To use METIS ordering, set `LMETISDIR` and `IMETIS` to the appropriate paths and uncomment `LMETIS`
-  - For METIS compilation, see above
-- Compile the library in all precisions:
+- 若要使用 SCOTCH 排序，将 `LSCOTCHDIR` 设为带 `esmumps` 的 scotch
+  - SCOTCH 的编译见[主编译指南](./compiling.md)
+  - SCOTCH 排序的相关信息见[此页面](http://mumps.enseeiht.fr/index.php?page=faq#2)
+- 若要使用 METIS 排序，将 `LMETISDIR` 与 `IMETIS` 设为相应路径，并取消 `LMETIS` 的注释
+  - METIS 的编译见上文
+- 编译各精度的依赖库：
   ```bash
   make all
   ```
-- In the `lib/` folder you will find `cmumps`, `dmumps`, `mumps_common`, and `pord` libraries
+- 在 `lib/` 目录中可找到 `cmumps`、`dmumps`、`mumps_common` 和 `pord` 依赖库

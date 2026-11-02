@@ -5,29 +5,22 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 当所用机器无法访问 ITER git 仓库与 jorek.eu 时如何准备 nrt 测试
 
-原文页面：[NRT preparation with rsync](https://iterorganization.github.io/JOREK/code_development/nrt-preparation-with-rsync.html)　·　源文件：`code_development/nrt-preparation-with-rsync.md`
-</div>
-
-# Preparation of the nrt tests in case the machine you are using does not have access to the ITER git repository and to jorek.eu
-
-- Get the code from the repository with git on a machine where outward ssh connection is available
+- 在一台可对外建立 ssh 连接的机器上，用 git 从仓库获取代码
 
     ```
     $ git clone ssh://git.iter.org/stab/jorek.git jorek_git
     $ git checkout nrt
     ```
 
-- Download the reference test cases (restart files) from the jorek.eu web site 
+- 从 jorek.eu 网站下载参考测试用例（重启文件）
 
     ```
     $ jorek_git/non_regression_tests/get_all_data.sh
     ```
 
-- Transfer the directory to the machine you are using for the tests (example: Helios)
+- 把该目录传输到用于测试的机器上（示例：Helios）
 
     ```
     $ rsync -av --progress jorek_git USER@helios.iferc-csc.org:

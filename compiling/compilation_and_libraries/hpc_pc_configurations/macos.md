@@ -7,26 +7,19 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 在装有 macOS 的 Apple 计算机上使用 GCC 构建 JOREK
 
-原文页面：[macOS](https://iterorganization.github.io/JOREK/compiling/compilation_and_libraries/hpc_pc_configurations/macos.html)　·　源文件：`compiling/compilation_and_libraries/hpc_pc_configurations/macos.md`
-</div>
+下面简要说明如何在装有 macOS 的 Apple 计算机上使用 GCC 构建 JOREK。本教程基于 [Homebrew](https://brew.sh/)，在 [MacPorts](https://www.macports.org/) 下做法应当类似。本说明未针对性能做优化，目的只是让代码能够运行起来。
 
-# Building JOREK on Apple computers with macOS using GCC
+与 Linux 相比，macOS 上存在一些差异：
 
-Here is a short description of how to build JOREK on Apple computers with macOS using GCC. This tutorial is based on [Homebrew](https://brew.sh/), but should work similarly with [MacPorts](https://www.macports.org/). The description is not optimized for performance, but just to get the code up and running.
+- 默认编译器是 Clang，而非 GCC
+- 诸如 `readlink` 一类的 Unix 工具不兼容
+- OpenMPI 似乎无法与 GCC 7.3 配合工作，因此改用 MPICH
 
-On macOS there are some differences compared to Linux:
+## 所需步骤
 
-- the default compiler is Clang, not GCC
-- Unix tools such as `readlink` are not compatible
-- OpenMPI does not seem to work with GCC 7.3, so MPICH is used instead
-
-## Required steps
-
-- Install tools, compiler, MPICH, and HDF5 with MPI and Fortran support. It is important here to compile MPICH with `gcc-7`.
+- 安装工具、编译器、MPICH，以及支持 MPI 与 Fortran 的 HDF5。此处关键是用 `gcc-7` 编译 MPICH。
 
 ```bash
 brew install coreutils findutils gcc
@@ -34,13 +27,13 @@ brew install --cc=gcc-7 mpich
 brew install hdf5 --with-fortran --with-mpi
 ```
 
-- Set the path to use GNU tools instead of the macOS ones.
+- 设置路径，以便使用 GNU 工具而非 macOS 自带工具。
 
 ```bash
 export PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
 ```
 
-- Compile SCOTCH ([see the main compilation guide](../compiling.md)) with:
+- 编译 SCOTCH（[参见主编译指南](../compiling.md)），使用：
 
 ```makefile
 EXE=
@@ -66,7 +59,7 @@ RANLIB= ranlib
 YACC= bison -pscotchyy -y -b y
 ```
 
-- Compile PaStiX ([see the main compilation guide](../compiling.md)) with:
+- 编译 PaStiX（[参见主编译指南](../compiling.md)），使用：
 
 ```makefile
 HOSTARCH    = i686_mac
@@ -282,13 +275,13 @@ CCFDEB    := $(CCFDEB) $(CCTYPES) $(CCPASTIX)
 # Uncomment if y
 ```
 
-- Compile JOREK ([see the main compilation guide](../compiling.md)) using:
+- 编译 JOREK（[参见主编译指南](../compiling.md)），使用：
 
 ```bash
 CC=gcc-7 make -j8
 ```
 
-See more below. Use the following `Makefile.inc`:
+详见下文。使用如下 `Makefile.inc`：
 
 ```makefile
 # Configuration file for jorek
@@ -378,9 +371,9 @@ HDF5LIB=$(HDF5_HOME)/lib/libhdf5hl_fortran.a \
         #$(EBROOTZLIB)/lib/libz.a
 ```
 
-## Possible compilation error
+## 可能的编译错误
 
-When compiling, you may encounter an error like:
+编译时可能遇到如下错误：
 
 ```bash
 Undefined symbols for architecture x86_64:
@@ -404,17 +397,17 @@ collect2: error: ld returned 1 exit status
 make: *** [jorek2_main] Error 1
 ```
 
-In this case, add these two lines:
+此时，在 `.dep/jorek2_main.d` 中添加以下两行：
 
 ```bash
 jorek2_main: .obj/r3_info.o
 jorek2_main: .obj/r3_ctlk.o
 ```
 
-to `.dep/jorek2_main.d`, comment out the line
+然后注释掉 `tools/r3_ctlk.c` 中的这一行
 
 ```c
 #include <sys/procfs.h>
 ```
 
-in `tools/r3_ctlk.c`, and run `make` again.
+并重新运行 `make`。

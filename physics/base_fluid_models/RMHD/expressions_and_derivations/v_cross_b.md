@@ -7,14 +7,7 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
-
-原文页面：[The v x B Term Expression](https://iterorganization.github.io/JOREK/physics/base_fluid_models/RMHD/expressions_and_derivations/v_cross_b.html)　·　源文件：`physics/base_fluid_models/RMHD/expressions_and_derivations/v_cross_b.md`
-</div>
-
-# Derivation of the v x B Term
+# v×B 项的推导
 
 $$\begin{equation*}\begin{split}
   \mathbf{v}\times\mathbf{B}
@@ -28,7 +21,7 @@ $$\begin{equation*}\begin{split}
 &= R\mathbf{a}^3[\psi,u] + F_0\nabla_\text{pol} u
 \end{split}\end{equation*}$$
 
-Taking diamagnetic effects into account leads to:
+计入抗磁效应后可得：
 
 $$\begin{equation*}\begin{split}
   \mathbf{v}\times\mathbf{B}
@@ -36,11 +29,11 @@ $$\begin{equation*}\begin{split}
 &= R\mathbf{a}^3[\psi,u] + F_0\nabla_\text{pol} u {\color{grey}{+ \frac{2 \tau_{IC}R}{\rho}\mathbf{a}^3[\psi,p_i] + \frac{2 \tau_{IC}}{\rho}F_0\nabla_\text{pol}p_i}}
 \end{split}\end{equation*}$$
 
-Also:
+此外：
 
 $$\begin{equation*}\begin{split}
   \mathbf{a^3} \cdot \left( \mathbf{v}\times\mathbf{B} \right) =
   \mathbf{B} \cdot \left( \mathbf{a^3}\times\mathbf{v} \right) = - \mathbf{B} \cdot \nabla_{pol} u = - \frac{1}{R} \left[u,\psi \right] {\color{grey}{- \frac{2\tau_{IC}}{\rho R}F_0[p_i,\psi] }}
 \end{split}\end{equation*}$$
 
-Information from the [coordinates](../../../coordinates.md) as well as the [vector-identities](../../../vector-identities.md) pages was used.
+推导中使用了[坐标](../../../coordinates.md)页以及[矢量恒等式](../../../vector-identities.md)页的信息。

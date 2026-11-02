@@ -7,35 +7,28 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 连续性方程的推导
 
-原文页面：[The Continuity Equation Expression](https://iterorganization.github.io/JOREK/physics/base_fluid_models/RMHD/expressions_and_derivations/continuity_eq.html)　·　源文件：`physics/base_fluid_models/RMHD/expressions_and_derivations/continuity_eq.md`
-</div>
-
-# Derivation of the Continuity Equation
-
-The continuity equation in JOREK is given by:
+JOREK 中的连续性方程为：
 
 $$\begin{equation}
   \partial_t\rho=-\nabla\cdot(\rho\mathbf{v})+\nabla\cdot(D\nabla\rho) + S_\rho
 \end{equation}$$
 
-The expression for the velocity $\mathbf{v}$ in the reduced MHD model is:
+约化 MHD 模型中速度 $\mathbf{v}$ 的表达式为：
 
 $$\begin{equation*}
 \mathbf{v} = -R^2\nabla u \times \nabla\phi + v_{||}\mathbf{B}
 \end{equation*}$$
 
-Substituting this into the first term of the right hand side of the continuity equation, we get:
+将其代入连续性方程右端的第一项，可得：
 
 $$\begin{equation*}\begin{split}
 -\nabla\cdot(\rho\mathbf{v}) &= -\nabla\cdot\left[\rho\left(-R^2\nabla u \times \nabla\phi + v_{||}\mathbf{B}\right)\right] \\
 &= \nabla\cdot\left[\rho R^2\nabla u \times \nabla\phi\right] - \nabla\cdot\left(\rho v_{||}\mathbf{B}\right)
 \end{split}\end{equation*}$$
 
-Using the vector identity $\nabla\cdot(\mathbf{A}\times\mathbf{C}) = \mathbf{C}\cdot(\nabla\times\mathbf{A}) - \mathbf{A}\cdot(\nabla\times\mathbf{C})$ and the fact that $\nabla\times\nabla\phi = 0$, the first term becomes:
+利用矢量恒等式 $\nabla\cdot(\mathbf{A}\times\mathbf{C}) = \mathbf{C}\cdot(\nabla\times\mathbf{A}) - \mathbf{A}\cdot(\nabla\times\mathbf{C})$ 以及 $\nabla\times\nabla\phi = 0$，第一项变为：
 
 $$\begin{equation*}\begin{split}
 \nabla\cdot\left(\rho R^2\nabla u \times \nabla\phi\right) &= \nabla\phi\cdot\left[\nabla\times\left(\rho R^2\nabla u\right)\right] \\
@@ -44,7 +37,7 @@ $$\begin{equation*}\begin{split}
 &= \frac{1}{R}[\rho R^2, u]
 \end{split}\end{equation*}$$
 
-For the second term, using $\nabla\cdot\mathbf{B} = 0$, we have:
+对于第二项，利用 $\nabla\cdot\mathbf{B} = 0$，有：
 
 $$\begin{equation*}\begin{split}
 -\nabla\cdot\left(\rho v_{||}\mathbf{B}\right) &= -\mathbf{B}\cdot\nabla(\rho v_{||}) - \rho v_{||}\underbrace{\nabla\cdot\mathbf{B}}_{=0} \\
@@ -52,7 +45,7 @@ $$\begin{equation*}\begin{split}
 &= -\frac{F}{R^2}\partial_3(\rho v_{||}) - \frac{1}{R}[\rho v_{||}, \psi]
 \end{split}\end{equation*}$$
 
-Combining these, the continuity equation in reduced MHD variables is:
+将二者合并，即得约化 MHD 变量下的连续性方程：
 
 $$\begin{equation}
 \partial_t\rho = \frac{1}{R}[\rho R^2, u] - \frac{1}{R}[\rho v_{||}, \psi] - \frac{F}{R^2}\partial_3(\rho v_{||}) + \nabla\cdot(D\nabla\rho) + S_\rho

@@ -6,24 +6,17 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
-
-原文页面：[Impurity Collisions](https://iterorganization.github.io/JOREK/physics/kinetic_models/neutrals_and_impurities/impurity_collisions.html)　·　源文件：`physics/kinetic_models/neutrals_and_impurities/impurity_collisions.md`
-</div>
-
-# Impurity collisions
-Currently, charged impurities can collide with background plasma ions using two types of the so-called Homma collision operator.
-To use these type of impurity collisions set `use_kin_bg_collisions=.t.` and choose `kin_bg_coll_type`, which is Homma 2020 by defualt.
+# 杂质碰撞
+目前，带电杂质可使用两类所谓的 Homma 碰撞算子与背景等离子体离子碰撞。
+要使用这类杂质碰撞，需设置 `use_kin_bg_collisions=.t.` 并选择 `kin_bg_coll_type`，默认为 Homma 2020。
 
 ## Homma 2012
-Published in [*Y. Homma, 2012 JCP*], builds on the Monte Carlo Binary Collision Model (BCM) [*T. Takizuka, H. Abe, 1977 JCP*], and adds the contribution of the thermal force by choosing a background plasma ion velocity from a distorted Maxwell distribution under the temperature gradient.
-To use this operator, set `kin_bg_coll_type=Homma2013`.
+发表于 [*Y. Homma, 2012 JCP*]，以蒙特卡罗二元碰撞模型（BCM）[*T. Takizuka, H. Abe, 1977 JCP*] 为基础，并通过在温度梯度下从畸变 Maxwell 分布中选取背景等离子体离子速度，加入了热力的贡献。
+要使用该算子，需设置 `kin_bg_coll_type=Homma2013`。
 
 ## Homma 2020
-Improves the previous model by adding a heat-flux limiter, since the Spitzer-Haerm formula used for the sampled heat-flux is known to be overestimated in low collisionality regimes [*Y. Homma, 2020 Nucl. Fusion*].
+通过加入热流限制因子改进了先前的模型，因为用于采样热流的 Spitzer-Haerm 公式在低碰撞率区间已知会被高估 [*Y. Homma, 2020 Nucl. Fusion*]。
 
-To use this operator, set `kin_bg_coll_type=Homma2020`.
+要使用该算子，需设置 `kin_bg_coll_type=Homma2020`。
 
-The heat-flux limiter can be adjusted with the `homma2020_alpha` parameter, default and recommended value is 1.5 [Fundamenski 2005].
+热流限制因子可通过 `homma2020_alpha` 参数调节，默认并推荐取值为 1.5 [Fundamenski 2005]。

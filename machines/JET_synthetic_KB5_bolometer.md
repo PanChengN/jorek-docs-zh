@@ -5,23 +5,16 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 合成 JET KB5 辐射热计
 
-原文页面：[KB5 bolometer](https://iterorganization.github.io/JOREK/machines/JET_synthetic_KB5_bolometer.html)　·　源文件：`machines/JET_synthetic_KB5_bolometer.md`
-</div>
+关于该诊断的信息见[此处](https://users.euro-fusion.org/pages/data-dmsd/jetdatahandbook/php/entry.php?type=0&name=KB5#basic_information)。
 
-# Synthetic JET KB5 bolometer
-
-Information on the diagnostic may be found [here](https://users.euro-fusion.org/pages/data-dmsd/jetdatahandbook/php/entry.php?type=0&name=KB5#basic_information).
-
-KB5H is in Octant 6 ($\phi=3\pi/4$ in JOREK, considering that $\phi=0$ is Octant 1) and KB5V in Octant 3 ($\phi=3\pi/2$).
+KB5H 位于第 6 八分之一扇区（在 JOREK 中 $\phi=3\pi/4$，这里以 $\phi=0$ 为第 1 八分之一扇区），KB5V 位于第 3 八分之一扇区（$\phi=3\pi/2$）。
 
 ![JET KB5H](assets/jet/jet_kb5h.png)
 ![JET KB5V](assets/jet/jet_kb5v.png)
 
-Here is an example of [postproc](../howto/introduction_to_jorek_diagnostics) script to produce synthetic KB5 data:
+下面是一个用于生成 KB5 合成数据的 [postproc](../howto/introduction_to_jorek_diagnostics) 脚本示例：
 
 ```text
 namelist JET85943_R3P4Z0P9

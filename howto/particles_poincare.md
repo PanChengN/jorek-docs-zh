@@ -7,28 +7,21 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 用粒子追踪器生成庞加莱图
 
-原文页面：[Generate Poincaré Plots with Particle Tracker](https://iterorganization.github.io/JOREK/howto/particles_poincare.html)　·　源文件：`howto/particles_poincare.md`
-</div>
+## 与 jorek2_poincare 的区别
 
-# Generating Poincaré Plots with Particle Tracker
+- 可选择用粒子而不仅是磁力线生成庞加莱图。
+- 输出按每个标记粒子分开，并包含连接长度。
+- 输出以 HDF5 格式存储。
 
-## What's different to jorek2_poincare
+## 1. 编译并运行代码
 
-- Option to generate Poincaré plots with particles and not just field lines.
-- Output is separated for each marker and includes connection length.
-- Output is stored in HDF5 format.
-
-## 1. Compiling and running the code
-
-1. It is recommended to use MUMPS for the particle tracer (set `USE_MUMPS=1` in `Makefile.inc`). 
-2. (For plotting you will need numpy, h5py, and matplotlib)
-3. Compile the Poincaré program with: `make poincare`
-4. Include the binary in the same folder with JOREK inputs and restart files.
-5. The simulation options are given in `pncr` file which you should also include in the same folder and contains the following:
+1. 建议为粒子追踪器使用 MUMPS（在 `Makefile.inc` 中设置 `USE_MUMPS=1`）。
+2. （绘图需要 numpy、h5py 和 matplotlib）
+3. 用以下命令编译庞加莱程序：`make poincare`
+4. 把可执行文件放在与 JOREK 输入文件和重启文件相同的目录中。
+5. 模拟选项在 `pncr` 文件中给出，该文件也应放在同一目录中，其内容如下：
 
     ```
     # n_tracers - number of field line/particle tracers 
@@ -48,21 +41,21 @@ render_with_liquid: false
 
     ```
 
-6. You can change the values in `pncr` file but don't alter the structure.
-7. The Poincaré data is collected for a single time-slice that corresponds to `jorek_restart.h5`.
-8. To run the code, use `mpirun -n 1 ./poincare < input_namelist`
+6. 可以修改 `pncr` 文件中的数值，但不要改动其结构。
+7. 庞加莱数据针对对应于 `jorek_restart.h5` 的单个时间片收集。
+8. 运行代码使用 `mpirun -n 1 ./poincare < input_namelist`
 
-### Further information and possible issues
+### 进一步信息与可能的问题
 
-- Issues can arise if time-step is too large (e.g. field lines diverge or have “width” in the plot or the simulation might not complete). Reducing time-step means simulations take longer time, but you can alleviate this by reducing `n_tracers` and `n_turns`. Running with default settings should take just few minutes.
-- Tracing particles by default includes electric field, which can cause acceleration. To disable the electric field, add `E=0` at the end of the subroutine `calc_EBNormBGradBCurlbDbdt` in `particles/mod_fields.f90`.
-- When tracing particles, relativistic guiding center pusher is used. This could be an issue when the guiding center approximation is not valid e.g. in spherical tokamaks.
-- Markers are initialized at the outer mid-plane at even intervals radially, and the initial toroidal angle is randomly sampled from uniform distribution.
-- Field lines are traced in one direction along the B-field vector. For particles this is determined by pitch.
+- 若时间步过大可能出问题（例如磁力线发散，或在图中具有"宽度"，或模拟可能无法完成）。减小时间步意味着模拟耗时更长，但可通过减小 `n_tracers` 和 `n_turns` 来缓解。用默认设置运行应只需几分钟。
+- 追踪粒子时默认包含电场，这会造成加速。要禁用电场，在 `particles/mod_fields.f90` 中子程序 `calc_EBNormBGradBCurlbDbdt` 的末尾添加 `E=0`。
+- 追踪粒子时使用相对论导向中心推进器。当导向中心近似不成立时（例如在球形托卡马克中），这可能是个问题。
+- 标记粒子在外中平面上沿径向以等间隔初始化，初始环向角从均匀分布中随机抽取。
+- 磁力线沿 B 场矢量在一个方向上追踪。对于粒子，方向由平行速度比（pitch）决定。
 
-## 2. Compiling and running the code
+## 2. 编译并运行代码
 
-- The program outputs `poincare.h5` fiel that contains the following fields
+- 程序输出 `poincare.h5` 文件，其中包含以下字段
 
 ```
 r       : R-coordinate
@@ -75,12 +68,12 @@ mil     : Distance the marker has travelled up to this point
 mileage : The distance [m] that a marker travelled in total
 ```
 
-- The data is stored in unstructured 1D arrays where each data point corresponds to a crossing of poloidal or toroidal plane. This makes it easy to modify the code so that the data is collected in several (poloidal or toroidal) planes simultaneously.
-- `iprt` and `pncrid` can be used to disect the data. For example, to get indices of all points for marker i at plane j, use: `idx = np.logical_and.reduce([iprt == i, iplane == j])`
-- At the moment the data is collected at Rz-plane corresponding to phi = 0, and at the outer mid-plane.
-The results can be visualized with `util/plot_poincare.py` just by running the script. Here's an example output:
+- 数据存储在一维非结构化数组中，其中每个数据点对应一次极向或环向平面的穿越。这使得修改代码以便同时在多个（极向或环向）平面上收集数据变得容易。
+- `iprt` 和 `pncrid` 可用于切分数据。例如，要获得标记粒子 i 在平面 j 上所有点的索引，使用：`idx = np.logical_and.reduce([iprt == i, iplane == j])`
+- 目前数据在 phi = 0 对应的 Rz 平面以及外中平面处收集。
+结果可用 `util/plot_poincare.py` 直接运行脚本进行可视化。以下是一个示例输出：
 
     <img src="assets/particles_poincare/2022_11_22_poincare.png" alt="Poincare plot created using particle tracer" width="600">
 
-- The colors in red hue indicate confined markers (ones that were not lost during the simulation). Each marker is assigned a (red tinted) color from a pool of six colors, which makes it easier to separate adjacent lines.
-- The colors in blue hue indicate connection length of the lost markers. The color shows the connection length at that position
+- 红色色调表示被约束的标记粒子（在模拟过程中未损失的）。每个标记粒子从六种颜色的池中分配一种（红色调）颜色，以便更容易区分相邻的线。
+- 蓝色色调表示已损失标记粒子的连接长度。颜色显示该位置处的连接长度

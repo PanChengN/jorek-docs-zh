@@ -1,20 +1,13 @@
 ---
-
+title: "壁负荷"
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 如何使用粒子追踪器评估壁负荷？ 
 
-原文页面：[wall_loads](https://iterorganization.github.io/JOREK/physics/kinetic_models/runaway_electrons/wall_loads.html)　·　源文件：`physics/kinetic_models/runaway_electrons/wall_loads.md`
-</div>
-
-# How to assess wall loads with the particle tracker? 
-
-## Note:
-  * The wall collision check has been implemented fully only for relativistic particle and relativistic guiding center modes. For other modes the algorithm still exists but you can't get a full output without implementing how the particle energy is evaluated in the export routine (so this is a simple thing to do).
-  * You'll need a triangular mesh that represents PFCs to use this module. If you don't have one, use this script to generate simple wall mesh from the edges of the JOREK computational grid.
-  * See also the [internship report](./../../assets/wall_loads/internship_report_with_chapters.pdf) of Miko Skyllas.
+## 注意：
+  * 壁碰撞检查只对相对论粒子与相对论导向中心模式做了完整实现。其他模式下算法依然存在，但若不实现导出例程中粒子能量的计算方式，就无法得到完整输出（这是一件简单的事）。
+  * 使用该模块需要一个表示面向等离子体部件（PFC）的三角形网格。若没有，可用本脚本从 JOREK 计算网格的边界生成简单壁网格。
+  * 另见 Miko Skyllas 的[实习报告](./../../assets/wall_loads/internship_report_with_chapters.pdf)。
 
 ### namelist2wall.py
 ```python
@@ -77,11 +70,11 @@ plt.show()
 ```
 
 
-## 1. Input
+## 1. 输入
 
-The input consists of a simple HDF5 file that has two datasets: **ntriangle** indicating number of wall elements (triangles) and **nodes** which is an array of triangle nodes in a format [x1_1, y1_1, z1_1, x2_1, y2_1, z2_1,x3_1, y3_1, z3_1, x1_2, y1_2, z1_2, ...], where the last index is triangle ID.
+输入是一个简单的 HDF5 文件，含两个数据集：**ntriangle** 表示壁单元（三角形）的数目，**nodes** 是三角形节点的数组，格式为 [x1_1, y1_1, z1_1, x2_1, y2_1, z2_1,x3_1, y3_1, z3_1, x1_2, y1_2, z1_2, ...]，其中最后一个下标为三角形编号。
 
-Easy way to construct input is e.g. by reading the data (usually in stl or vtk format) with pyvista, and converting it to desired format:
+构造输入的一个简便方法是：用 pyvista 读取数据（通常为 stl 或 vtk 格式），再转换为所需格式：
 
 ### readstl.py
   
@@ -103,67 +96,65 @@ with h5py.File('wall.h5','w') as h5:
 
 ```
 
-Include the wall mesh in your run folder.
-## 2. Running a simulation with wall collision checks 
+将壁网格放入算例目录。
+## 2. 运行带壁碰撞检查的模拟 
 
-The implementation of the module can be found in particles/mod_wall_collision.f90. To use this module in a particle simulation, begin by initializing the wall data.
+该模块的实现位于 particles/mod_wall_collision.f90。要在粒子模拟中使用该模块，首先初始化壁数据。
 ```
 type(octree_triangle) :: octree ! The struct containing the wall data.
 call mod_wall_collision_init('wall.h5', octree, max_depth)
 ```
-To check wall collisions at each time step, use (inside the simulation loop)
+要在每个时间步检查壁碰撞，使用（位于模拟循环内）
 ```
 call mod_wall_collision_check(p, q, octree, wall_id, wall_pos)
 ```
 
-where p is the marker position at the beginning of the time step (in cylindrical coordinates) and q at the end of the time step. The subroutine returns id of the wall element that was hit (zero otherwise) and the impact point as p + t * (q - p) where parameter t is determined by the collision check. The wall element id corresponds to the position of the element in the input file.
+其中 p 为时间步开始时标记粒子的位置（柱坐标），q 为时间步结束时的位置。该子程序返回被击中壁单元的 id（未击中则为零）以及撞击点 p + t * (q - p)，其中参数 t 由碰撞检查确定。壁单元 id 对应该单元在输入文件中的位置。
 
-Free resources with
+释放资源用
 ```
 call mod_wall_collision_free(octree)
 ```
 
-You can export the data with
+可用以下调用导出数据
 ```
 call mod_wall_collision_export(sim, file)
 ```
 
-Note that this assumes that (for lost markers) you have stored the data as i_elm = (-1) * wall_id. The minus sign is there just to notify that the marker is lost.
+注意这假定（对丢失的标记粒子）你已按 i_elm = (-1) * wall_id 存储数据。负号只是为了标明该标记粒子已丢失。
 
-An example script can be found in particles/examples/example_wallload.f90
-## 3. Output and post-processing 
+示例脚本见 particles/examples/example_wallload.f90
+## 3. 输出与后处理 
 
-For the output the module creates a HDF5 file that contains:
-  * IDs (i.e. index in the original input array starting from 1) of the wetted elements.
-  * Particle load (prt/m^2) on each wetted triangle. The particle load is counted as sum(weight) / area of the element, where sum is over all particles that hit the element.
-  * Heat load (J/m^2) on each wetted triangle. The heat load is counted as sum( particle weight * particle energy) / area of the element.
+模块会创建一个 HDF5 文件作为输出，其中包含：
+  * 受载单元的 ID（即原始输入数组中的下标，从 1 开始）。
+  * 每个受载三角形上的粒子负荷（prt/m^2）。粒子负荷按 sum(weight) / 单元面积计算，求和遍历所有击中该单元的粒子。
+  * 每个受载三角形上的热负荷（J/m^2）。热负荷按 sum( particle weight * particle energy) / 单元面积计算。
 
-Optionally, one can also output the particle restart file, where i_elm indicates the end state of the given marker (>0 confined, =0 was lost but did not hit wall, < 0 triangle ID (multiplied with -1 to indicate the marker was lost) where this marker was lost).
+可选地，还可输出粒子重启文件，其中 i_elm 表示该标记粒子的末态（>0 为约束，=0 为丢失但未击中壁，< 0 为该标记粒子丢失处的三角形 ID（乘以 -1 以标明标记粒子已丢失））。
 
-The post-processing script is util/plot_wallload.py that will output the wetted area, and maximum particle and heat loads. The script requires wall input, wall loads and optionally also the particle restart file. The script also visualizes the losses (note that the default settings are for ITER):
+后处理脚本为 util/plot_wallload.py，会输出受载面积以及最大粒子负荷与热负荷。该脚本需要壁输入、壁负荷，可选地还需要粒子重启文件。脚本还会可视化损失（注意默认设置针对 ITER）：
 
 <p float="left">
   <img src="./../../assets/wall_loads/wallloadscatter_1_.png" width="45%" />
   <img src="./../../assets/wall_loads/wallload3d_1_.png" width="45%" />
 </p>
 
-(**Left**) Scatter plot of marker final positions. (**Right**) Loads on the 3D wall mesh
+(**左**) 标记粒子最终位置的散点图。(**右**) 三维壁网格上的负荷
 
 <p float="left">
   <img src="./../../assets/wall_loads/wallloadmean_1_.png" width="45%" />
   <img src="./../../assets/wall_loads/wallloadhist.png" width="45%" />
 </p>
 
-(**Left**) Load pattern on the wall. Note that these losses are projected on the blue curve shown in the first figure, so this figure does not show exact losses or their distribution but just the general pattern. (**Right**) Histogram showing area affected at least by the given heat load.
+(**左**) 壁上的负荷分布。注意这些损失是投影到第一幅图中的蓝线上，因此该图并不显示精确的损失或其分布，而只是总体分布形态。(**右**) 显示至少受到给定热负荷影响的面积的直方图。
 
 
 
 
 
-## 4. Description of the algorithm 
+## 4. 算法说明 
 
-The algorithm is relatively simple. At each time-step, the line segment between the marker new and old positions is used to perform ray-tracing with respect to wall triangles using Möller-Trumbore algorithm. To optimize the process, ray tracing is only performed against triangles that are in close proximity. This is accomplished by recursively dividing the volume into eight quadrants, and only checking collisions against those triangles that are inside the same volume(s) as the marker new or old position. This //octree// is built upon initialization, and it's effectiveness can be seen in the following plot (for simulations max_depth=6 is recommended):
+该算法相对简单。在每个时间步，用标记粒子新旧位置之间的线段，借助 Möller-Trumbore 算法对壁三角形做射线追踪。为优化过程，只对邻近的三角形做射线追踪。做法是递归地把体积划分为八个象限，只对与标记粒子新位置或旧位置处于同一体积内的三角形做碰撞检查。该 //octree// 在初始化时构建，其效果可见下图（模拟中建议 max_depth=6）：
 
 ![octreeconvergence](./../../assets/wall_loads/octreeconvergence.png)
-
-

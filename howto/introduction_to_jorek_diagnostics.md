@@ -7,22 +7,15 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# JOREK 部分诊断工具简介
 
-原文页面：[Get Started with JOREK Diagnostics](https://iterorganization.github.io/JOREK/howto/introduction_to_jorek_diagnostics.html)　·　源文件：`howto/introduction_to_jorek_diagnostics.md`
-</div>
+本教程演示如何运行 JOREK 的一些重要诊断工具。我们假定你已掌握运行 JOREK 的基础知识。关于如何分析 JOREK 仿真，教程 [首次运行 JOREK](running_jorek_for_the_first_time.md) 中已给出部分信息。这里提供更多细节，并介绍几个额外的诊断工具。
 
-# Introduction to (some) JOREK diagnostics
+# 坐标系
 
-This tutorial will show you how to run some of the important JOREK diagnostics. We assume that you already know the basics of how to run JOREK. Some information about how to analyze JOREK simulations was already given in the tutorial [Running JOREK for the first time](running_jorek_for_the_first_time.md). Here, you get a bit more information and learn about a few additional diagnostics.
+解读任何仿真数据时（其实在搭建算例时便已如此），都应确保充分理解 JOREK 中所用的坐标系，以及它与实验装置所用坐标系之间的关系。JOREK 中的坐标系如下：
 
-# Coordinates
-
-For any interpretation of simulation data (and already for setting up the simulations), you should make sure you understand the coordinate system(s) used in JOREK well and how this relates to the coordinate systems used in the experimental devices. In JOREK we have the following: 
-
-The basic cylindrical coordinate system $` (u1,u2,u3)=(R,Z,ϕ) `$ of JOREK is given by 
+JOREK 的基本柱坐标系 $` (u1,u2,u3)=(R,Z,ϕ) `$ 由下式给出
 
 <img align="right" src="assets/introduction_to_jorek_diagnostics/jorek-coordinates.png" alt="JOREK coordinates" width="300">
 
@@ -34,32 +27,32 @@ z&=Z \\
 \end{aligned}
 $$
 
-where $`(x,y,z)`$ denotes Cartesian coordinates. Thus, $`ϕ`$ goes clockwise if looked at from above! See [coordinates](..\physics\coordinates.md) for more details. ASDEX Upgrade, for instance, uses a definition of $`ϕ`$ going in the opposite direction! 
+其中 $`(x,y,z)`$ 表示笛卡尔坐标。因此，从上往下看时 $`ϕ`$ 是顺时针方向！详见 [coordinates](..\physics\coordinates.md)。例如 ASDEX Upgrade 对 $`ϕ`$ 的定义方向正好相反！
 
 # qprofile.dat
 
 <img align="right" src="assets/introduction_to_jorek_diagnostics/qprofile-example.png" alt="qprofile example" width="300">
 
-When the code is finished, calculating the equilibrium, it automatically calculates the q-profile and writes it out to `qprofile.dat`. If you need to plot the qprofile at a different time point during the simulation instead, `jorek2_postproc` described further below will help you to easily do that. 
+程序完成平衡计算后，会自动计算 q 剖面并写入 `qprofile.dat`。若需要在仿真过程中的其他时刻绘制 q 剖面，下文介绍的 `jorek2_postproc` 可以方便地实现。
 
 # plot_grids.sh
 
-The script `./util/plot_grids.sh` allows to plot the simulations grids. Via the option `-o xpoint` you can for instance plot only the X-point grid. The script uses the data written out by JOREK into the `grid_*.dat` ascii files and plots them with `gnuplot`. You can also plot directly to `.ps` or `.png` files (check with option `-h`). 
+脚本 `./util/plot_grids.sh` 可用于绘制仿真网格。例如通过选项 `-o xpoint` 可以只绘制 X 点网格。该脚本使用 JOREK 写入 `grid_*.dat` ASCII 文件的数据，并用 `gnuplot` 绘图。也可以直接输出为 `.ps` 或 `.png` 文件（用选项 `-h` 查看）。
 
 # plot_live_data.sh
 
 <img align="right" src="assets/introduction_to_jorek_diagnostics/energies-example.png" alt="Energies example" width="400">
 
-The code writes out some information to `macroscopic_vars.dat` while running. The script `plot_live_data.sh` allows to easily extract and plot data from this file. When you call the script without options, it will plot directly the evolution of the magnetic and kinetic energies (see example). When you have the plotting window open, 
+程序运行时会向 `macroscopic_vars.dat` 写入一些信息。脚本 `plot_live_data.sh` 可以方便地从该文件提取并绘制数据。不带选项调用该脚本时，会直接绘制磁能与动能随时间的演化（见示例）。绘图窗口打开后，
 
-- the <ins>right</ins> mouse button allows you to zoom in
-- pressing `U` unzooms again
-- pressing `L` switches between logarithmic and non-logarithmic y-axis
-- pressing `E` updates the plot in case there is new data written by the running simulation.
+- 按<ins>右</ins>键可以放大
+- 按 `U` 可恢复原来的显示范围
+- 按 `L` 可在对数与非对数 y 轴之间切换
+- 按 `E` 可更新图像，以纳入正在运行的仿真新写入的数据。
 
-If you call the script with option `-h`, the usage information is printed. You can for instance directly plot into a `.ps` file if necessary. In case you need to further adapt the plot, you can copy the `local_plot.gp` file to a different name e.g. `my_plot.gp`, adapt it and then run `gnuplot my_plot.gp`. 
+以选项 `-h` 调用脚本时，会打印用法信息。必要时可以直接绘制到 `.ps` 文件。若需要进一步调整图像，可把 `local_plot.gp` 复制为其他名称（例如 `my_plot.gp`），修改后运行 `gnuplot my_plot.gp`。
 
-The option `-l` lists all quantities you can plot. Presently this is: 
+选项 `-l` 列出所有可绘制的物理量。目前包括：
 
 ```
 * axis
@@ -76,16 +69,16 @@ The option `-l` lists all quantities you can plot. Presently this is:
 * times
 ```
 
-You can select which quantity to plot with the option `-q`. It is sufficient to type the start of the quantity. For instance the growth rates can be plotted with: 
+可用选项 `-q` 选择要绘制的物理量。只需输入该物理量名称的开头部分即可。例如绘制增长率：
 
 ```
 ./util/plot_live_data.sh -q g
 ```
 
-**Note:**
+**注意：**
 
-- You may need to make a recent version of `gnuplot` available before you can use this diagnostics. Usually this works via `module load gnuplot`. Best add this to your `.bashrc` login script.
-- The `plot_live_data.sh` script always extracts the data from `macroscopic_vars.dat` into a file called `<quantity-name>.dat` for plotting. Thus, you can easily also plot the data yourself with an arbitrary tool. This makes it simple to compare two simulations:
+- 使用该诊断工具之前，可能需要先提供较新版本的 `gnuplot`。通常通过 `module load gnuplot` 即可。最好把这一行加入 `.bashrc` 登录脚本。
+- `plot_live_data.sh` 脚本总是先把 `macroscopic_vars.dat` 中的数据提取到名为 `<quantity-name>.dat` 的文件中再绘图。因此你也可以方便地用任意工具自行绘制数据。这样比较两个算例就很简单：
 
 ```
   gnuplot
@@ -93,47 +86,46 @@ You can select which quantity to plot with the option `-q`. It is sufficient to 
   > plot 'case1/energies.dat' using 1:3 with lines, ''case2/energies.dat'' using 1:3 with lines
 ```
 
-# jorek2vtk
-
+# jorek2vtk {#jorek2vtk}
 <img align="right" src="assets/introduction_to_jorek_diagnostics/jorek2vtk-example.png" alt="jorek2vtk example" width="400">
 
-You have already come across `jorek2vtk` in the tutorial [Running JOREK for the first time](running_jorek_for_the_first_time.md). Some additional information is provided here. As a reminder, you need to compile the diagnostics via `make -j 8 jorek2vtk`. Make sure you use the same hard-coded parameters as the main binary. To actually convert the `.h5` restart files into `.vtk` files, you simply run 
+你在教程 [首次运行 JOREK](running_jorek_for_the_first_time.md) 中已经接触过 `jorek2vtk`。这里补充一些信息。提醒一下，需要通过 `make -j 8 jorek2vtk` 编译该诊断工具。务必使用与主程序相同的硬编码参数。要把 `.h5` 重启文件真正转换为 `.vtk` 文件，只需运行
 
 ```
  ./util/convert2vtk.sh -j 8 jorek2vtk inputfile
 ```
 
-**Note:**
+**注意：**
 
-- `convert2vtk.sh` automatically puts the `.vtk` files into reasonably named sub-folders like `vtk_no0_iplane1`. Those can easily be plotted with Paraview or Visit.
-- `convert2vtk.sh` automatically compares the time stamps of already existing `.vtk` files to the corresponding `.h5` files: If the `.vtk` file is newer, no conversion is needed. But if the `.h5` file is newer, then the `.vtk` file is automatically updated.
+- `convert2vtk.sh` 会自动把 `.vtk` 文件放入命名合理的子目录，例如 `vtk_no0_iplane1`。这些文件可以用 ParaView 或 VisIt 方便地绘制。
+- `convert2vtk.sh` 会自动比较已有 `.vtk` 文件与相应 `.h5` 文件的时间戳：若 `.vtk` 文件更新，则无需转换；若 `.h5` 文件更新，则自动更新 `.vtk` 文件。
 
-**Available options:**
+**可用选项：**
 
-- The option `-si` should denormalize all quantities.
-- The option `-no0` excludes the $`n=0`$ mode from the VTK files such that you can only look at the non-axisymmetric components.
-- The option `-i_tor` allows to select one of the toroidal harmonics. Cosine and sine are counted separately here.
-- The option `-iplane` allows to write out data in a different toroidal plane. Default is plane 1 (i.e., $`ϕ=0`$).
-- The option `-only XXXXX-XXXXX` allows to convert only some of the restart files.
-- The option `-nsub X` allows to change the number of sub-points used to represent each Bezier element. The default value is 5.
-- The option `-h` explains how the script is used.
+- 选项 `-si` 应对所有物理量做去归一化。
+- 选项 `-no0` 从 VTK 文件中排除 $`n=0`$ 模，从而只能查看非轴对称分量。
+- 选项 `-i_tor` 用于选择某个环向谐波。此处余弦与正弦分别计数。
+- 选项 `-iplane` 用于把数据写到不同的环向平面。默认是平面 1（即 $`ϕ=0`$）。
+- 选项 `-only XXXXX-XXXXX` 只转换部分重启文件。
+- 选项 `-nsub X` 用于改变每个贝塞尔单元所用的子点数。默认值为 5。
+- 选项 `-h` 说明脚本的用法。
 
-**Identifying a problem:** In case something goes wrong with the conversion it is a good idea to compile `jorek2vtk` again with debugging options, and first try the conversion the “manual” way with 
+**排查问题：** 若转换过程中出错，最好带调试选项重新编译 `jorek2vtk`，并先用“手动”方式尝试转换：
 
 ```
   cp jorekXXXXX.h5 jorek_restart.h5
   ./jorek2vtk < ./inputfile
 ```
 
-Typical problems you may run into are that you compiled `jorek2vtk` with the wrong model or wrong hard-coded parameters or that an `.h5` restart file is damaged such that it cannot be read into `jorek2vtk` properly. 
+常见问题包括：编译 `jorek2vtk` 时选错了模型或硬编码参数，或某个 `.h5` 重启文件已损坏，无法被 `jorek2vtk` 正确读入。
 
-## Showing simulation time in ParaView plots
+## 在 ParaView 图中显示仿真时间
 
-To display the simulation time in a ParaView plot, use the **Annotate Global Data** filter.
+要在 ParaView 图中显示仿真时间，使用 **Annotate Global Data** 过滤器。
 
-The legacy VTK format written by `jorek2vtk` does not provide the time information in a form that ParaView can use directly. ParaView versions 5.5 and newer support a [JSON-based meta-file format for file series](https://gitlab.kitware.com/paraview/paraview/blob/v5.5.0/Documentation/release/ParaView-5.5.0.md#json-based-new-meta-file-format-for-series-added), which provides a workaround.
+`jorek2vtk` 写出的 legacy VTK 格式所提供的时间信息形式无法被 ParaView 直接使用。ParaView 5.5 及更新版本支持[基于 JSON 的文件序列元文件格式](https://gitlab.kitware.com/paraview/paraview/blob/v5.5.0/Documentation/release/ParaView-5.5.0.md#json-based-new-meta-file-format-for-series-added)，可作为一种变通方案。
 
-In the directory containing the VTK files, create a JSON file whose name ends in `.vtk.series`. For example:
+在存放 VTK 文件的目录中，创建一个文件名以 `.vtk.series` 结尾的 JSON 文件。例如：
 
 ```json
 {
@@ -149,20 +141,22 @@ In the directory containing the VTK files, create a JSON file whose name ends in
 
 <img align="right" src="assets/introduction_to_jorek_diagnostics/jorek2vtk3d-example.png" alt="jorek2vtk_3d example" width="400">
 
-The compilation and usage is almost identical to jorek2vtk, however:
+编译与用法同 jorek2vtk 几乎相同，但有几点区别：
 
-- 3D data is written out.
-- That means you will end up with huge files. You should use the `-only` option to convert only some of the files.
-- You may need to edit the `jorek2vtk_3d.f90` file to adapt the number of toroidal planes written out.
-- The `.vtk` files end up on subfolders called `vtk3d_no0` or similar.
+- 输出的是 3D 数据。
+- 这意味着文件会非常大。应使用 `-only` 选项只转换部分文件。
+- 你可能需要编辑 `jorek2vtk_3d.f90` 文件，以调整输出的环向平面数。
+- `.vtk` 文件会放在名为 `vtk3d_no0` 之类的子目录中。
 
-$\rightarrow$ Consider to use the [Paraview-plugin](running_jorek_for_the_first_time.md) instead
+$\rightarrow$ 可考虑改用 [ParaView 插件](running_jorek_for_the_first_time.md)
 
-# jorek2_poincare
-
+# jorek2_poincare {#jorek2_poincare}
 <img align="right" src="assets/introduction_to_jorek_diagnostics/poinc-r-z-example.png" alt="jorek2_poincare R Z example" width="300">
 
-To visualize the magnetic topology, Poincare plots are a very useful tool. `jorek2_poincare` allows to trace a specific field lines for a given number of toroidal turns. A point is then marked each time the field line passes through the $`ϕ=0`$ plane. You need to create a small additional file named `stpts` which describes the field lines to be traced. The following example traces 100 field lines started between $`Z=0`$ and $`Z=1`$ at $`R=10`$ and $`ϕ=0`$. $`R,Z,ϕ`$ and `n_turns` is interpolated for the field lines not explicitly in between the given ones: 
+要可视化磁拓扑，Poincaré 图是非常有用的工具。`jorek2_poincare` 可以对给定的环向圈数追踪特定的磁力线。磁力线每次穿过 $`ϕ=0`$ 平面时标记一个点。需要额外创建一个小文件 `stpts` 来描述要追踪的磁力线。下例在 $`R=10`$、$`ϕ=0`$ 处，于 $`Z=0`$ 与 $`Z=1`$ 之间起始追踪 100 条磁力线。对未显式给出的磁力线，$`R,Z,ϕ`$ 与 `n_turns` 采用插值：
+
+{: .warning }
+译者注：原文此处称追踪 100 条磁力线，但示例 `stpts` 中 `n_lines` 为 40。
 
 ```
 # n_lines
@@ -172,7 +166,7 @@ To visualize the magnetic topology, Poincare plots are a very useful tool. `jore
    40    10.000     1.00      0.000      2500
 ```
 
-It is also possible to specify each field line individually: 
+也可以逐条单独指定磁力线：
 
 <img align="right" src="assets/introduction_to_jorek_diagnostics/poinc-rho-theta-example.png" alt="jorek2_poincare rho theta example" width="300">
 
@@ -185,7 +179,7 @@ It is also possible to specify each field line individually:
     3    10.000     1.00      0.000      3000
 ```
 
-Or you can specify several sets of field lines: 
+或者指定若干组磁力线：
 
 ```
 # n_lines
@@ -197,23 +191,23 @@ Or you can specify several sets of field lines:
    80    10.000     1.00      0.000      2500
 ```
 
-Now you can simply run the diagnostics by doing: 
+现在只需这样运行该诊断工具：
 
 ```
 cp jorekXXXXX.h5 jorek_restart.h5
 ./jorek2_poincare < ./inputfile
 ```
 
-As a result, you get two [ASCII](## "American Standard Code for Information Interchange") files which contain the data in two different representations: 
+结果得到两个 [ASCII](## "American Standard Code for Information Interchange") 文件，其中以两种不同表示给出数据：
 
-- `poinc_R-Z.dat` contains the points in $`(R, Z)`$ coordinates
-- `poinc_rho-theta.dat` contains the points in $`(ρ_\text{pol}, θ)`$ coordinates, where $`θ`$ is the poloidal angle and $`ρ_\text{pol}=\sqrt{Ψ_N}`$.
+- `poinc_R-Z.dat` 包含 $`(R, Z)`$ 坐标下的点
+- `poinc_rho-theta.dat` 包含 $`(ρ_\text{pol}, θ)`$ 坐标下的点，其中 $`θ`$ 是极向角，$`ρ_\text{pol}=\sqrt{Ψ_N}`$。
 
-**Warning:** `jorek2_poincare` is a useful but rather old diagnostics. You may need to edit the source code to increase manually the `n_phi` value in order to get a clean Poincare plot (in particular for larger mode numbers). The program should in principle be re-implemented in a cleaner way at some point… 
+**警告：** `jorek2_poincare` 是一个有用但相当陈旧的诊断工具。为了得到干净的 Poincaré 图（尤其是模数较大时），可能需要修改源码手动增大 `n_phi` 值。原则上该程序将来应以更清晰的方式重新实现……
 
 # jorek2_powers
 
-This diagnostics makes only sense for `model3XX` and X-point cases. It calculates for instance the heat fluxes to the divertor targets. Note that you presently need to set manually in the source code `diagnostics/jorek2_powers.f90` source code three parameters before compilation: 
+该诊断工具只对 `model3XX` 和 X 点算例有意义。例如它计算流向偏滤器靶板的热流。注意目前需要在编译前于源码 `diagnostics/jorek2_powers.f90` 中手动设置三个参数：
 
 ```
 R_in_out     # set to a value between the inner and outer target plate
@@ -221,9 +215,9 @@ Z_wall_in    # upper limit of inner divertor target
 Z_wall_out   # lower limit of outer divertor target
 ```
 
-It might be a nice exercise for one of you to detect these three values automatically, which would not be too complicated… 
+若能自动识别这三个值，对你们中的某个人来说可能是个不错的练习，并不算太复杂……
 
-The tool writes out the calculated quantities directly onto the screen: 
+该工具把计算出的物理量直接输出到屏幕：
 
 ```
  inner/outer wall/divertor parallel convection :  -0.11942676E-08 -0.34636717E-20  0.10706467E+00  0.48405278E+00 [MW]
@@ -241,7 +235,7 @@ The tool writes out the calculated quantities directly onto the screen:
  inner/outer wall/divertor wetted length         :  -0.44929316E-02 -0.49001212E-02  0.16486467E+00  0.98795565E-01 [m]
  ```
 
-It also exports them to `powers_time.out` and `powers_time_sum.out`. Since the code appends to the files, you can do something in bash like the following to collect the data from all restart files: 
+它还会把这些量导出到 `powers_time.out` 和 `powers_time_sum.out`。由于程序以追加方式写入，可以在 bash 中这样做，从所有重启文件收集数据：
 
 ```bash
 for f in `ls jorek[0-9]*.h5`; do
@@ -249,34 +243,33 @@ for f in `ls jorek[0-9]*.h5`; do
   ./jorek2_powers < ./inputfile
 done
 ```
-For a detailed understanding of the output of these diagnostics, you will need to look in detail at the source code itself and/or ask. 
+要详细理解这些诊断工具的输出，需要仔细查看源码本身，和／或直接询问。
 
 # jorek2_target2vtk
 
 <img align="right" src="assets/introduction_to_jorek_diagnostics/Target-example.png" alt="Target example" width="400">
 
-Allows to write out the target heat fluxes to the divertor targets as a VTK file for plotting. Compile: 
+可将偏滤器靶板上的靶板热流写出为 VTK 文件以便绘图。编译：
 
 ```
 make -j 8 jorek2_target2vtk
 ```
 
-Run: 
+运行：
 
 ```
 cp jorekXXXXX.h5 jorek_restart.h5
 jorek2_target2vtk < inputfile
 ```
 
-Now you can plot the `jorek_tmp.vtk` file. 
+现在可以绘制 `jorek_tmp.vtk` 文件。
 
-# jorek2_postproc 
+# jorek2_postproc {#jorek2_postproc}
+该工具旨在用简单脚本以多种方式分析仿真，也可以交互使用。把自己的新诊断集成进来相对容易。
 
-This tool is meant to allow for analyzing simulations in various ways with simple scripts. It can also be used interactively. Integrating new own diagnostics is comparably easy. 
+## 第一个交互示例
 
-## First interactive example
-
-Let's start with an example of interactive usage. After you call `./jorek2_postproc` (don't pipe in the namelist input file), you get a simple prompt where you can type your commands. The basic usage is also printed for you: 
+先从交互使用的例子开始。调用 `./jorek2_postproc`（不要把 namelist 输入文件用管道送入）后，会出现一个简单提示符，可在其中输入命令。基本用法也会一并打印：
 
 ```
  =========================================================================
@@ -312,7 +305,7 @@ Let's start with an example of interactive usage. After you call `./jorek2_postp
 
 <img align="right" src="assets/introduction_to_jorek_diagnostics/postproc-point-example.png" alt="Postproc point example" width="400">
 
-As a very simple example, you can type to write out the evolution of the temperature at the center over time: 
+作为一个非常简单的例子，可以如下输入，写出中心点温度随时间的演化：
 
 ```
 namelist intear
@@ -322,23 +315,23 @@ for step 0 to 999 do
 done
 ```
 
-To check what “expressions” are available, simply type in `expressions`. 
+要查看有哪些“表达式”可用，直接输入 `expressions`。
 
-`jorek2_postproc` will read in all restart files available in the specified range and evaluate the commands inside the loop for each of them. It is possible to have many different evaluations in the same loop of course.
+`jorek2_postproc` 会读入指定范围内所有可用的重启文件，并对每个文件执行循环中的命令。当然，同一个循环里可以包含多种不同的计算。
 
-The result is written out to `postproc/exprs_at_R9.6000_Z-0.700_p0.000_s00000..00999.dat`, which can easily be plotted with gnuplot or other tools. 
+结果写入 `postproc/exprs_at_R9.6000_Z-0.700_p0.000_s00000..00999.dat`，可以方便地用 gnuplot 或其他工具绘制。
 
-## Running with a script
+## 用脚本运行
 
-If you put the same commands from above into a text file, e.g., `postproc_script`, you can easily re-run your analysis when the simulation has continued further, or apply the same analysis to a different case: 
+若把上面同样的命令写入文本文件（例如 `postproc_script`），就能在仿真继续推进后方便地重跑分析，或把同样的分析应用到另一个算例：
 
 ```
 ./jorek2_postproc < ./postproc_script
 ```
 
-## A few examples for analysis you can do 
+## 若干分析示例
 
-#### Averaged profiles
+#### 平均剖面
 
 ```
  =========================================================================
@@ -359,9 +352,9 @@ If you put the same commands from above into a text file, e.g., `postproc_script
  =========================================================================
 ```
 
-This provides profiles only up to $`Ψ_N=1`$. 
+这只给出 $`Ψ_N=1`$ 以内的剖面。
 
-#### Basic properties of the plasma state
+#### 等离子体状态的基本性质
 
 ```
  =========================================================================
@@ -379,7 +372,7 @@ This provides profiles only up to $`Ψ_N=1`$.
  =========================================================================
 ```
 
-#### Average energy spectrum during a specified time window
+#### 指定时间窗内的平均能谱
 
 ```
  =========================================================================
@@ -397,7 +390,7 @@ This provides profiles only up to $`Ψ_N=1`$.
  =========================================================================
 ```
 
-#### Flux surfaces (Psi contours)
+#### 磁面（Psi 等值线）
 
 <img align="right" src="assets/introduction_to_jorek_diagnostics/fluxsurfaces-example.png" alt="Flux surfaces example" width="200">
 
@@ -419,7 +412,7 @@ This provides profiles only up to $`Ψ_N=1`$.
  ===========================================================
 ```
 
-#### Various integral quantities like particle content, current, etc.
+#### 粒子数、电流等各种积分量
 
 <img align="right" src="assets/introduction_to_jorek_diagnostics/int2d-example.png" alt="Integral example" width="400">
 
@@ -438,7 +431,7 @@ This provides profiles only up to $`Ψ_N=1`$.
  =========================================================================
 ```
 
-#### Integral along a line in a poloidal plane (e.g. line integrated density)
+#### 极向平面内沿一条线的积分（例如线积分密度）
 
 ```
  =========================================================================
@@ -459,7 +452,7 @@ This provides profiles only up to $`Ψ_N=1`$.
  =========================================================================
 ```
 
-#### Profiles across the midplane
+#### 中平面上的剖面
 
 <img align="right" src="assets/introduction_to_jorek_diagnostics/midplane-example.png" alt="Midplane example" width="300">
 
@@ -483,7 +476,7 @@ This provides profiles only up to $`Ψ_N=1`$.
  =========================================================================
 ```
 
-#### Values at a given point
+#### 给定点处的值
 
 ```
  =========================================================================
@@ -502,7 +495,7 @@ This provides profiles only up to $`Ψ_N=1`$.
  =========================================================================
 ```
 
-#### Profiles along a straight line
+#### 沿直线的剖面
 
 ```
  =========================================================================
@@ -523,7 +516,7 @@ This provides profiles only up to $`Ψ_N=1`$.
  =========================================================================
 ```
 
-#### Quantities in a rectangular area in HDF5 format (often requested by experimentalists)
+#### HDF5 格式的矩形区域物理量（实验人员经常需要）
 
 ```
  =========================================================================
@@ -542,7 +535,7 @@ This provides profiles only up to $`Ψ_N=1`$.
  =========================================================================
 ```
 
-#### q-profile during the simulation
+#### 仿真过程中的 q 剖面
 
 ```
  =========================================================================
@@ -550,7 +543,7 @@ This provides profiles only up to $`Ψ_N=1`$.
  =========================================================================
 ```
 
-#### Separatrix location
+#### 分界面位置
 
 <img align="right" src="assets/introduction_to_jorek_diagnostics/separatrix-example.png" alt="Separatrix example" width="300">
 
@@ -571,9 +564,9 @@ This provides profiles only up to $`Ψ_N=1`$.
  =========================================================================
 ```
 
-(In the plot on the right, the separatrix and the fluxsurfaces are plotted at the same time) 
+(右图中，分界面与磁面同时绘出) 
 
-#### Profiles at given R,Z versus phi
+#### 给定 R,Z 处剖面随 phi 的变化
 
 ```
  =========================================================================
@@ -594,9 +587,8 @@ This provides profiles only up to $`Ψ_N=1`$.
  =========================================================================
 ```
 
-## Expressions available
-
-One of the main advantages here is, that **a lot of different “expressions”** are ready for you to use already, not only the JOREK variables. The following expressions are available for analysis at present. It is pretty easy to add new ones yourself in `diagnostics/new_diag/mod_expression.f90` (see also further below). **The command `si-units` allows to switch to denormalized units.** You can list the available expressions by simply typing `expressions` in `jorek2_postproc` interactively. 
+## 可用的表达式 {#expressions-available}
+这里的一个主要优势是：**大量不同的“表达式”**已经可以直接使用，而且不只是 JOREK 变量。目前可用于分析的表达式如下。在 `diagnostics/new_diag/mod_expression.f90` 中自行添加新表达式相当容易（另见下文）。**命令 `si-units` 可切换到去归一化单位。** 在 `jorek2_postproc` 交互模式下直接输入 `expressions` 即可列出可用表达式。
 
 ```
  List of Diagnostic Expressions:
@@ -655,20 +647,19 @@ One of the main advantages here is, that **a lot of different “expressions”*
  --------------------------------------------------------------------------------
 ```
 
-## new_diag
-
+## new_diag {#new_diag}
 <img align="right" src="assets/introduction_to_jorek_diagnostics/new-diag-example.png" alt="New diag example" width="200">
 
-This is a framework you can use to build quite a few diagnostics yourself. It is also used for a lot of the `jorek2_postproc` features in the background. The implementation is in `diagnostics/new_diag/` and split into a few different modules:
+这是一个可用于自行构建不少诊断工具的框架。它在后台也支撑着 `jorek2_postproc` 的许多功能。实现位于 `diagnostics/new_diag/`，分为几个模块：
 
-- `mod_new_diag`: Main module you need to include to access the functionality of this framework.
-- `mod_expressions`: Provides a lot of expressions you can easily evaluate as described above for `jorek2_postproc`
-- `mod_position`: Data structure for selecting pol/tor positions to evaluate expressions at.
-- `mod_straight_field_line`: Used for reconstructing straight field line coordinates (see `jorek2_four` below).
-- `mod_four_filter`: Allows to select specific Fourier modes of evaluated expressions.
-- `mod_diag_output`: Write out the data in various ways.
+- `mod_new_diag`：要使用该框架功能必须包含的主模块。
+- `mod_expressions`：提供大量表达式，可如上文所述在 `jorek2_postproc` 中方便地求值
+- `mod_position`：用于选择求值表达式的极向／环向位置的数据结构。
+- `mod_straight_field_line`：用于重建直磁力线坐标（见下文 `jorek2_four`）。
+- `mod_four_filter`：可选择所求值表达式的特定 Fourier 模。
+- `mod_diag_output`：以多种方式写出数据。
 
-You can try out the functionality by editing `diagnostics/new_diag_demo.f90` and compiling with `make -j 8 new_diag_demo`. An example of what you can put there: 
+可以通过编辑 `diagnostics/new_diag_demo.f90` 并用 `make -j 8 new_diag_demo` 编译来试用这些功能。可写入的内容示例如下：
 
 ```
 [...]
@@ -712,7 +703,7 @@ You can try out the functionality by editing `diagnostics/new_diag_demo.f90` and
 
 <img align="right" src="assets/introduction_to_jorek_diagnostics/jorek2-four-example.png" alt="jorek2_four example" width="300">
 
-Compile via `make -j 8 jorek2_four`. Then create a file in the run folder called `four_params.nml`: 
+用 `make -j 8 jorek2_four` 编译。然后在算例目录中创建名为 `four_params.nml` 的文件：
 
 ```
 &four_params
@@ -725,13 +716,12 @@ nTht = 120
 /
 ```
 
-`jorek2_four` performs the 2D Fourier analysis in magnetic coordinates (straight field line coordinates; Pest coordinates). 
+`jorek2_four` 在磁坐标（直磁力线坐标；Pest 坐标）下进行二维 Fourier 分析。
 
 <img src="assets/introduction_to_jorek_diagnostics/straight-field-line-example.png" alt="Straight field line example" width="300">
 
-# Beyond
-
-A lot more diagnostics exist, for example: 
+# 延伸 {#beyond}
+还有更多诊断工具，例如：
 
 ```
 jorek2_connection2
@@ -745,4 +735,4 @@ jorek_to_helena
 ...
 ```
 
-Some of them in active use, some may need repair before they become useful again. In case you need to look at a particular aspect of a simulation, it's always a good idea to quickly ask whether a solution for your problem already exists. If not, it would be great if you implement your diagnostics in a way that makes it useful for the whole community. Feel free to ask for advice regarding the best way to do that (new program, integrated with `jorek2_postproc` etc). 
+其中一些正在使用，另一些可能需要修复后才能重新派上用场。若你需要考察仿真的某个特定方面，最好先问一下是否已有现成方案。如果没有，很希望你能以实现得对整个社区都有用的方式加入自己的诊断工具。关于最佳做法（新程序、集成到 `jorek2_postproc` 等）可以随时咨询。

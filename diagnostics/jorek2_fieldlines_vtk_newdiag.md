@@ -5,25 +5,18 @@ render_with_liquid: false
 parent: "General"
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
-
-原文页面：[Jorek2_fieldlines_vtk_newdiag](https://iterorganization.github.io/JOREK/diagnostics/jorek2_fieldlines_vtk_newdiag.html)　·　源文件：`diagnostics/jorek2_fieldlines_vtk_newdiag.md`
-</div>
-
 ## Jorek2_fieldlines_vtk_newdiag
 
-This diagnostics evaluates arbitrary physical expressions (using the new_diag framework) along field lines and writes this information to both vtk and txt files. Run it as
+该诊断沿磁力线计算任意物理表达式（使用 new_diag 框架），并将这些信息同时写入 vtk 与 txt 文件。运行方式为
    jorek2_fieldlines_vtk_newdiag < jorek.in
 
-It uses the file jorek_restart.h5 to load the simulation state, and a text file called stpts containing required information about the field lines along which physical expressions are to be to evaluated, and the physical expressions to be evaluated (see below). 
-Output is generated in the files 
-- field_lines.vtk is a binary file containing the expressions along field lines (using a coordinate system consistent with jorek2vtk) and can be read with visualization tools such as Paraview
-- field_lines.txt is an ASCII file containing the same data (using the coordinate system in https://www.jorek.eu/wiki/doku.php?id=coordinates)
+它使用文件 jorek_restart.h5 载入模拟状态，并使用名为 stpts 的文本文件，其中包含待求值物理表达式所在磁力线的必要信息，以及待求值的物理表达式（见下文）。 
+输出生成于以下文件 
+- field_lines.vtk 是二进制文件，包含沿磁力线的表达式值（使用与 jorek2vtk 一致的坐标系），可用 Paraview 等可视化工具读取
+- field_lines.txt 是 ASCII 文件，包含相同的数据（使用 https://www.jorek.eu/wiki/doku.php?id=coordinates 中的坐标系）
 
-### Program settings
-If a file stpts exists, it is read in to set the required parameters. The stpts file must have this format:
+### 程序设置
+若存在文件 stpts，则读入该文件以设定所需参数。stpts 文件必须采用以下格式：
   # n_scalars
   3
   # expr  name
@@ -40,11 +33,11 @@ If a file stpts exists, it is read in to set the required parameters. The stpts 
   5    2.989     1.571     6.0900      1
   ...
   100  2.997     1.620     6.0900      1
-Here, n_scalars is the number of scalar expressions to be evaluated, expr and name are the expressions (as defined in the new_diag framework) and its name, n_lines are the number of field lines to be evaluated (in both backward and forward direction so the final number of computed field lines will be twice this number). Moreover, nr is the field line number, R_start, Z_start and phi_start its initial coordinate, and n_turns the number of toroidal turns along which the field line should be followed. As in the jorek2_poincare diagnostics, the user can either provide the initial coordinates of all the field lines, or specify groups of field lines where only the first and last lines are explicitly given, and their initial coordinates are assumed to be uniformily distributed between the first and the last.
+此处，n_scalars 为待求值的标量表达式个数，expr 与 name 分别为表达式（按 new_diag 框架中的定义）及其名称，n_lines 为待求值的磁力线条数（沿正向与反向两个方向追踪，因此最终计算的磁力线数目为该值的两倍）。此外，nr 为磁力线编号，R_start、Z_start 与 phi_start 为其起始坐标，n_turns 为追踪该磁力线所沿的环向圈数。与 jorek2_poincare 诊断相同，用户可以给出全部磁力线的起始坐标，也可以指定若干组磁力线、只显式给出每组的第一条与最后一条，其起始坐标假定在首条与末条之间均匀分布。
 
-### Output files
-field_lines.txt contains the evaluated expressions along field lines using the coordinate system as in https://www.jorek.eu/wiki/doku.php?id=coordinates
-The format of this file is like this:
+### 输出文件
+field_lines.txt 包含沿磁力线求值的表达式结果，使用的坐标系见 https://www.jorek.eu/wiki/doku.php?id=coordinates
+该文件的格式如下：
             line               x               y               z             Phi    Te_eV           ne_m-3          nimp_m-3
                1  0.29471371E+01  0.57653373E+00  0.16059999E+01  0.60900002E+01  0.32168159E+01  0.25254070E+21  0.11506390E+21
                1  0.29454236E+01  0.59543729E+00  0.16052808E+01  0.60837169E+01  0.32214899E+01  0.25050444E+21  0.11412951E+21
@@ -52,5 +45,5 @@ The format of this file is like this:
                1  0.29416425E+01  0.63324934E+00  0.16038219E+01  0.60711503E+01  0.32482059E+01  0.24628058E+21  0.11214984E+21
                1  0.29395747E+01  0.65215647E+00  0.16030822E+01  0.60648675E+01  0.32712436E+01  0.24410277E+21  0.11110648E+21
 
-field_lines.vtk is a binary file that can be read within Paraview. It contains the same data as field_line.txt, but the coordinate system is consistent with jorek2vtk. As example of the kind of plot that can be produced with this diagnostics is shown here.
+field_lines.vtk 是二进制文件，可在 Paraview 中读取。它包含与 field_line.txt 相同的数据，但坐标系与 jorek2vtk 一致。此处展示了一个可用该诊断绘制的图形示例。
 ![](jorek2_fieldlines_vtk.png)

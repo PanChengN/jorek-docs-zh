@@ -7,113 +7,105 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+## 简要概述
 
-原文页面：[ADAS Atomic Data](https://iterorganization.github.io/JOREK/physics/model_extensions/adas.html)　·　源文件：`physics/model_extensions/adas.md`
-</div>
+在涉及电离、复合、线辐射、轫致辐射、复合辐射等过程的 JOREK 模型（如 500、501、502、565、600 等）中，相应的速率系数常取自原子数据与分析结构（Atomic Data and Analysis Structure，ADAS）数据库。这些系数按元素以 ASCII 文本文件给出，原则上可从 OPEN-ADAS 网页 [https://open.adas.ac.uk/](https://open.adas.ac.uk/) 下载。
+为方便起见，氢、氖、氩等常用元素对应的文件已预先下载，可在[此处](https://www.jorek.eu/wiki/lib/exe/fetch.php?media=adas_data.tar.gz)获取。运行 JOREK 时，若要使用 ADAS 系数，须在输入／namelist 文件中通过输入参数 `adas_dir` 提供存放这些文件的文件夹路径。
 
-## Brief overview
+## 命名约定
 
-In JOREK models (like 500, 501, 502, 565, 600 etc) that involve processes such as ionization, recombination, line-radiation, Bremsstrahlung, recombination radiation, the corresponding rate-coefficients are often taken from Atomic Data and Analysis Structure (ADAS) database. The coefficients are given in ASCII text files for different elements, which one can in principle download from the OPEN-ADAS webpage [https://open.adas.ac.uk/](https://open.adas.ac.uk/).
-For convenience, the files corresponding to commonly used elements like Hydrogen, Neon, Argon etc are pre-downloaded and can be found [here](https://www.jorek.eu/wiki/lib/exe/fetch.php?media=adas_data.tar.gz). While running JOREK, if you want to use ADAS coefficients, then the path to the folder containing these files must be provided in the input/namelist file, using the input parameter `adas_dir`.
+我们使用 [ADF11 等核主文件](http://open.adas.ac.uk/adf11)。该数据集包含以下系数：（W 不具备的系数以 `()` 标出）
 
-## Naming convention
-
-We use the [ADF11 Iso-nuclear master files](http://open.adas.ac.uk/adf11). This dataset contains the following coefficients: (Coefficients unavailable for W have been marked with `()`)
-
-| Symbol | Ionisation state from electron-ion collisions |
+| 符号 | 电子—离子碰撞的电离态 |
 |--------|-----------------------------------------------|
-| ACD    | Effective recombination coefficients          |
-| SCD    | Effective ionisation coefficients             |
-| (QCD)  | (Cross-coupling coefficients)                 |
-| (XCD)  | (Parent cross-coupling coefficients)          |
+| ACD    | 有效复合系数          |
+| SCD    | 有效电离系数             |
+| (QCD)  | (交叉耦合系数)                 |
+| (XCD)  | (母体交叉耦合系数)                  |
 
-| Symbol | ionisation state from hydrogen-ion collisions    |
+| 符号 | 氢离子碰撞的电离态    |
 |--------|---------------------------------------------------|
-| (CCD)  | (Charge exchange effective recombination coefficients) |
+| (CCD)  | (电荷交换有效复合系数) |
 
-| Symbol | Radiation emission from electron-ion collisions |
+| 符号 | 电子—离子碰撞的辐射发射 |
 |--------|-------------------------------------------------|
-| PLT    | Line power driven by excitation of ions         |
-| PRB    | Continuum and line power driven by recombination and Bremsstrahlung of dominant ions |
-| (PLS)  | (Line power from selected transitions of dominant ions) |
+| PLT    | 由离子激发驱动的线功率         |
+| PRB    | 由主离子的复合与轫致辐射驱动的连续谱与线功率 |
+| (PLS)  | (主离子选定跃迁的线功率) |
 
-| Symbol | Radiation emission from hydrogen-ion collisions |
+| 符号 | 氢离子碰撞的辐射发射 |
 |--------|-------------------------------------------------|
-| (PRC)  | (Line power due to charge transfer from thermal neutral hydrogen to dominant ions) |
+| (PRC)  | (由热中性氢向主离子的电荷转移引起的线功率) |
 
-For simulating W impurities in fusion plasmas we would need ACD, SCD, CCD. To estimate the radiation losses, we would also need PLT, PRB.
+在聚变等离子体中模拟 W 杂质需要 ACD、SCD、CCD。为估计辐射损失，还需要 PLT、PRB。
 
-CCD is not in the dataset for W, so we will do without for now.
+W 的数据集中没有 CCD，因此目前暂不使用。
 
-The filenames follow a simple format:
+文件名遵循简单的格式：
 
-| type | filename       | units  |
+| 类型 | 文件名       | 单位  |
 |------|----------------|--------|
 | ACD  | acd50_w.dat    | cm3s-1 |
 | SCD  | scd50_w.dat    | cm3s-1 |
 | PLT  | plt50_w.dat    | Wcm3   |
 | PRB  | prb50_w.dat    | Wcm3   |
 
-all metastable unresolved.
+全部亚稳态未分辨。
 
-## Parametrization using the coefficients
+## 用系数进行参数化
 
-All the coefficients are pure functions of free-electron density and electron temperature. At the moment the coefficients are valid for electron densities up to
-  * $2\times 10^{21} m^{-3}$ for Hydrogen
-  * $3\times 10^{21} m^{-3}$ for Neon, Argon ?
-Data is available for extended density range (upto 1e24 m^-3 for Deuterium) but these are not yet used in JOREK.
+所有系数都只是自由电子密度与电子温度的函数。目前这些系数的适用电子密度上限为
+  * 氢：$2\times 10^{21} m^{-3}$
+  * 氖、氩：$3\times 10^{21} m^{-3}$？
+数据在扩展密度范围内也可获得（对氘可达 1e24 m^-3），但这些数据尚未在 JOREK 中使用。
 
-The parametrization (functional dependence) of rates on the coefficients are as follow,
+速率对系数的参数化（函数依赖关系）如下，
 
----To be filled---
+---待补充---
 
-## Data format in the ADAS files
+## ADAS 文件的数据格式
 
-Note that the raw ADAS data is structured that all recombining data (ACD & PRB) are recombining FROM Z = 1 to N, while all ionizing data (SCD & PLT) are ionizing TO Z = 1 to N. To avoid an off-by-one error, we shifted the raw data by one index in mod_openadas.f90 when reading the raw ADAS data.
+注意原始 ADAS 数据的组织方式是：所有复合数据（ACD 与 PRB）表示从 Z = 1 到 N 的复合，而所有电离数据（SCD 与 PLT）表示电离到 Z = 1 到 N。为避免差一错误，我们在读取原始 ADAS 数据时于 mod_openadas.f90 中将原始数据平移了一个索引。
 
-The file format can also be seen in more detail on the [Open-ADAS site](http://open.adas.ac.uk/man/appxa-11.pdf).
+文件格式的更多细节也可参见 [Open-ADAS 站点](http://open.adas.ac.uk/man/appxa-11.pdf)。
 
-  * per ionisation level
-    * per temperature (in log10, eV)
-      * per density (in log10, cm^-3)
-        * log10 of Generalized collisional radiative coefficient (ACD, SCD, PLT, PRB)
+  * 按电离能级
+    * 按温度（log10，eV）
+      * 按密度（log10，cm^-3）
+        * 广义碰撞辐射系数（ACD、SCD、PLT、PRB）的 log10
 
-## Getting ionization rates from the above data
+## 从上述数据获取电离率
 
-  * The ionization coefficients are given for z = 1..n_Z as ionizing to the level z.
-  * The recombination coefficients are given for z = 1..n_Z as recombining from the level z
+  * 电离系数按电离到能级 z 给出，取 z = 1..n_Z。
+  * 复合系数按从能级 z 复合给出，取 z = 1..n_Z
 
-  * ionization rate to z in a volume = SCD(z, Te) * n_e * n_z
-  * ionization rate to z for an atom (1/s) = SCD(z, Te) * n_e
-  * probability of an atom ionizing in a specific time = SCD(z, Te) * n_e * dt which is only valid for small probabilities
+  * 体积内电离到 z 的速率 = SCD(z, Te) * n_e * n_z
+  * 单个原子电离到 z 的速率（1/s）= SCD(z, Te) * n_e
+  * 原子在给定时间内发生电离的概率 = SCD(z, Te) * n_e * dt，该式仅在小概率时有效
 
-The same calculation as above holds for the recombination rate, and the LT/RB power per atom
+复合率以及每个原子的 LT/RB 功率可作与上述相同的计算
 
-## Interpolation in coefficients
+## 系数的插值
 
-The coefficients are interpolated linearly in log10 of Te and ne. This could be replaced with higher-order splines for instance.
+系数在 Te 与 ne 的 log10 上作线性插值。例如可以改用高阶样条。
 
-## Checking the radiation power function and its components
+## 检查辐射功率函数及其各分量 {#checking-the-radiation-power-function-and-its-components}
+检查辐射功率函数及其各分量的快捷方式是使用 radiation_function_diagno 程序，它针对一组硬编码参数与杂质种类输出上述数据。 
 
-A quick way to check the radiation power function and its components is to use the radiation_function_diagno program, which output the aforementioned data for a set of hard-coded parameters and impurity species. 
+另一种方式是检查自动生成的 charge_distribution.dat 文件，其中包含一系列电子温度下的日冕平衡电荷态分布，以及总辐射功率函数。
 
-Another way is to check the automatically generated charge_distribution.dat file, which contains the Coronal Equilibrium charge state distribution for a range of electron temperatures, as well as the total radiation power function.
+## 数据
 
-## Data
+也可以从下面下载数据
+  * **[JOREK 当前使用的数据](https://www.jorek.eu/wiki/lib/exe/fetch.php?media=adas_data.tar.gz)**
+  * **[扩展密度的数据（仅氢可用）](https://www.jorek.eu/wiki/lib/exe/fetch.php?media=files.tar.gz)**
 
-You can also download the data from below
-  * **[Data currently used in JOREK](https://www.jorek.eu/wiki/lib/exe/fetch.php?media=adas_data.tar.gz)**
-  * **[Data with extended density (available only for Hydrogen)](https://www.jorek.eu/wiki/lib/exe/fetch.php?media=files.tar.gz)**
+## 联系人
 
-## Contact persons
-
-In case of questions, you might try contacting someone from the below list. Each of them has different levels of exposure to ADAS/JOREK, so not everyone might be able to answer every question that you have.
-  * Martin O'Mullane (one of the main developers of ADAS, not a JOREK user), email: martin.omullane@strath.ac.uk
-  * Di Hu, email: hudi2@buaa.edu.cn
-  * Sven Korving, email: Sven.Korving@iter.org
-  * Fabian Wieschollek, email: fawie@ipp.mpg.de
-  * Vinodh Bandaru, email: vkb@ipp.mpg.de
-  * Máté Szűcs, email: mate.szuecs@ipp.mpg.de
+如有问题，可尝试联系下列人员之一。他们各自接触 ADAS/JOREK 的程度不同，因此并非每个人都能回答你的所有问题。
+  * Martin O'Mullane（ADAS 主要开发者之一，非 JOREK 用户），邮箱：martin.omullane@strath.ac.uk
+  * Di Hu，邮箱：hudi2@buaa.edu.cn
+  * Sven Korving，邮箱：Sven.Korving@iter.org
+  * Fabian Wieschollek，邮箱：fawie@ipp.mpg.de
+  * Vinodh Bandaru，邮箱：vkb@ipp.mpg.de
+  * Máté Szűcs，邮箱：mate.szuecs@ipp.mpg.de

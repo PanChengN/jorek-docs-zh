@@ -7,20 +7,13 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 变分多尺度（VMS）稳定化
 
-原文页面：[Variable MultiScale (VMS) Stabilization](https://iterorganization.github.io/JOREK/howto/vms.html)　·　源文件：`howto/vms.md`
-</div>
+VMS 稳定化目前已在 full MHD 模型 750 中实现。
 
-# Variable MultiScale (VMS) Stabilization
+## 用法
 
-VMS stabilization is currently implemented for full MHD model 750.
-
-## Usage
-
-Set `use_vms = .true.` in the JOREK input file and assign suitable values to the coefficients for the evolved variables:
+在 JOREK 输入文件中设置 `use_vms = .true.`，并为各演化变量的系数赋予合适的值：
 
 ```fortran
 use_vms = .true.
@@ -39,11 +32,11 @@ vms_coeff_rhon   = 1.d-3
 vms_coeff_rhoimp = 1.d-3
 ```
 
-The preset value is `use_vms = .false.`, so VMS stabilization is disabled by default. For `n_order = 3`, the recommended starting value is `0.001` for each active variable.
+预设值为 `use_vms = .false.`，因此 VMS 稳定化默认关闭。对 `n_order = 3`，建议每个生效变量的起始取值为 `0.001`。
 
-## Derivation and Implementation
+## 推导与实现
 
-Let $\mathcal{R}(\boldsymbol{w})$ be the residual
+设 $\mathcal{R}(\boldsymbol{w})$ 为残差
 
 $$
 \begin{aligned}
@@ -58,7 +51,7 @@ $$
 \end{aligned}
 $$
 
-Here, $\boldsymbol{w}\subset\boldsymbol{W}$ forms a well-defined system of MHD equations, with
+此处 $\boldsymbol{w}\subset\boldsymbol{W}$ 构成一个定义良好的 MHD 方程组，且
 
 $$
 \boldsymbol{W}
@@ -68,13 +61,13 @@ A_R,\,A_Z,\,\psi,\,u_R,\,u_Z,\,u_\phi,\,
 \right)^\mathrm{T}.
 $$
 
-The Galerkin finite-element method (FEM) for this system of partial differential equations is
+该偏微分方程组的 Galerkin 有限元方法（FEM）为
 
 $$
 \int \boldsymbol{w}^*\cdot\mathcal{R}(\boldsymbol{w})\,d\Omega=0.
 $$
 
-The VMS-stabilized FEM formulation is
+VMS 稳定化的有限元表述为
 
 $$
 \int \boldsymbol{w}^*\cdot\mathcal{R}(\boldsymbol{w})\,d\Omega
@@ -84,13 +77,13 @@ $$
 =0.
 $$
 
-The first term is the finite-element weak form and the second is the VMS stabilization.
+第一项为有限元弱形式，第二项为 VMS 稳定化。
 
-> **Implementation remark:** In the implicit method, $\mathcal{L}^\mathrm{T}\boldsymbol{w}^*$ is assumed to be evaluated at the previous time step. Its Jacobian is therefore not taken into account.
+> **实现说明：** 在隐式方法中，假定 $\mathcal{L}^\mathrm{T}\boldsymbol{w}^*$ 取上一时间步的值，因此不计入其雅可比矩阵。
 
-## Residual and Practical Difficulties
+## 残差与实际困难
 
-The residual appearing in the VMS stabilization terms is approximated as
+VMS 稳定化项中出现的残差近似为
 
 $$
 \mathcal{R}
@@ -100,15 +93,15 @@ $$
 -\mathbb{S}(\boldsymbol{w}).
 $$
 
-The following simplifications are made:
+作了如下简化：
 
-- Transient (time-derivative) terms are ignored.
-- The $\boldsymbol{J}\times\boldsymbol{B}$ term is ignored for simplicity. Including it would require extending the Fourier method.
-- Diffusivities parallel to the magnetic field are ignored for simplicity.
+- 忽略瞬态（时间导数）项。
+- 为简化起见，忽略 $\boldsymbol{J}\times\boldsymbol{B}$ 项。若要包含该项，需要扩展 Fourier 方法。
+- 为简化起见，忽略平行于磁场的扩散系数。
 
-## Stabilization Operator
+## 稳定化算子
 
-Consider the two-temperature full MHD model with impurities. Its partial differential-equation operator is
+考虑含杂质的双温度 full MHD 模型，其偏微分方程算子为
 
 $$
 \mathcal{L}=
@@ -142,9 +135,9 @@ $$
 \end{bmatrix}.
 $$
 
-## Stabilization Matrix
+## 稳定化矩阵
 
-The simplest choice is a diagonal stabilization matrix:
+最简单的选择是对角稳定化矩阵：
 
 $$
 \mathbb{T}
@@ -163,9 +156,9 @@ C_{A_R} & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
 \end{bmatrix}.
 $$
 
-Here, $h_e$ is the characteristic element size and $\lambda_e$ is the Alfvén-wave speed evaluated element-wise. The real parameters $C_{A_R}$ and so on correspond to input parameters such as `vms_coeff_AR`.
+其中 $h_e$ 为单元特征尺寸，$\lambda_e$ 为逐单元计算的 Alfvén 波速。实数参数 $C_{A_R}$ 等对应 `vms_coeff_AR` 之类的输入参数。
 
-In principle, the stabilization matrix should be
+原则上，稳定化矩阵应为
 
 $$
 \mathbb{T}
@@ -177,10 +170,10 @@ $$
 \right)^{-1}.
 $$
 
-However, evaluating this expression is harder than solving the original problem.
+然而，计算该表达式比求解原问题更困难。
 
-## Additional Remarks
+## 补充说明
 
-- Different formulations and approximations of the residual produce a hierarchy of VMS stabilization methods.
-- Different choices of stabilization operator also produce a hierarchy of methods. The simplest choice, for example, is to use the diagonal part of $\mathcal{L}$ without diffusive terms.
-- For details and demonstrations, see [Computers & Mathematics with Applications (2023)](https://doi.org/10.1016/j.camwa.2023.04.034).
+- 残差的不同表述与近似会产生一个 VMS 稳定化方法系列。
+- 稳定化算子的不同选择同样会产生一个方法系列。例如，最简单的选择是只取 $\mathcal{L}$ 的对角部分而不含扩散项。
+- 细节与演示见 [Computers & Mathematics with Applications (2023)](https://doi.org/10.1016/j.camwa.2023.04.034)。

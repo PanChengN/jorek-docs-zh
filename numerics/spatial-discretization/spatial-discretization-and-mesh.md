@@ -6,26 +6,19 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
-
-原文页面：[Spatial discretization and mesh](https://iterorganization.github.io/JOREK/numerics/spatial-discretization/spatial-discretization-and-mesh.html)　·　源文件：`numerics/spatial-discretization/spatial-discretization-and-mesh.md`
-</div>
-
-# How does the poloidal mesh uses Bezier finite elements
-When building the mesh, formulation $(2)$ in [Introduction to spatial Discretization in JOREK](introduction.md) is used.  
-Each element is required to have a certain shape. For example:
+# 极向网格如何使用贝塞尔有限元
+构造网格时使用 [JOREK 中的空间离散引言](introduction.md) 中的表述 $(2)$。  
+每个单元须具有特定形状，例如：
 
 <img src="../assets/grids/grid_polar.png">
 
-This means that $\vec{v}^{ivl}$ and $h^{ij}$ must be imposed accordingly such that formulation $(2)$ in [Introduction to spatial Discretization in JOREK](introduction.md) expresses the desired shape. 
+这意味着必须相应地设定 $\vec{v}^{ivl}$ 与 $h^{ij}$，使 [JOREK 中的空间离散引言](introduction.md) 中的表述 $(2)$ 给出所期望的形状。 
 
-How $\vec{v}^{ivl}$ and $h^{ij}$ are set depends from the type of mesh. 
+$\vec{v}^{ivl}$ 与 $h^{ij}$ 的设定方式取决于网格类型。 
 
-## Poloidal mesh in tokamaks
-Being axisymmetric, tokamaks have the same poloidal mesh for each $\phi_p$ ($p=1\dots \texttt{n_planes}$).
-This means that `n_coord_tor=1`. 
+## 托卡马克中的极向网格
+托卡马克是轴对称的，因此对每个 $\phi_p$（$p=1\dots \texttt{n_planes}$）的极向网格相同。
+这意味着 `n_coord_tor=1`。 
 
-## Mesh in stellarators
-In stellarators it might be desired to set `n_coord_tor>1` to use Fourier harmonics to model the non axisimmetry of the grid.
+## 仿星器中的网格
+在仿星器中，可能希望设 `n_coord_tor>1`，用傅里叶谐波来刻画网格的非轴对称性。

@@ -6,19 +6,12 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 测试用简化平衡
 
-原文页面：[Simplified Equilibria for Tests](https://iterorganization.github.io/JOREK/machines/asdex_upgrade_simplified-equilibria-for-tests.html)　·　源文件：`machines/asdex_upgrade_simplified-equilibria-for-tests.md`
-</div>
+## 大长径比撕裂模测试算例（"intear"）
 
-# Simplified Equilibria for Tests
-
-## Tearing mode test case in large aspect ratio ("intear")
-
-- R0=10m, a=1m (circular cross-section)
-- This should be sufficient to specify the test case:
+- R0=10m，a=1m（圆形截面）
+- 以下信息应足以确定该测试算例：
 
 ```text
 rho  = const = 1
@@ -32,11 +25,11 @@ n0   = 6*10^19 m^-3
 rho0 = 2*10^-7 kg/m^3 -> sqrt(mu0 rho0)=5e-7 is the JOREK time normalization
 ```
 
-- In cylinder approximation use: `Btor = 1` and `R = 10`
-- For the normalization of rho and T see [here](../physics/normalization)
-- Details we need to agree about when comparing in detail: eta, visco, ZK_par, ZK_perp, D_perp, ...
+- 柱近似下取：`Btor = 1` 与 `R = 10`
+- rho 与 T 的归一化见[此处](../physics/normalization)
+- 详细比较时需要约定的细节：eta、visco、ZK_par、ZK_perp、D_perp 等
 
-<!-- ## Internal Kink equilibrium for Isabel
+<!-- ## 为 Isabel 准备的内扭曲模平衡
 
 - [jorek-input-aug-like-fixed-boundary-equilibrium-for-isabel-with-q0-larger-than-1.tar.gz](assets/asdex_upgrade/jorek-input-aug-like-fixed-boundary-equilibrium-for-isabel-with-q0-larger-than-1.tar.gz)
 - [current_profile_for_isabel.dat.tar.gz](assets/asdex_upgrade/current_profile_for_isabel.dat.tar.gz)

@@ -5,21 +5,13 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 垂直稳定的主动控制器模型 {#active-controller-model-for-vertical-stabilization}
+JOREK 中加入了一个 PID 控制器，以便在含 $n=0$ 的自由边界模拟中实现主动稳定。
 
-原文页面：[Active controller model for vertical stabilization](https://iterorganization.github.io/JOREK/machines/active_controller_model_for_vertical_stabilization.html)　·　源文件：`machines/active_controller_model_for_vertical_stabilization.md`
-</div>
-
-# Active controller model for vertical stabilization
-
-A PID controller was added to JOREK to enable active stabilization in free-boundary simulations including $n=0$.
-
-## Fundamentals
+## 基本原理
 
 
-It acts on specific coils based on the vertical axis position and its evolution in the simulation according to:
+它依据垂直轴位置及其在模拟中的演化，作用于特定线圈，规律为：
 
 $$
 \begin{align}
@@ -27,11 +19,11 @@ $$
 \end{align}
 $$
 
-where $e=Z(t)-Z_\text{ref}(t)$ is the deviation from the reference value and $K_\text{P}$, $K_\text{I}$, $K_\text{D}$ are the proportional, integral and derivative gains.
+其中 $e=Z(t)-Z_\text{ref}(t)$ 是对参考值的偏差，$K_\text{P}$、$K_\text{I}$、$K_\text{D}$ 分别为比例、积分和微分增益。
 
-## Implementation in JOREK
+## 在 JOREK 中的实现
 
-The equation above is discretized and built into the `coil_current_source` routine in `vacuum/vacuum_response.dat` after the current profile of the PF coils is interpolated. There, it has the following form:
+上式经离散化后写入 `vacuum/vacuum_response.dat` 中的 `coil_current_source` 例程，位置在 PF 线圈电流剖面插值之后。其形式如下：
 
 $$
 \begin{align}
@@ -43,53 +35,52 @@ I(i) &=  I(i) + \mathrm{vert\_FB\_amp\_ts}(i)\,\Delta I
 \end{align}
 $$
 
-It has the following features with the parameters listed in the table below:
+其功能如下，相关参数列于下表：
 
-- Activate the controller after a certain time `start_VFB_ts`
-- Use a constant reference value or an input profile
-- Specify the tact time, a periodic interval after which the controller acts
-- Set coil current limits for each coil individually
-- Set an amplification factor for each coil individually to distribute the action
+- 在给定时刻之后启用控制器：`start_VFB_ts`
+- 使用恒定参考值或输入剖面
+- 设定节拍时间，即控制器起作用的周期间隔
+- 逐个线圈设定电流上限
+- 逐个线圈设定放大因子，以分配控制作用
 
-The controller is only activated if the amplification factors are specified and if the start time is exceeded.
+只有指定了放大因子且已超过启动时刻，控制器才会启用。
 
-## Parameters
+## 参数
 
-| Parameter | Comment | Typical values |
+| 参数 | 说明 | 典型取值 |
 | --- | --- | --- |
-| `vert_FB_gain(1)` | proportional gain $K_\text{P}$ | `1.e0` (case dependent) |
-| `vert_FB_gain(2)` | derivative gain $K_\text{D}$ | `1.e0` |
-| `vert_FB_gain(3)` | integral gain $K_\text{I}$ | `1.e0` |
-| `start_VFB_ts` [$t_{\text{JOREK}}$] | start time of vertical feedback | `-` |
-| `vert_FB_amp_ts` | gain amplification factor for individual coils | $>0$ for upper, $<0$ for lower coils |
-| `I_coils_max` [A] | maximum allowed current in the PF coil | case specific |
-| `vert_FB_tact` [$t_{\text{JOREK}}$] | apply VFB only periodically | optional |
-| `Z_ref_ts(t)` | time trace of reference axis position | case specific |
-| `vert_pos_file` [$t_{\text{JOREK}}$ \| m] | input file for time dependent axis position | - |
+| `vert_FB_gain(1)` | 比例增益 $K_\text{P}$ | `1.e0`（视算例而定） |
+| `vert_FB_gain(2)` | 微分增益 $K_\text{D}$ | `1.e0` |
+| `vert_FB_gain(3)` | 积分增益 $K_\text{I}$ | `1.e0` |
+| `start_VFB_ts` [$t_{\text{JOREK}}$] | 垂直反馈的启动时刻 | `-` |
+| `vert_FB_amp_ts` | 各线圈的增益放大因子 | 上侧线圈 $>0$，下侧线圈 $<0$ |
+| `I_coils_max` [A] | PF 线圈允许的最大电流 | 视算例而定 |
+| `vert_FB_tact` [$t_{\text{JOREK}}$] | 仅周期性施加 VFB | 可选 |
+| `Z_ref_ts(t)` | 参考轴位置的时间轨迹 | 视算例而定 |
+| `vert_pos_file` [$t_{\text{JOREK}}$ \| m] | 随时间变化的轴位置的输入文件 | - |
 
 
-## How to specify the input profile
+## 如何指定输入剖面
 
-The position can be specified by either:
+位置可由下列任一方式给出：
 
-- an input profile file (`vert_pos_file`)
-  - the time is given in [$t_{\text{JOREK}}$]
-  - the vertical position in [m]
-  - when the simulation is longer than specified by the profile, the last value of the profile is used as the reference.
-- the input parameter `Z_axis_ref` also used for the free boundary equilibrium
-- if none of this is specified, the initial or restart value of the axis is used
+- 输入剖面文件（`vert_pos_file`）
+  - 时间以 [$t_{\text{JOREK}}$] 给出
+  - 垂直位置以 [m] 给出
+  - 当模拟时间长于剖面所覆盖的范围时，取剖面最后一个值作为参考。
+- 输入参数 `Z_axis_ref`，该参数也用于自由边界平衡
+- 若以上都未指定，则采用轴的初始值或重启值
 
-## Tuning
-The optimal gains can vary from case to case, depending on the equilibrium parameters and the use case.
+## 调参
+最优增益因算例而异，取决于平衡参数与使用场景。
 
-Normally, the axis oscillates during the first time steps when the controller is active.
-This oscillation can be used to adjust the gains. Otherwise, a sudden variation in the target value (a step response) can be used to improve the settings. 
+通常，控制器启用后的最初几个时间步内轴会振荡。
+可利用该振荡调整增益。此外，也可用目标值的突变（阶跃响应）来改进参数设置。
 
-The tuning can be performed in three steps:
+调参可分三步进行：
 
-- Increase $K_\text{P}$ with the other gains at 0 until the oscillation amplitude is low and the overshoot is small in the case of a step response. If $K_\text{P}$ is too high, the response will overshoot and the system becomes unstable.
-- Increase $K_\text{D}$ to reduce the oscillations.
-- Increase $K_\text{I}$ if there is an error in steady state. (I have not seen a big effect of this so far, and the error was usually very low with only $K_\text{P}$ and $K_\text{D}$ gains.)
-
+- 在其他增益为 0 的情况下增大 $K_\text{P}$，直到振荡幅度较小、阶跃响应下的超调也较小。若 $K_\text{P}$ 过大，响应会超调并使系统失稳。
+- 增大 $K_\text{D}$ 以抑制振荡。
+- 若稳态存在误差，则增大 $K_\text{I}$。（目前为止我未看到明显效果，仅用 $K_\text{P}$ 与 $K_\text{D}$ 增益时误差通常已很小。）
 
 

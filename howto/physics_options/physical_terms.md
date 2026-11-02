@@ -9,13 +9,6 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 物理项激活
 
-原文页面：[Activation of Physical Terms](https://iterorganization.github.io/JOREK/howto/physics_options/physical_terms.html)　·　源文件：`howto/physics_options/physical_terms.md`
-</div>
-
-# Activation of Physical Terms
-
-Instructions for enabling optional physical terms in the JOREK equations.
+在 JOREK 方程中启用可选物理项的说明。

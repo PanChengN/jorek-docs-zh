@@ -8,60 +8,53 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+Andres 正在编写本页。
 
-原文页面：[Base Fluid Models](https://iterorganization.github.io/JOREK/physics/base_fluid_models/base_fluid_models.html)　·　源文件：`physics/base_fluid_models/base_fluid_models.md`
-</div>
+# JOREK 物理模型
 
-Andres working on this now
+请注意，除下文描述的模型之外，**还有多个开关可用来激活／停用方程中的不同项与边界条件**。相关说明见 [howto/physics_options](../../howto/physics_options.md)。
 
-# JOREK Physics Models
+## [约化 MHD](reduced_mhd.md)：
 
-Note that on top of the models described below, **multiple switches are available to activate/deactive different terms and boundary conditions in the equations**. For this, go to [howto/physics_options](/howto/physics_options.md).
+__model 600__ 是约化 MHD 的主力模型，它允许用户在[硬编码参数](../../compiling/compilation_and_libraries/hard-coded_parameters.md)阶段自行组合希望保留在模拟中的不同物理内容（$v_\parallel$、$T_e$ 与 $T_i$ 分离、流体中性粒子、流体杂质……）。__model 600__ 中始终存在的变量为：
 
-## [Reduced MHD](reduced_mhd.md): 
-
-__model 600__ is the workhorse for reduced MHD as it allows users to combine the different physics ($v_\parallel$, separate $T_e$ and $T_i$, fluid neutrals, fluid impurities, ...) they wish to keep in their simulations at [hard-coded parameters](../../compiling/compilation_and_libraries/hard-coded_parameters.md) time. The variables that are always present in __model 600__ are:
-
-| Variable | Symbol | variable number | 
+| 变量 | 符号 | 变量编号 | 
 | --- | --- | --- |
-| Poloidal magnetic flux: | $\psi$ | 1 |
-| Velocity stream function: | $u$ | 2 |
-| Toroidal current density: | $zj$ | 3 |
-| Vorticity: | $\omega$ | 4 |
-| Mass density: | $\rho$ | 5 |
-| Temperature: | $T$ or $T_i$ | 6 |
+| 极向磁通： | $\psi$ | 1 |
+| 速度流函数： | $u$ | 2 |
+| 环向电流密度： | $zj$ | 3 |
+| 涡量： | $\omega$ | 4 |
+| 质量密度： | $\rho$ | 5 |
+| 温度： | $T$ 或 $T_i$ | 6 |
 
-When $v_\parallel$ is used, it is always `var_vpar=7`.
+当使用 $v_\parallel$ 时，其编号始终为 `var_vpar=7`。
 
-For __model 600__, the variable numbers are assigned at compile time.
+对 __model 600__ 而言，变量编号在编译时分配。
 
-In addition to __model 600__, there are older, legacy, reduced MHD models shown below. __However__, new developments are not necessarily included in these models and, as such, users are suggested to use __model 600__.
+除 __model 600__ 之外，下面还列出了较旧的遗留约化 MHD 模型。__但是__，新的开发成果未必会包含在这些模型中，因此建议用户使用 __model 600__。
 
-| Model | Description | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
+| 模型 | 说明 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| model199 | No parallel flows | $\psi$ | $u$ | $j$ | $\omega$ | $\rho$ | $T$ | | | | |
-| model303/333 | Parallel flows | $\psi$ | $u$ | $j$ | $\omega$ | $\rho$ | $T$ | $v_{\vert\vert}$ | | | |
-| model305 | ECCD 1 current model | $\psi$ | $u$ | $j$ | $\omega$ | $\rho$ | $T$ | $v_{\vert\vert}$ | $J_{ECCD}$ | | |
-| model306 | ECCD 2 current model | $\psi$ | $u$ | $j$ | $\omega$ | $\rho$ | $T$ | $v_{\vert\vert}$ | $J_{EC1}$ | $J_{EC2}$ | |
-| model400 | Parallel flows; separate $T_e$ and $T_i$ | $\psi$ | $u$ | $j$ | $\omega$ | $\rho$ | $T_i$ | $v_{\vert\vert}$ | $T_e$ | | |
-| model500/501/555 | Parallel flows and neutral/impurity density | $\psi$ | $u$ | $j$ | $\omega$ | $\rho$ | $T$ | $v_{\vert\vert}$ | $\rho_{n/imp}$ | | |
+| model199 | 无平行流 | $\psi$ | $u$ | $j$ | $\omega$ | $\rho$ | $T$ | | | | |
+| model303/333 | 含平行流 | $\psi$ | $u$ | $j$ | $\omega$ | $\rho$ | $T$ | $v_{\vert\vert}$ | | | |
+| model305 | ECCD 1 电流模型 | $\psi$ | $u$ | $j$ | $\omega$ | $\rho$ | $T$ | $v_{\vert\vert}$ | $J_{ECCD}$ | | |
+| model306 | ECCD 2 电流模型 | $\psi$ | $u$ | $j$ | $\omega$ | $\rho$ | $T$ | $v_{\vert\vert}$ | $J_{EC1}$ | $J_{EC2}$ | |
+| model400 | 含平行流；$T_e$ 与 $T_i$ 分离 | $\psi$ | $u$ | $j$ | $\omega$ | $\rho$ | $T_i$ | $v_{\vert\vert}$ | $T_e$ | | |
+| model500/501/555 | 含平行流以及中性粒子／杂质密度 | $\psi$ | $u$ | $j$ | $\omega$ | $\rho$ | $T$ | $v_{\vert\vert}$ | $\rho_{n/imp}$ | | |
 
 
-## [Full MHD](full_mhd.md)
+## [全 MHD](full_mhd.md)
 
-| Model | Variables: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
+| 模型 | 变量：1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | model710 | $A_3$ | $A_R$ | $A_Z$ | $u_R$ | $u_Z$ | $u_\phi$ | $\rho$ | $T$ | | |
 | model711 | $A_3$ | $A_R$ | $A_Z$ | $u_R$ | $u_Z$ | $u_\phi$ | $\rho$ | $Ti$ | $Te$ | |
 | model712 | $A_3$ | $A_R$ | $A_Z$ | $u_R$ | $u_Z$ | $u_\phi$ | $\rho$ | $Ti$ | $Te$ | $\rho_n$ |
 
 
-Refer also to the page about [Notation Conventions](../notation.md).
+另请参阅 [符号约定](../notation.md) 页面。
 
-## Derivations by Emmanuel Franck et al. 
+## Emmanuel Franck 等人的推导
 
-  * [Part I: Document on two-fluid and single-fluid MHD](assets/hierarchymhd.pdf)
-  * [Part II: Document on reduced MHD](assets/reduced_mhd.pdf)
+  * [第一部分：关于双流体与单流体 MHD 的文档](assets/hierarchymhd.pdf)
+  * [第二部分：关于约化 MHD 的文档](assets/reduced_mhd.pdf)

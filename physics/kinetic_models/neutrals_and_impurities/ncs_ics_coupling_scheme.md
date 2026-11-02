@@ -6,18 +6,11 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 耦合方案
 
-原文页面：[Coupling Scheme](https://iterorganization.github.io/JOREK/physics/kinetic_models/neutrals_and_impurities/ncs_ics_coupling_scheme.html)　·　源文件：`physics/kinetic_models/neutrals_and_impurities/ncs_ics_coupling_scheme.md`
-</div>
+JOREK 中（动理学）中性粒子模型的推导与实现见 [*S. Q. Korving et al. PoP 2023*](https://doi.org/10.1063/5.0135318)。
 
-# Coupling scheme
-
-The derivation and implementation of the (kinetic) neutral model for JOREK is described in [*S. Q. Korving et al. PoP 2023*](https://doi.org/10.1063/5.0135318).
-
-For the neutral (ncs) and impurity (ics) coupling scheme, sources and sinks for particles are projected for the density, (parallel) momentum, and energy equations. However, as the JOREK form of the equations is different than the typical Euler form of the equations, the source terms need to be corrected. The sources are corrected as follows:
+对于中性粒子（ncs）与杂质（ics）耦合方案，粒子源与粒子汇被投影到密度方程、（平行）动量方程和能量方程中。然而，由于 JOREK 形式的方程与典型的 Euler 形式方程不同，源项需要做修正。源项的修正方式如下：
 
  $$ 
 \begin{aligned}
@@ -29,26 +22,26 @@ For the neutral (ncs) and impurity (ics) coupling scheme, sources and sinks for 
 \end{aligned}
  $$ 
 
-Where $`S_E`$, $`\vec{S}_{\rho v}`$ and $`S_\rho`$ are the physical source terms.
+其中 $`S_E`$、$`\vec{S}_{\rho v}`$ 与 $`S_\rho`$ 为物理源项。
 
 
 <figure style="float: right; margin-left: 15px; text-align: center;">
   <img src="../neutrals_and_impurities/assets/ncs_ics_coupling_scheme.md/coupling.png" alt="Flowchart of the two-way coupling" width="200" style="background-color: white;">
   <figcaption style="font-size: 0.9em; font-style: italic; color: #555;">Flowchart of the two-way coupling</figcaption>
 </figure>
-The particles are two-way coupled to the MHD equations, the schematics can be seen in the picture on the right:
+粒子与 MHD 方程双向耦合，其示意框图见右图：
 
-### Overview of source terms
+### 源项一览
 
-| Reaction | $`S_\rho`$   | $`\vec{S}_{\rho v}`$  | $`\vec{S}_{v}`$ | $`S_{E,i}`$ | $`S_{Ti}`$ | $`S_{E,e}`$ | $`S_{Te}`$ |
+| 反应 | $`S_\rho`$   | $`\vec{S}_{\rho v}`$  | $`\vec{S}_{v}`$ | $`S_{E,i}`$ | $`S_{Ti}`$ | $`S_{E,e}`$ | $`S_{Te}`$ |
 | - | - | - | - | - | - | - | - |
-| *n* Ion| $`m_i \Gamma_{ion}`$ | $`m_i \Gamma_{ion} \vec{v}_n`$ | $`m_i \Gamma_{ion} (\vec{v}_n - \vec{v}_n)`$ | $`\Gamma_{ion} ( \frac{m_i}{m_n}\frac{T_n}{\gamma-1} + \frac{1}{2} m_i v_n^2)`$ | $`\Gamma_{ion} ( T_n + \frac{1}{2} m_i (\vec{v}_n-\vec{v}_i)^2)`$ | $`-\Gamma_{ion} \|E_{Bind}\|`$ | $`-\Gamma_{ion} \|E_{Bind}\|`$ |
-| *n* rec | $`-m_i \Gamma_{rec}`$ | $`-m_i \Gamma_{rec} \vec{v}_i`$ | - | $`-\Gamma_{rec}( \frac{T_i}{\gamma-1}+\frac{1}{2} m_i v_i^2 )`$| $`-\Gamma_{rec} T_i`$ | $`-\Gamma_{rec} \frac{T_e}{\gamma-1}`$ | $`-(L_{PRB}-S_{rec}\|E_{bind}\|)n_e n_i`$ |
+| *n* 电离| $`m_i \Gamma_{ion}`$ | $`m_i \Gamma_{ion} \vec{v}_n`$ | $`m_i \Gamma_{ion} (\vec{v}_n - \vec{v}_n)`$ | $`\Gamma_{ion} ( \frac{m_i}{m_n}\frac{T_n}{\gamma-1} + \frac{1}{2} m_i v_n^2)`$ | $`\Gamma_{ion} ( T_n + \frac{1}{2} m_i (\vec{v}_n-\vec{v}_i)^2)`$ | $`-\Gamma_{ion} \|E_{Bind}\|`$ | $`-\Gamma_{ion} \|E_{Bind}\|`$ |
+| *n* 复合 | $`-m_i \Gamma_{rec}`$ | $`-m_i \Gamma_{rec} \vec{v}_i`$ | - | $`-\Gamma_{rec}( \frac{T_i}{\gamma-1}+\frac{1}{2} m_i v_i^2 )`$| $`-\Gamma_{rec} T_i`$ | $`-\Gamma_{rec} \frac{T_e}{\gamma-1}`$ | $`-(L_{PRB}-S_{rec}\|E_{bind}\|)n_e n_i`$ |
 | *n* CX | - | $`w_p (v_n^{old} - (N_{rng} \sqrt{\frac{T_i}{m_i}}+v_{drift}))`$ | idem | $`\frac{1}{2} w_p ((v_n^{old})^2-(v_n^{new})^2)`$ | $`S_E^{CX} - v \cdot S_v^{CX}`$ | | |
-| *Imp* ion/rec | - | - | - | - | - | $`-w_p \|E_{bind}\|`$ |  $`-(\gamma-1)w_p \|E_{bind}\|`$ |
-| *Imp* rad | - | - | - | - | - | $`-n_e w_p (PLT + PRB -S_{rec}\|E_{bind}\|)\delta t`$ | $`-(\gamma-1)n_e w_p (PLT + PRB -S_{rec}\|E_{bind}\|)\delta t`$ |
-| *Imp* coll | - | $`w_p m_{imp}(v_{old}-v_{new})`$| idem | $`\frac{1}{2} w_p m_{imp}(v_{old}^2-v_{new}^2)`$ | $`(\gamma - 1)\frac{1}{2} w_p m_{imp}(v_{old}^2-v_{new}^2)`$ | | |
+| *杂质* 电离/复合 | - | - | - | - | - | $`-w_p \|E_{bind}\|`$ |  $`-(\gamma-1)w_p \|E_{bind}\|`$ |
+| *杂质* 辐射 | - | - | - | - | - | $`-n_e w_p (PLT + PRB -S_{rec}\|E_{bind}\|)\delta t`$ | $`-(\gamma-1)n_e w_p (PLT + PRB -S_{rec}\|E_{bind}\|)\delta t`$ |
+| *杂质* 碰撞 | - | $`w_p m_{imp}(v_{old}-v_{new})`$| idem | $`\frac{1}{2} w_p m_{imp}(v_{old}^2-v_{new}^2)`$ | $`(\gamma - 1)\frac{1}{2} w_p m_{imp}(v_{old}^2-v_{new}^2)`$ | | |
 
-Note 1, the terms including $` T + \frac{1}{2} m_i (\vec{v}_a-\vec{v}_b)^2 `$ is a fluid picture, where the macroscopic drift velocity can be slpit from the random microscopic velocity resulting in the temperature. For the particle picture, it is just the kinetic energy.
+注 1：含 $` T + \frac{1}{2} m_i (\vec{v}_a-\vec{v}_b)^2 `$ 的项属于流体图像，其中宏观漂移速度可从随机微观速度中分离出来，由此得到温度。而对于粒子图像，它就只是动能。
 
-Note 2, there is a difference between a radiation rate, and cooling rate. The energy sink for the plasma is the cooling rate. Not all radiation is couling the plasma, e.g. the dielectric cascade in i-e recombination
+注 2：辐射率与冷却率之间存在差别。等离子体的能量汇是冷却率。并非所有辐射都在冷却等离子体，例如 i-e 复合中的介质级联（dielectric cascade）

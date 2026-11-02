@@ -80,15 +80,22 @@ def upstream_pages() -> list[Path]:
 
 
 def rewrite_front_matter(raw_fm: str, zh: str | None) -> str:
-    """只改 title / parent / grand_parent 三行，其余字段与顺序保持不变。"""
+    """只改 title / parent / grand_parent 三行，其余字段与顺序保持不变。
+
+    上游个别页面（如 physics/kinetic_models/initialization.md）的 front matter
+    里根本没有 title 字段，此时补一行中文 title，否则 Jekyll 的导航会退化成文件名。
+    """
     lines = raw_fm.split("\n")
     out = []
+    has_title = any(re.match(r"^\s*title\s*:", ln) for ln in lines)
     for line in lines:
         if re.match(r"^\s*title\s*:", line) and zh:
             indent = line[: len(line) - len(line.lstrip())]
             out.append(f'{indent}title: "{zh}"')
         else:
             out.append(line)
+    if not has_title and zh:
+        out.insert(0, f'title: "{zh}"')
     return "\n".join(out)
 
 
@@ -180,6 +187,11 @@ def write_config(dry: bool) -> None:
     out = out.replace('footer_content: "JOREK Documentation"',
                       'footer_content: "JOREK 文档中文版 · 原文版权归 JOREK 团队所有"')
     out = out.replace('back_to_top_text: "Back to top"', 'back_to_top_text: "返回顶部"')
+    # 关键：上游的 url/baseurl 指向官方站点，必须换成中文站自己的，
+    # 否则所有导航链接都会带上 /JOREK 前缀而失效。
+    out = out.replace('url: "https://iterorganization.github.io"',
+                      'url: "https://panchengn.github.io"')
+    out = out.replace('baseurl: "/JOREK"', 'baseurl: "/jorek-docs-zh"')
     out += (
         "\n# ===== 中文站附加配置 =====\n"
         "lang: zh-CN\n"

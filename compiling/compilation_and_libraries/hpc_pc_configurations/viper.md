@@ -7,23 +7,16 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# MPCDF 的 Viper 超级计算机系统
 
-原文页面：[Viper](https://iterorganization.github.io/JOREK/compiling/compilation_and_libraries/hpc_pc_configurations/viper.html)　·　源文件：`compiling/compilation_and_libraries/hpc_pc_configurations/viper.md`
-</div>
-
-# Viper supercomputer system at MPCDF
-
-- 768 CPU compute nodes  
-  (AMD EPYC Genoa 9554 CPUs with 128 cores and at least 512 GB RAM per node, 4.9 PFlop/s theoretical peak performance (FP64))
-- 228 GPU nodes comprising 456 APUs  
-  (to be deployed in the course of 2024)
+- 768 个 CPU 计算节点  
+  （AMD EPYC Genoa 9554 CPU，128 核，每节点至少 512 GB 内存，理论峰值性能 4.9 PFlop/s（FP64））
+- 228 个 GPU 节点，共包含 456 个 APU  
+  （将于 2024 年内陆续部署）
 
 - <https://docs.mpcdf.mpg.de/doc/computing/viper-user-guide.html>
 
-## Login via gateway
+## 通过网关登录
 
 ```bash
 ssh <user>@gate.mpcdf.mpg.de
@@ -33,29 +26,29 @@ ssh <user>@gate.mpcdf.mpg.de
 ssh <user>@viper.mpcdf.mpg.de
 ```
 
-## File systems
+## 文件系统
 
-The file system `/u` (a symbolic link to `/viper/u`) is designed for permanent user data (source files, config files, etc.). The size of `/u` is 1.2 PB. Your home directory is in `/u`. The default disk quota in `/u` is 1.0 TB, and the file quota is 256K files. You can check your disk quota in `/u` with:
+文件系统 `/u`（指向 `/viper/u` 的符号链接）用于长期存放用户数据（源文件、配置文件等）。`/u` 的容量为 1.2 PB。你的主目录位于 `/u` 中。`/u` 的默认磁盘配额为 1.0 TB，文件数配额为 256K 个文件。可用如下命令检查你在 `/u` 中的磁盘配额：
 
 ```bash
 /usr/lpp/mmfs/bin/mmlsquota viper_u
 ```
 
-The file system `/ptmp` (a symbolic link to `/viper/ptmp`) is designed for batch job I/O (12 PB, no system backups). Files in `/ptmp` that have not been accessed for more than 12 weeks will be removed automatically. The period of 12 weeks may be reduced if necessary, with prior notice.
+文件系统 `/ptmp`（指向 `/viper/ptmp` 的符号链接）用于批处理作业的 I/O（12 PB，无系统备份）。`/ptmp` 中超过 12 周未被访问的文件将被自动删除。如有必要，可在事先通知的前提下缩短 12 周的期限。
 
-As a current policy, no quotas are applied on `/ptmp`.
+按现行政策，`/ptmp` 上不施加配额。
 
-The `/r` file system (a symbolic link to `/ghi/r`) stages archive data. It is available only on the login nodes `viper.mpcdf.mpg.de` and on the interactive nodes `viper-i.mpcdf.mpg.de`.
+`/r` 文件系统（指向 `/ghi/r` 的符号链接）用于暂存归档数据。它仅在登录节点 `viper.mpcdf.mpg.de` 和交互节点 `viper-i.mpcdf.mpg.de` 上可用。
 
-Each user has a subdirectory `/r/<initial>/<userid>` to store data. For efficiency, files should be packed into tar files, with a size of about 1 GB to 1 TB, before archiving them in `/r`. Please avoid archiving many small files. When the file system `/r` becomes filled above a certain threshold, files will be transferred from disk to tape, beginning with the largest files that have not been used for the longest time.
+每个用户在 `/r/<initial>/<userid>` 下有一个子目录用于存放数据。为提高效率，在归档到 `/r` 之前应将文件打包为 tar 文件，大小约为 1 GB 至 1 TB。请避免归档大量小文件。当文件系统 `/r` 的占用超过某一阈值时，文件将从磁盘转移到磁带，并优先从未被使用时间最长的大文件开始。
 
-Please do not use the file system `/tmp` or `$TMPDIR` for scratch data. Instead, use `/ptmp`, which is accessible from all Viper cluster nodes.
+请不要将文件系统 `/tmp` 或 `$TMPDIR` 用于临时数据，而应使用 `/ptmp`，它可从 Viper 集群的所有节点访问。
 
-In cases where an application really depends on node-local storage, please use the directories from the environment variables `JOB_TMPDIR` and `JOB_SHMTMPDIR`, which are set individually for each Slurm job.
+如果某个应用确实依赖节点本地存储，请使用环境变量 `JOB_TMPDIR` 与 `JOB_SHMTMPDIR` 所指的目录，它们为每个 Slurm 作业单独设置。
 
-## Compiling JOREK
+## 编译 JOREK
 
-Add the following lines to your `.bashrc` file:
+将下列各行加入 `.bashrc` 文件：
 
 ```bash
 module purge
@@ -66,7 +59,7 @@ module load fftw-mpi/3.3.10
 export LD_LIBRARY_PATH=${FFTW3_ROOT}/lib:${HDF5_ROOT}/lib:${MKLROOT}/lib:${LD_LIBRARY_PATH}
 ```
 
-Example `Makefile.inc`:
+`Makefile.inc` 示例：
 
 ```makefile
 MODEL             = model303
@@ -121,9 +114,9 @@ HDF5INCLUDE = $(HDF5_HOME)/include
 HDF5LIB     = -L$(HDF5_HOME)/lib -lhdf5hl_fortran -lhdf5_hl -lhdf5_fortran -lhdf5 -lz
 ```
 
-## Running JOREK
+## 运行 JOREK
 
-Example batch job script:
+批处理作业脚本示例：
 
 ```bash
 #!/bin/bash -l

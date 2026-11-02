@@ -7,20 +7,13 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 在 Leonardo-CPU 上使用 Intel + Oneapi 与 Raven 依赖库编译 JOREK
 
-原文页面：[Leonardo with Raven Libraries](https://iterorganization.github.io/JOREK/compiling/compilation_and_libraries/hpc_pc_configurations/leonardo_cpu_with_raven_libraries.html)　·　源文件：`compiling/compilation_and_libraries/hpc_pc_configurations/leonardo_cpu_with_raven_libraries.md`
-</div>
+这些依赖库已从 Raven 复制，并放置在 /leonardo_work/FUA38_MHD_0/libraries_from_raven。
 
-# Compiling JOREK on Leonardo-CPU with Intel + Oneapi and Raven libaries
+如果无法访问该路径，请从 https://datashare.mpcdf.mpg.de/s/5KJucm9EnHbsltA 下载。
 
-The libraries have been copied from Raven and placed in /leonardo_work/FUA38_MHD_0/libraries_from_raven.
-
-If you cannot access it, please download it from https://datashare.mpcdf.mpg.de/s/5KJucm9EnHbsltA.
-
-Please modify the LIBROOT in the Makefile.inc with the correct path.
+请将 Makefile.inc 中的 LIBROOT 修改为正确路径。
 
   ## bashrc
   ```bash

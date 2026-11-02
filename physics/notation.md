@@ -51,6 +51,6 @@ render_with_liquid: false
 
 另请参阅[模型](base_fluid_models/base_fluid_models.md)页面。
 
-## 脚注
+## 脚注 {#footnotes}
   - 在 element_matrix 例程中，x 与 y 常被用作 R 与 Z 的同义词，切勿与笛卡尔坐标混淆。 
   - 在柱坐标系中，归一化协变基矢量与归一化逆变基矢量自然是相同的。

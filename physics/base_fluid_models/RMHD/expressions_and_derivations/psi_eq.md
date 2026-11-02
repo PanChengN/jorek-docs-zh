@@ -7,34 +7,27 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 极向磁通方程的推导
 
-原文页面：[The Poloidal Flux Equation Expression](https://iterorganization.github.io/JOREK/physics/base_fluid_models/RMHD/expressions_and_derivations/psi_eq.html)　·　源文件：`physics/base_fluid_models/RMHD/expressions_and_derivations/psi_eq.md`
-</div>
-
-# Derivation of the Poloidal Flux Equation
-
-The starting point for the poloidal flux equation is the induction equation:
+极向磁通方程的出发点是感应方程：
 
 $$\begin{equation}
   \partial_t\mathbf{B} = -\nabla\times\mathbf{E}
 \end{equation}$$
 
-Expressing the magnetic field as $\mathbf{B}=\nabla\times\mathbf{A}$ and removing the curl leads to:
+将磁场表示为 $\mathbf{B}=\nabla\times\mathbf{A}$ 并消去旋度，可得：
 
 $$\begin{equation}\label{dAdt}
   \partial_t\mathbf{A} = -\mathbf{E} - \nabla\Phi + \alpha_L\nabla\phi
 \end{equation}$$
 
-where $\Phi$ is the electric potential and $\alpha_L$ represents the loop voltage. Multiplying this equation by $R^2\nabla\phi$, we get:
+其中 $\Phi$ 为电势，$\alpha_L$ 表示环电压。将该方程乘以 $R^2\nabla\phi$，得到：
 
 $$\begin{equation*}
   R^2\nabla\phi\cdot\partial_t\mathbf{A} = -R^2\nabla\phi\cdot\mathbf{E} - R^2\nabla\phi\cdot\nabla\Phi + R^2\nabla\phi\cdot\alpha_L\nabla\phi
 \end{equation*}$$
 
-Using the definition of the poloidal flux $\psi = R^2\mathbf{A}\cdot\nabla\phi = RA_\phi$ and the relation for the electric potential $F_0 u \equiv \Phi$, the terms are:
+利用极向磁通的定义 $\psi = R^2\mathbf{A}\cdot\nabla\phi = RA_\phi$ 以及电势关系 $F_0 u \equiv \Phi$，各项为：
 
 $$\begin{align*}
   R^2\nabla\phi\cdot\partial_t\mathbf{A} &= \partial_t\psi \\
@@ -42,7 +35,7 @@ $$\begin{align*}
   R^2\nabla\phi\cdot\alpha_L\nabla\phi &= \alpha_L
 \end{align*}$$
 
-The electric field term $-R^2\nabla\phi\cdot\mathbf{E}$ is evaluated using Ohm's law $\mathbf{E} = -\mathbf{v}\times\mathbf{B} + \eta\mathbf{j}$:
+电场项 $-R^2\nabla\phi\cdot\mathbf{E}$ 利用欧姆定律 $\mathbf{E} = -\mathbf{v}\times\mathbf{B} + \eta\mathbf{j}$ 计算：
 
 $$\begin{equation*}\begin{split}
   -R^2\nabla\phi\cdot\mathbf{E} &= R^2\nabla\phi\cdot(\mathbf{v}\times\mathbf{B}) - R^2\nabla\phi\cdot\eta\mathbf{j} \\
@@ -50,9 +43,9 @@ $$\begin{equation*}\begin{split}
   &= R[\psi, u] - \eta(j - j_0)
 \end{split}\end{equation*}$$
 
-where $j_0$ is the current source related to the loop voltage $\alpha_L$ via $\eta j_0 = \alpha_L$. 
+其中 $j_0$ 是通过 $\eta j_0 = \alpha_L$ 与环电压 $\alpha_L$ 相关联的电流源。
 
-Combining all the terms, we obtain the poloidal flux equation used in JOREK:
+将各项合并，即得 JOREK 中所用的极向磁通方程：
 
 $$\begin{equation}
   \partial_t\psi = R[\psi, u] + \eta(j - j_0) - F_0\partial_\phi u

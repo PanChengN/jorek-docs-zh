@@ -6,55 +6,48 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
-
-原文页面：[JOREK-IMAS](https://iterorganization.github.io/JOREK/diagnostics/jorek-imas.html)　·　源文件：`diagnostics/jorek-imas.md`
-</div>
-
 # JOREK-IMAS
 
-## What Is IMAS?
+## IMAS 是什么？
 
-The Integrated Modelling & Analysis Suite (IMAS) provides a common data model and a software ecosystem for exchanging experimental and simulation data between fusion codes. The [IMAS Data Dictionary](https://github.com/iterorganization/IMAS-Data-Dictionary) implements this model as machine-independent **Interface Data Structures (IDSs)** with standardized names and structures.
+集成建模与分析套件（IMAS）提供统一的数据模型与软件生态，用于在各类聚变程序之间交换实验数据与仿真数据。[IMAS Data Dictionary](https://github.com/iterorganization/IMAS-Data-Dictionary) 以与机器无关的**接口数据结构（IDSs）**实现该模型，其名称与结构均已标准化。
 
-**New users should start with the [open-source IMAS tutorial](https://github.com/iterorganization/IMAS-tutorial).** Its notebooks introduce IMAS, the Data Dictionary, data access, IDS exploration and visualization, and simulation-database management. The tutorial is a living document and links to the maintained documentation for each component.
+**新用户应先阅读[开源 IMAS 教程](https://github.com/iterorganization/IMAS-tutorial)。** 该教程的 notebook 介绍 IMAS、Data Dictionary、数据访问、IDS 探查与可视化，以及仿真数据库管理。教程是持续更新的文档，并链接到各组件维护中的说明。
 
-## Open-Source IMAS Components
+## 开源 IMAS 组件
 
-Most of the IMAS software relevant to JOREK users is developed openly:
+与 JOREK 用户相关的大部分 IMAS 软件都以公开方式开发：
 
-| Component | Purpose |
+| 组件 | 用途 |
 | --- | --- |
-| [IMAS Data Dictionary](https://github.com/iterorganization/IMAS-Data-Dictionary) | Defines the IMAS data model and IDS schemas for experimental and simulation data. |
-| [IMAS-Python](https://github.com/iterorganization/IMAS-Python) | Python library for creating, reading, writing, and manipulating IDSs. |
-| [IMAS-Fortran](https://github.com/iterorganization/IMAS-Fortran) | Fortran data-access library used to manipulate IDS structures and connect them to the available storage backends. |
-| [IMAS-ParaView](https://github.com/iterorganization/IMAS-ParaView) | ParaView plugins for visualizing GGD meshes and other IMAS data. This replaces the former GGD-VTK workflow. |
-| [IMAS-MUSCLE3](https://github.com/iterorganization/IMAS-MUSCLE3) | Integration tools for coupling IMAS-compatible codes in MUSCLE3 workflows. Its actors exchange IDS data between the coupled components. |
-| [SimDB](https://github.com/iterorganization/SimDB) | Command-line and client-server tools for tracking, querying, transferring, and managing simulations and their metadata. |
-| [SimDB Dashboard](https://github.com/iterorganization/SimDB-Dashboard) | Web interface for querying and viewing simulations in a remote SimDB database. |
+| [IMAS Data Dictionary](https://github.com/iterorganization/IMAS-Data-Dictionary) | 定义 IMAS 数据模型，以及实验数据与仿真数据的 IDS 模式。 |
+| [IMAS-Python](https://github.com/iterorganization/IMAS-Python) | 用于创建、读取、写入和操作 IDS 的 Python 库。 |
+| [IMAS-Fortran](https://github.com/iterorganization/IMAS-Fortran) | Fortran 数据访问库，用于操作 IDS 结构并将其连接到可用的存储后端。 |
+| [IMAS-ParaView](https://github.com/iterorganization/IMAS-ParaView) | 用于可视化 GGD 网格及其他 IMAS 数据的 ParaView 插件。它取代了此前的 GGD-VTK 工作流。 |
+| [IMAS-MUSCLE3](https://github.com/iterorganization/IMAS-MUSCLE3) | 在 MUSCLE3 工作流中耦合兼容 IMAS 的程序的集成工具。其 actor 在耦合的组件之间交换 IDS 数据。 |
+| [SimDB](https://github.com/iterorganization/SimDB) | 用于跟踪、查询、传输和管理仿真及其元数据的命令行工具与客户端—服务器工具。 |
+| [SimDB Dashboard](https://github.com/iterorganization/SimDB-Dashboard) | 用于查询和查看远程 SimDB 数据库中仿真的 Web 界面。 |
 
-Many more open-source fusion and IMAS repositories are available from the [ITER Organization on GitHub](https://github.com/iterorganization).
+更多开源聚变与 IMAS 代码仓库可从 [GitHub 上的 ITER Organization](https://github.com/iterorganization)获取。
 
-## How Can JOREK Users Benefit from IMAS?
+## JOREK 用户如何从 IMAS 中获益？
 
-- **Obtain initial equilibria:** Build a JOREK input file from an equilibrium IDS, including $FF'$, coil currents, and the poloidal-flux map. Use [SimDB](https://github.com/iterorganization/SimDB) or the [SimDB Dashboard](https://github.com/iterorganization/SimDB-Dashboard) to find available simulations and their database metadata.
+- **获取初始平衡：** 由 equilibrium IDS 构建 JOREK 输入文件，包括 $FF'$、线圈电流与极向磁通分布。使用 [SimDB](https://github.com/iterorganization/SimDB) 或 [SimDB Dashboard](https://github.com/iterorganization/SimDB-Dashboard) 查找可用的仿真及其数据库元数据。
 
-- **Obtain tokamak components:** Read specifications such as vacuum-vessel geometry, first-wall panels, diagnostics, and coils from the corresponding IDSs when they are included in an accessible IMAS entry.
+- **获取托卡马克部件：** 当真空室几何、第一壁板、诊断与线圈等规格包含在可访问的 IMAS 条目中时，从相应的 IDS 中读取这些规格。
 
-- **Archive, share, and reference simulations:** Export JOREK results to IDSs and manage the resulting simulation and its metadata with SimDB.
+- **归档、共享与引用仿真：** 将 JOREK 结果导出到 IDS，并用 SimDB 管理由此得到的仿真及其元数据。
 
-- **Visualize and process IMAS data:** Use [IMAS-ParaView](https://github.com/iterorganization/IMAS-ParaView) for GGD meshes, machine descriptions, and diagnostic geometries, or work directly with IDSs through [IMAS-Python](https://github.com/iterorganization/IMAS-Python) and [IMAS-Fortran](https://github.com/iterorganization/IMAS-Fortran).
+- **可视化与处理 IMAS 数据：** 用 [IMAS-ParaView](https://github.com/iterorganization/IMAS-ParaView) 处理 GGD 网格、装置描述与诊断几何，或通过 [IMAS-Python](https://github.com/iterorganization/IMAS-Python) 与 [IMAS-Fortran](https://github.com/iterorganization/IMAS-Fortran) 直接操作 IDS。
 
-- **Couple JOREK to other codes and create workflows:** MUSCLE3 can couple JOREK to other codes, for example to calculate synthetic diagnostic signals from JOREK output. [IMAS-MUSCLE3](https://github.com/iterorganization/IMAS-MUSCLE3) provides the actors that exchange IDS data between the coupled components.
+- **将 JOREK 与其他程序耦合、构建工作流：** MUSCLE3 可将 JOREK 与其他程序耦合，例如由 JOREK 输出计算合成诊断信号。[IMAS-MUSCLE3](https://github.com/iterorganization/IMAS-MUSCLE3) 提供在耦合组件之间交换 IDS 数据的 actor。
 
-## Creating a JOREK Input File from an IMAS Entry
+## 由 IMAS 条目创建 JOREK 输入文件
 
-1. Follow the [IMAS tutorial](https://github.com/iterorganization/IMAS-tutorial) to become familiar with IDSs and the current data-access tools.
-2. Find an appropriate simulation with the [SimDB Dashboard](https://github.com/iterorganization/SimDB-Dashboard). Record the user, database, pulse, and run identifying the IMAS entry, then select a time slice containing a suitable equilibrium.
-3. Configure the IMAS data-access environment required at your site. Installation and usage information is maintained in the [IMAS-Python](https://github.com/iterorganization/IMAS-Python) repository; module names and available storage backends may be site-specific.
-4. From `communication/IMAS`, run `imas2jorek.py`, replacing the uppercase placeholders with the selected entry and time:
+1. 按照 [IMAS 教程](https://github.com/iterorganization/IMAS-tutorial)熟悉 IDS 与当前的数据访问工具。
+2. 用 [SimDB Dashboard](https://github.com/iterorganization/SimDB-Dashboard) 找到合适的仿真。记录标识该 IMAS 条目的 user、database、pulse 与 run，然后选择包含合适平衡的时间片。
+3. 配置本机站点所需的 IMAS 数据访问环境。安装与使用说明在 [IMAS-Python](https://github.com/iterorganization/IMAS-Python) 仓库中维护；模块名与可用的存储后端可能因站点而异。
+4. 在 `communication/IMAS` 目录下运行 `imas2jorek.py`，并用所选条目与时间替换全大写的占位符：
 
 ```bash
 python imas2jorek.py \
@@ -65,28 +58,28 @@ python imas2jorek.py \
     --time TIME
 ```
 
-Display all arguments and defaults, including the storage backend, Data Dictionary major version, IDS occurrence, and tokamak used to construct the boundary, with:
+用下列命令显示所有参数及其默认值，包括存储后端、Data Dictionary 主版本、IDS occurrence，以及用于构造边界的托卡马克：
 
 ```bash
 python imas2jorek.py -h
 ```
 
-The script operates similarly to `eqdsk2jorek`. The `--tokamak` (`-tk`) option selects the tokamak used to construct the initial $R$-$Z$ boundary; inspect and adapt the generated grid boundary as needed.
+该脚本的用法与 `eqdsk2jorek` 类似。`--tokamak`（`-tk`）选项指定用于构造初始 $R$-$Z$ 边界的托卡马克；请按需检查并调整生成的网格边界。
 
-After `imas2jorek.py` finishes, it produces:
+`imas2jorek.py` 运行结束后会生成：
 
-- `jorek_namelist`, containing the poloidal-flux boundary conditions and coil currents.
-- `jorek_density`, `jorek_temperature`, and `jorek_ffprime`, containing the profiles.
+- `jorek_namelist`，包含极向磁通边界条件与线圈电流。
+- `jorek_density`、`jorek_temperature` 与 `jorek_ffprime`，包含剖面。
 
-## Exporting JOREK Data to IMAS
+## 将 JOREK 数据导出到 IMAS
 
-Load the IMAS module. On the ITER cluster:
+加载 IMAS 模块。在 ITER 集群上：
 
 ```bash
 module load IMAS
 ```
 
-The `jorek2_IDS` tool converts JOREK HDF5 restart files into IMAS data. Enable the IMAS interface and provide the Access Layer compiler and linker flags in `Makefile.inc`:
+`jorek2_IDS` 工具将 JOREK 的 HDF5 重启文件转换为 IMAS 数据。在 `Makefile.inc` 中启用 IMAS 接口，并给出 Access Layer 的编译与链接标志：
 
 ```makefile
 USE_IMAS = 1
@@ -99,14 +92,14 @@ IMASLIB=`pkg-config --libs-only-L --libs-only-l al-fortran`
 # IMASLIB=`pkg-config --libs-only-L --libs-only-l imas-ifort`
 ```
 
-Configure `jorek2_IDS` consistently with the model and toroidal resolution used by the simulation, then compile it. For example:
+按仿真所用的模型与环向分辨率一致地配置 `jorek2_IDS`，然后编译。例如：
 
 ```bash
 util/config.sh n_tor=1 n_period=1 n_plane=1 with_TiTe=.false. with_vpar=.false. with_impurities=.true.
 make -j 8 jorek2_IDS
 ```
 
-In the simulation directory containing the restart files, create `imas.nml`. The comments below describe its parameters:
+在包含重启文件的算例目录中创建 `imas.nml`。下面的注释说明了各参数的含义：
 
 ```fortran
 &imas_params
@@ -162,17 +155,17 @@ In the simulation directory containing the restart files, create `imas.nml`. The
 /
 ```
 
-Run the converter with one MPI process:
+用单个 MPI 进程运行该转换器：
 
 ```bash
 mpirun -n 1 ./jorek2_IDS < jorek_input_file
 ```
 
-Successful exports print messages such as `XXXXX IDS exported`. The stored data can then be inspected with [IMAS-ParaView](https://github.com/iterorganization/IMAS-ParaView) or processed directly with [IMAS-Python](https://github.com/iterorganization/IMAS-Python) and [IMAS-Fortran](https://github.com/iterorganization/IMAS-Fortran).
+导出成功时会打印形如 `XXXXX IDS exported` 的消息。随后可用 [IMAS-ParaView](https://github.com/iterorganization/IMAS-ParaView) 查看所存数据，或用 [IMAS-Python](https://github.com/iterorganization/IMAS-Python) 与 [IMAS-Fortran](https://github.com/iterorganization/IMAS-Fortran) 直接处理。
 
-## Available IDS Nodes
+## 可用的 IDS 节点
 
-The IDSs and variables that can currently be filled are listed below.
+下面列出目前可填充的 IDS 与变量。
 
 ### `summary`
 
@@ -206,9 +199,9 @@ summary_ids.boundary.geometric_axis_r.value
 summary_ids.boundary.geometric_axis_z.value
 ```
 
-### `plasma_profiles` (occurrence 0)
+### `plasma_profiles`（occurrence 0）
 
-Provides poloidal-flux-averaged profiles using the $n=0$ poloidal flux.
+使用 $n=0$ 的极向磁通，给出按极向磁通平均的剖面。
 
 ```text
 plasma_profiles_ids.profiles_1d.grid.psi_magnetic_axis
@@ -238,9 +231,9 @@ plasma_profiles_ids.profiles_1d.q
 plasma_profiles_ids.profiles_1d.grid.rho_tor_norm
 ```
 
-### `plasma_profiles` (occurrence 1)
+### `plasma_profiles`（occurrence 1）
 
-Contains high-precision raw JOREK variables. This IDS can be used to calculate current density and magnetic field accurately. It also contains electron and ion temperatures, mass density, electrostatic potential, and toroidal vorticity. Finite-element and Fourier-series coefficients are stored in GGD format and can be visualized with [IMAS-ParaView](https://github.com/iterorganization/IMAS-ParaView).
+包含高精度的 JOREK 原始变量。该 IDS 可用于准确计算电流密度与磁场。它还包含电子与离子温度、质量密度、静电势以及环向涡量。有限元系数与傅里叶级数系数以 GGD 格式存储，可用 [IMAS-ParaView](https://github.com/iterorganization/IMAS-ParaView) 可视化。
 
 ```text
 plasma_profiles_ids.ids_properties.homogeneous_time
@@ -285,9 +278,9 @@ plasma_profiles.grid_ggd[0].space[1].identifier.description
 plasma_profiles.grid_ggd[0].space[1].objects_per_dimension[0].object[:].geometry
 ```
 
-### `plasma_profiles` (occurrence 2)
+### `plasma_profiles`（occurrence 2）
 
-Contains the $B_R$ and $B_Z$ magnetic-field components on a rectangular grid extending beyond the JOREK grid. It is available only for full free-boundary simulations with `export_field_extension = .true.`. The $(R,Z)$ space is a regular two-dimensional grid containing values at its nodes rather than Bézier coefficients, while the toroidal direction retains its Fourier representation. This occurrence is intended for field-line-tracing codes such as SMITER.
+在超出 JOREK 网格的矩形网格上给出 $B_R$ 与 $B_Z$ 磁场分量。仅当 `export_field_extension = .true.` 的完整自由边界仿真才可用。$(R,Z)$ 空间是规则二维网格，节点上存的是数值而非贝塞尔系数，而环向方向仍保留傅里叶表示。该 occurrence 面向 SMITER 之类的磁力线追踪程序。
 
 ```text
 plasma_profiles_ids.ids_properties.homogeneous_time
@@ -317,12 +310,12 @@ plasma_profiles.grid_ggd[0].space[1].objects_per_dimension[0].object[:].geometry
 
 ### `wall`
 
-The `wall` IDS contains two wall descriptions:
+`wall` IDS 包含两种壁描述：
 
-- The inner ITER vacuum-vessel layer, represented as a thin wall discretized with linear triangular elements. Current-density vector, effective thickness, and resistivity are provided for each triangle.
-- An axisymmetric representation of the ITER first wall. Incident perpendicular heat flux, current-density vector for halo-current calculations, and poloidal flux are stored at the nodes of a triangular mesh.
+- ITER 真空室内层，表示为用线性三角形单元离散的薄壁。每个三角形都给出电流密度矢量、有效厚度与电阻率。
+- ITER 第一壁的轴对称表示。入射垂直热流、用于晕电流（halo current）计算的电流密度矢量以及极向磁通存储在三角形网格的节点上。
 
-These quantities can be visualized with [IMAS-ParaView](https://github.com/iterorganization/IMAS-ParaView).
+这些量可用 [IMAS-ParaView](https://github.com/iterorganization/IMAS-ParaView) 可视化。
 
 ```text
 wall_ids.ids_properties.homogeneous_time
@@ -363,7 +356,7 @@ wall_ids.description_ggd[:].component[0].type[0].identifier.description
 
 ### `pf_passive`
 
-The `pf_passive` IDS contains additional passive conductors in which currents are induced: the outer vacuum-vessel layer, outer triangular support, and divertor inboard rail. They are discretized as toroidal loops.
+`pf_passive` IDS 包含可在其中感应出电流的附加无源导体：真空室外层、外部三角形支撑以及偏滤器内侧导轨。它们按环向回路离散。
 
 ```text
 pf_passive.ids_properties.homogeneous_time
@@ -496,7 +489,7 @@ equilibrium_ids.time_slice.profiles_2d.b_field_phi
 
 ### `radiation`
 
-Available only for SPI simulations using markers.
+仅在使用标记粒子的 SPI 仿真中可用。
 
 ```text
 The GGD structures are identical to those of plasma_profiles/1, otherwise

@@ -5,23 +5,16 @@ render_with_liquid: false
 parent: "诊断与后处理"
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+该文件包含仿真中特定时间步的能量与增长率，可用 [plot_live_data.sh](plot_live_data.sh.md) 脚本绘制这些量随时间的变化。
 
-原文页面：[Macroscopic_vars.dat](https://iterorganization.github.io/JOREK/diagnostics/macroscopic_vars.html)　·　源文件：`diagnostics/macroscopic_vars.md`
-</div>
-
-This file contains the energies and growth rates at specific time steps in the simulation, and can be used to plot the variation of these quantities in time with the [plot_live_data.sh](plot_live_data.sh.md) script.
-
-The format is 
+格式为
    @rcs_version:  GIT revision        b575260-dirty
    @jorek_model:   303
    @n_tor:     3
    @n_plane:     8
    @n_period:     1
 
-And then a series of values at specific times
+随后是各特定时刻的一系列数值
    @times:     1   1.000000000E+03
    @energies:  1.000000000E+03  2.012235987E-02  2.073465471E-22  1.291279331E-16  1.245421010E-19
    @growth_rates:  1.500000000E+03 -8.745715263E-13  6.921484349E-04  7.638978557E-06 -2.518593016E-06

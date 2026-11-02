@@ -7,15 +7,8 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
-
-原文页面：[Leonardo with Intel oneAPI](https://iterorganization.github.io/JOREK/compiling/compilation_and_libraries/hpc_pc_configurations/leonardo_cpu_with_intel_oneapi.html)　·　源文件：`compiling/compilation_and_libraries/hpc_pc_configurations/leonardo_cpu_with_intel_oneapi.md`
-</div>
-
-# Compiling JOREK on Leonardo-CPU with Intel and Oneapi
-## bashrc file
+# 在 Leonardo-CPU 上使用 Intel 与 OneAPI 编译 JOREK
+## bashrc 文件
 ```bash
 # Load modules for setting-up the environment
 # INTEL ONEAPI
@@ -51,7 +44,7 @@ export INTEL_FFTW_LIB_LOC="/leonardo_work/FUAL8_MHD/csommari/install/FFTW_v3310_
 export INTEL_FFTW_INC_LOC="/leonardo_work/FUAL8_MHD/csommari/install/FFTW_v3310_oneapi202320_intelmpi2021_24012025/include"
 ```
 
-## Makefile.inc file 
+## Makefile.inc 文件
 ```bash
 # model directory
 MODEL = model600

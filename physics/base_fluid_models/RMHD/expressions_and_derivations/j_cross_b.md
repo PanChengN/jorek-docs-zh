@@ -7,14 +7,7 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
-
-原文页面：[The j x B Term Expression](https://iterorganization.github.io/JOREK/physics/base_fluid_models/RMHD/expressions_and_derivations/j_cross_b.html)　·　源文件：`physics/base_fluid_models/RMHD/expressions_and_derivations/j_cross_b.md`
-</div>
-
-# Derivation of the j x B Term
+# j×B 项的推导
 
 $$\begin{equation*}\begin{split}
 \mathbf{j}\times\mathbf{B} 

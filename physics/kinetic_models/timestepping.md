@@ -6,30 +6,23 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 动理学时间推进
 
-原文页面：[Kinetic timestepping](https://iterorganization.github.io/JOREK/physics/kinetic_models/timestepping.html)　·　源文件：`physics/kinetic_models/timestepping.md`
-</div>
+在 JOREK 的动理学应用中，存在多个数值时间尺度。除了 MHD 流体时间步（输入 namelist 中的 tstep 或 tstep_n，以 JOREK 归一化单位计）之外，还有粒子时间步 tstep_particles（以秒计）。一般而言，粒子时间步必须依据所模拟的物理过程来选择。这意味着动理学逃逸电子的粒子时间步（量级 10^-12 s）远小于动理学中性粒子的粒子时间步（量级 10^-7 s）。 
 
-# Kinetic timestepping
+在 kinetic main 中，目前所有动理学种类只共用一个时间步，因为面向中性粒子/杂质与快粒子/逃逸电子一体化模拟的开发工作还不多。
 
-In the kinetic application of JOREK, there are multiple numerical timescales. Besides the MHD fluid timestep (tstep or tstep_n in the input namelist, in JOREK normalised units), there is the particle timestep tstep_particles (in seconds). In general, the particle timestep must be chosen based on the physical processes that are being modelled. This means that the particle timestep for kinetic runaway electrons will be far smaller (order 10^-12 s) compared to the particle timestep of kinetic neutral (order 10^-7 s). 
+## 中间时间尺度
 
-In kinetic main, there is at the moment only a single timestep for all kinetic species, as there haven't been a lot of developments for integrated neutrals/impurities with fast particles/runaway electrons yet.
+然而，除了耦合模拟的这两个基本时间尺度（流体与粒子时间尺度）之外，某些模拟还能从中间时间尺度中获益。这在 kinetic_main 中以内层粒子循环的形式实现：在该循环中，仅依赖于粒子的操作可以比流体时间步更频繁地发生。其编码方式使每个粒子—粒子操作都能拥有自己的频率，同时又都与粒子时间步和流体时间步保持同步。具体做法是通过 namelist 中 %(...)each_nstep_part 这类变量，设置你希望该操作每隔多少个（整数）粒子时间步发生一次。
+在后端，所有这些 %(...)each_nstep_part 变量的最大公约数（gdc's）与最小公倍数（lcm）会被自动计算，并据此建立 kinetic_main 中的内层粒子循环。粒子演化在每次内层粒子循环调用时发生，步数等于全局 gcd（而非 1，以节省计算时间并避免输出文件冗杂）。粒子—粒子相互作用只按所需的频率发生（该频率由各自存储的 %each_nstep_particles 决定）。
+gcd、lcm 与 each_nstep_part 变量的默认值为 -9999991，其含义是该操作每个流体时间步只发生一次。（之所以选择这个默认值，是因为它是一个大素数的相反数，因此它与几乎任何其他数的 gcd 和 lcm 都会给出很怪异、从而便于调试的结果，万一它出现在不该出现的地方）
+目前实现为可与该中间时间尺度协同工作的粒子操作包括[壁相互作用](./neutrals_and_impurities/particle_wall_interactions.md)、[中性粒子—中性粒子碰撞](./neutrals_and_impurities/neutral_neutral_collisions.md)，逃逸电子大角度碰撞与逃逸电子重采样方面的工作正在进行中。
+输出文件会在进入内层粒子循环之前、以及内层粒子循环每一步开始时打印一些信息。
 
-## Intermediate timescale
+### 一个示例
 
-However, besides these two fundamental timescales for coupled simulations (fluid and particle timescales), certain simulations benefit from having intermediate timescales. This has been implemented in kinetic_main in the form of an inner particle loop in which actions depending only on the particles can happen more frequently than the fluid timestep. It is coded such that each particle-particle action can take it's own frequency, while all still synchronising to the particle timesteps and to the fluid timesteps. This is done by setting how many (integer) particle timesteps you want the action to happen through the %(...)each_nstep_part like variables in the namelist.
-In the backend, the greatest common divisors (gdc's) and least common multiple (lcm) of all of these %(...)each_nstep_part variables are calculated automatically, and from this the inner particle loop in kinetic_main is set up. The particle evolution happens each inner particle loop call, for an amount of steps equal to the global gcd (rather than 1, to save on computational time and output file cluttering). Particle-particle interactions only happens as often as they are required (which is determined from their own stored %each_nstep_particles).
-The default value for the gcd, lcm and each_nstep_part variables is -9999991, and it is interpreted as meaning that action should happen only once per fluid timestep. (The reason this default is chosen is that it is the negative of a big prime number, so the gcd and lcm of it with almost any other number will give very strange and thus debuggable answers if it somehow ends up in a place it shouldn't)
-The particle actions currently implemented to work with this intermediate timescale are the [wall_actions](./neutrals_and_impurities/particle_wall_interactions.md), [neutral neutral collisions](./neutrals_and_impurities/neutral_neutral_collisions.md) and work is in progress for the runaway electron large angle collisions and runaway electron resampling.
-The output file will print some information at before entering the inner particle loop and at the beginning of each step in the inner particle loop.
-
-### An example
-
-Let's see how this works in practice. Suppose you have a deuterium plasma with deuterium neutrals and the following settings:
+我们来看它在实践中如何运作。假设你有一个含氘中性粒子的氘等离子体，设置如下：
 ```fortran
 tstep_n=30
 tstep_particles    = 5.d-7
@@ -38,7 +31,7 @@ central_density = 0.425558
 part_group_configs(1)%ncoll_each_nstep_part=10
 part_group_configs(1)%wall_act_each_nstep_part=2
 ```
-This gives `sqrt(mu0*rho0)       =   2.0501E-07`, so the fluid timestep in SI units would then be $6.15\cdot10^{-6}$ s. Since we want to do the wall actions each 2 particle steps, and the neutral self collisions each 10 particle steps, we need to do a multiple of 10 particle steps each fluid step. The gcd of 2 and 10 is 2, the lcm of 2 and 10 is 10. But we can fit more than 10 particle steps into one fluid timestep, and we don't want to make our effective partice timestep bigger than the given particle timestep in the input, so instead we will make it smaller so that we can accomodate 20 step, i.e. 2 blocks of 10 steps. Now we have our inner particle loop set up, we will take steps of 2 particle steps, and then we do the actions after the requested amount of particle steps. This is all determined by the program automatically, and the results can be seen in the output just before the inner particle loop starts:
+这给出 `sqrt(mu0*rho0)       =   2.0501E-07`，因此以 SI 单位计的流体时间步将是 $6.15\cdot10^{-6}$ s。由于我们希望每 2 个粒子步做一次壁操作、每 10 个粒子步做一次中性粒子自碰撞，因此每个流体步需要走 10 的倍数个粒子步。2 与 10 的 gcd 为 2，2 与 10 的 lcm 为 10。但一个流体时间步内可以容纳多于 10 个粒子步，而我们又不想让有效粒子时间步大于输入中给定的粒子时间步，因此我们会把它调小，以便容纳 20 步，即 2 个 10 步的块。至此内层粒子循环已建立，我们将每次走 2 个粒子步，然后在达到所需粒子步数后执行相应操作。这些全部由程序自动确定，结果可在内层粒子循环开始前的输出中看到：
 
 ```
 ====================================================================================================
@@ -62,6 +55,6 @@ This gives `sqrt(mu0*rho0)       =   2.0501E-07`, so the fluid timestep in SI un
 ...
 ```
 
-### How to choose your %(...)each_nstep_part variables
+### 如何选取你的 %(...)each_nstep_part 变量
 
-If the lcm is a lot bigger than tstep_particles/tstep_fluid_si, then you will take very small particle steps without that really being necessary. It will throw a warning for this but you are responsible for using reasonable %(...)each_nstep_part variables. In general this means avoiding (co-)primes, e.g. don't use 15 and 7, because you will end up with an lcm of 105, meaning your tstep_particles will likely be unnecessarily small to fit 105 particle timesteps into one fluid timestep, and gcd of 1, meaning a lot of computation time is wasted on loading/unloading particles and the output file is cluttered. Rather, try to use multiples of eachother, in this case rather than 7 and 15, use 5 and 15, which has gcd=5, lcm=15. Also avoid large %(...)each_nstep_part altogether if tstep_particle/tstep_fluid_si is small. Just leave the %(...)each_nstep_part blank if you only want to do that action once every fluid timestep (it will then be done on the last inner particle loop step, and not be taken into account in the lcm/gcd calculations).
+如果 lcm 远大于 tstep_particles/tstep_fluid_si，那么你就会走非常小的粒子步，而这其实并不必要。程序会为此抛出警告，但你有责任使用合理的 %(...)each_nstep_part 变量。一般而言，这意味着要避免（互）素数，例如不要用 15 和 7，因为这样得到的 lcm 为 105，意味着为了在一个流体时间步内塞进 105 个粒子时间步，你的 tstep_particles 很可能被设得不必要地小；同时 gcd 为 1，意味着大量计算时间浪费在粒子的加载/卸载上，输出文件也变得冗杂。相反，应尽量使用彼此成倍数的值，就本例而言，不要用 7 和 15，而用 5 和 15，其 gcd=5、lcm=15。此外，如果 tstep_particle/tstep_fluid_si 很小，就应完全避免使用较大的 %(...)each_nstep_part。如果你只希望该操作每个流体时间步执行一次，就把 %(...)each_nstep_part 留空（此时它会在内层粒子循环的最后一步执行，且不计入 lcm/gcd 的计算）。

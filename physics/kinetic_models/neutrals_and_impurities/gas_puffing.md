@@ -6,48 +6,41 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+## 气体注入
 
-原文页面：[Gas Puffing](https://iterorganization.github.io/JOREK/physics/kinetic_models/neutrals_and_impurities/gas_puffing.html)　·　源文件：`physics/kinetic_models/neutrals_and_impurities/gas_puffing.md`
-</div>
+气体注入系统分为两部分编写：先用 valve 对象在仿真域中指定位置，随后即可通过 puff\_ctrl 对象为各个 part\_group\_configs 从这些阀门注入气体。
 
-## Gas Puffing
+### 设置阀门
+阀门通过 namelist 中的 valves 对象定义。最多可指定 n\_valves\_max = 20 个阀门。每个阀门的选项为：
 
-The gas injection system is coded in two parts: you can specify locations in your simulation domain using the valve object, after which you can puff from these valves for each part\_group\_configs by using the puff\_ctrl objects. 
-
-### Setting up a valve
-The valves are defined through the valves object from the namelist. You can specify at most n\_valves\_max = 20 valves. The options for each valve are:
-
-| valves(i)%           | option meaning |
+| valves(i)%           | 选项含义 |
 |----------------------|----------------|
-| type                 | four character code for the valve type. At the moment a poloidal circular ('circ') and poloidal 4 point polygon ('poly') option are implemented |
-| phi                  | toroidal angle of the valve (particles will be generated at this toroidal angle) |
-| r\_valve              | radius of poloidal circular valve (type must be 'circ')|
-| R\_valve\_loc          | R position of circular valve (type must be 'circ') |
-| Z\_valve\_loc          | Z position of circular valve (type must be 'circ') |
-| poly\_R               | 4 R vertices of a quadrangular valve (type must be 'poly') |
-| poly\_Z               | 4 Z vertices of a quadrangular valve (type must be 'poly') |
+| type                 | 阀门类型的四字符代码。目前实现了极向圆形（'circ'）和极向 4 点多边形（'poly'）两种选项 |
+| phi                  | 阀门的环向角（粒子将在此环向角处生成） |
+| r\_valve              | 极向圆形阀门的半径（类型必须为 'circ'）|
+| R\_valve\_loc          | 圆形阀门的 R 位置（类型必须为 'circ'） |
+| Z\_valve\_loc          | 圆形阀门的 Z 位置（类型必须为 'circ'） |
+| poly\_R               | 四边形阀门的 4 个 R 顶点（类型必须为 'poly'） |
+| poly\_Z               | 四边形阀门的 4 个 Z 顶点（类型必须为 'poly'） |
 
-If the valves%(i)%type='circ' you need to define a circular valve in the poloidal plane with r\_valve, R\_valve\_loc, Z\_valve\_loc. You can optionally specify a specific toroidal location phi at which the valve is located (if left unspecified, the particles puffed from this valve will be put at a random toroidal location).
-If the valves%(i)%type='poly', you need to define a quadrangular valve by setting poly\_R and poly\_Z (both exactly 4 points) which defines a quadrangle with the following corners; top-left: (poly\_R(1),poly\_Z(1)), top-right: (poly\_R(2),poly\_Z(2)), bottom-left: (poly\_R(3),poly\_Z(3)), bottom-right: (poly\_R(4),poly\_Z(4)).
+若 valves%(i)%type='circ'，需要在极向平面上用 r\_valve、R\_valve\_loc、Z\_valve\_loc 定义一个圆形阀门。可以选择性地指定阀门所在的特定环向位置 phi（若不指定，则从此阀门注入的粒子将被置于随机的环向位置）。
+若 valves%(i)%type='poly'，需要通过设置 poly\_R 和 poly\_Z（均恰好为 4 个点）来定义四边形阀门，其四个角点依次为：左上：(poly\_R(1),poly\_Z(1))，右上：(poly\_R(2),poly\_Z(2))，左下：(poly\_R(3),poly\_Z(3))，右下：(poly\_R(4),poly\_Z(4))。
 
-### Setting up the puffrates at a valve
+### 设置阀门处的注入速率
 
-With the valves defined, each neutral or impurity particle group can puff from each valve by setting the corresponding part\_group\_configs(j)%puff\_ctrl(i) object. Here part\_group\_configs(j)%puff\_ctrl(i) means the puff control object for valves(i) of species j (so setting a puffrate at part\_group\_configs(j)%puff\_ctrl(1) means puffing group j from the valve specified at valves(1)). The options for each puff\_ctrl object are:
+在定义好阀门之后，每个中性粒子或杂质粒子组都可以通过设置相应的 part\_group\_configs(j)%puff\_ctrl(i) 对象，从每个阀门注入。这里 part\_group\_configs(j)%puff\_ctrl(i) 表示组分 j 对应于 valves(i) 的注入控制对象（因此，在 part\_group\_configs(j)%puff\_ctrl(1) 处设置注入速率，意味着从 valves(1) 指定的阀门注入粒子组 j）。每个 puff\_ctrl 对象的选项为：
 
-| part\_group\_configs(j)%puff\_ctrl(i)% | option meaning |
+| part\_group\_configs(j)%puff\_ctrl(i)% | 选项含义 |
 |-------------------------------------|----------------|
-| supers\_num\_puff                     | number of new superparticles initialised at each puff action |
-| supers\_weight\_puff                  | aimed weight (no. real particles per superparticle) of the new superparticles initialised at each puff action |
-| supers\_ratio\_puff                   | fraction of the total number of superparticles allocated for this group (i.e. part\_group\_configs(i)%n\_particles) to use for each puff action |
-| times | array of time checkpoints (SI, in seconds) for which the puffing rate is specified (requires a defined puff\_ctrl(i)%rates of the same length) |
-| rates | array of specified puff rates (atoms/second) at given time checkpoints (requires a defined puff\_ctrl(i)%times of the same length) |
-| from\_file | filename of ASCII piecewise linear puffrate, with two columns: time in s, rate in atoms/s |
+| supers\_num\_puff                     | 每次注入动作初始化的新超粒子数 |
+| supers\_weight\_puff                  | 每次注入动作初始化的新超粒子的目标权重（每个超粒子代表的真实粒子数） |
+| supers\_ratio\_puff                   | 每次注入动作所使用的、分配给该组的超粒子总数（即 part\_group\_configs(i)%n\_particles）的比例 |
+| times | 指定注入速率的时间检查点数组（SI 单位，秒）（要求已定义长度相同的 puff\_ctrl(i)%rates） |
+| rates | 在给定时间检查点处指定的注入速率数组（原子/秒）（要求已定义长度相同的 puff\_ctrl(i)%times） |
+| from\_file | ASCII 分段线性注入速率文件名，包含两列：时间（s），速率（原子/s） |
 
-The supers\_...\_puff variables set how many super particles each puff action at this valve will create, similar to other particle creating actions such as for example those found in [Plasma-Wall Interactions](../neutrals_and_impurities/particle_wall_interactions.md). You can only set one of the super\_...\_puff variables. If you don't set any of the three, the supers\_ratio\_puff method will be used, with its default value being set by supers\_ratio\_puff\_default=$10^{-4}$ in mod\_particle\_puffing.f90
+supers\_...\_puff 变量设定此阀门处每次注入动作将创建多少个超粒子，与其他粒子创建动作类似，例如 [等离子体–壁相互作用](../neutrals_and_impurities/particle_wall_interactions.md) 中所述的那些。三个 supers\_...\_puff 变量只能设置其中一个。若三者都不设置，则使用 supers\_ratio\_puff 方式，其默认值由 mod\_particle\_puffing.f90 中的 supers\_ratio\_puff\_default=$10^{-4}$ 设定
 
-The actual puffrate over time is set by a piecewise linear function. This can either be specified from an ASCII file (with two columns, the first specifying the times and the last specyfing the rates at those times). In that case there is no limit on the amount of timepoints you use, so you have arbitrary time resolution in your puffrate. Alternatively, the puffrate can be specified directly from the input namelist if you don't need more that n\_puff\_segments\_max=20 timepoints. In that case, set the timepoints in "times" at which the corresponding puffrates are set in "rates". In either case (namelist or from file), it will use the first rate for t smaller than the first time defined, and after the last specified timepoint it will use the last specified rate, so if you want a constant puffrate over time, you would only have to set rates(1)=..., times(1)=0.
+随时间变化的实际注入速率由分段线性函数设定。既可从 ASCII 文件指定（包含两列，第一列给出时间，最后一列给出对应时刻的速率）。这种情况下时间点数目不受限制，因此注入速率可具有任意时间分辨率。另一种方式，如果不需要超过 n\_puff\_segments\_max=20 个时间点，可直接从输入 namelist 指定注入速率。此时，在 "times" 中设置时间点，并在 "rates" 中设置对应的注入速率。无论哪种方式（namelist 或从文件读取），对于小于第一个定义时间的 t，都将使用第一个速率；而在最后一个指定时间点之后，将使用最后指定的速率。因此，若希望注入速率随时间恒定，只需设置 rates(1)=...、times(1)=0。
 
-Note that you can puff a single particle group from as many or as few valves as you specified and you can individually control the rates and creation scheme at each valve.
+注意，单个粒子组可以从任意多或任意少的已指定阀门注入，并且可以分别控制每个阀门处的速率和创建方案。

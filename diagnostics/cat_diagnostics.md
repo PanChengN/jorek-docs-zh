@@ -6,11 +6,3 @@ nav_fold: true
 layout: default
 render_with_liquid: false
 ---
-
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
-
-原文页面：[Diagnostics and post-processing](https://iterorganization.github.io/JOREK/diagnostics/cat_diagnostics.html)　·　源文件：`diagnostics/cat_diagnostics.md`
-</div>
-

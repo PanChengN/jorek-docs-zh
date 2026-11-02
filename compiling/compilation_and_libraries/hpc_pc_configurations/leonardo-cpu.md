@@ -7,36 +7,29 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 在 Leonardo CPU 分区（DCGP）上运行 JOREK
 
-原文页面：[Leonardo-CPU](https://iterorganization.github.io/JOREK/compiling/compilation_and_libraries/hpc_pc_configurations/leonardo-cpu.html)　·　源文件：`compiling/compilation_and_libraries/hpc_pc_configurations/leonardo-cpu.md`
-</div>
+## 获取访问权限
 
-# Running JOREK on Leonardo CPU partition (DCGP)
-
-## Getting Access
-
-- Account Creation via https://userdb.hpc.cineca.it/ - Create New User
-- Then fill out the HPC-Related information and upload your scanned ID/passport
-- Contact the respective PI to add you to the project
+- 通过 https://userdb.hpc.cineca.it/ 创建账户——选择 Create New User
+- 然后填写与 HPC 相关的信息，并上传身份证／护照扫描件
+- 联系相应的 PI，将你加入项目
 
 ## README
 
-- [LEONARDO User Guide](https://wiki.u-gov.it/confluence/display/SCAIUS/LEONARDO+User+Guide)
-- [Setup for Eurofusion users](https://wiki.u-gov.it/confluence/display/SCAIUS/EUROfusion+users%3A+Marconi+and+Leonardo+environments)
-- Slides of the webinar offered by CINECA on the 18th of February, 2025 [slides_qa.pdf](slides_qa.pdf)
-- E-Mail Address of CINECA Helpdesk: superc@cineca.it
+- [LEONARDO 用户指南](https://wiki.u-gov.it/confluence/display/SCAIUS/LEONARDO+User+Guide)
+- [Eurofusion 用户的配置](https://wiki.u-gov.it/confluence/display/SCAIUS/EUROfusion+users%3A+Marconi+and+Leonardo+environments)
+- CINECA 于 2025 年 2 月 18 日举办的网络研讨会的幻灯片 [slides_qa.pdf](slides_qa.pdf)
+- CINECA 帮助台的电子邮件地址：superc@cineca.it
 
-## Login
+## 登录
 
-All the login nodes (4 icelake, no-gpu) have an identical environment and can be reached with SSH (Secure Shell) protocol using the "collective" hostname:
+所有登录节点（4 个 icelake 节点，不含 GPU）环境完全相同，均可通过 SSH（Secure Shell）协议使用"集合"主机名访问：
 
 ```bash
 ssh -Y <user>@login.leonardo.cineca.it
 ```
-which establishes a connection to one of the available login nodes. You can also indicate explicitly the login nodes:
+该命令会建立到某个可用登录节点的连接。也可以显式指定登录节点：
 
 ```bash
 login01-ext.leonardo.cineca.it
@@ -44,12 +37,12 @@ login02-ext.leonardo.cineca.it
 login05-ext.leonardo.cineca.it
 login07-ext.leonardo.cineca.it
 ```
-**Follow the instructions at [this link](https://wiki.u-gov.it/confluence/display/SCAIUS/FAQ#FAQ-Ikeepreceivingtheerrormessage%22WARNING:REMOTEHOSTIDENTIFICATIONHASCHANGED!%22evenifImodifyknown_hostfile) if you get the error message “WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!”**
+**如果收到错误信息“WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!”，请按[此链接](https://wiki.u-gov.it/confluence/display/SCAIUS/FAQ#FAQ-Ikeepreceivingtheerrormessage%22WARNING:REMOTEHOSTIDENTIFICATIONHASCHANGED!%22evenifImodifyknown_hostfile)中的说明处理。**
 
-## Software Available
-As usual module avail/load/list/show allows to access the available software
+## 可用的软件
+一如往常，通过 module avail/load/list/show 即可访问可用的软件
 
-To use the file manager midnight commander, put these two lines in your .bashrc:
+要使用文件管理器 midnight commander，请将下列两行写入 .bashrc：
 
 ```bash
 export PATH=/leonardo/pub/userexternal/dbonfigl/mc/bin:$PATH
@@ -57,25 +50,25 @@ export LD_LIBRARY_PATH=/leonardo/pub/userexternal/dbonfigl/mc/shares/
 mc:$LD_LIBRARY_PATH
 ```
 
-## Compiling JOREK (As of 2025.02: Under test)
-Below are some examples of the .bashrc and Makefile.inc setup.
+## 编译 JOREK（截至 2025.02：测试中）
+下面给出若干 .bashrc 与 Makefile.inc 配置示例。
 
-[Using GNU + OPENMPI](leonardo_cpu_with_gnu_openmpi.md) (Most stable setup so far & libraries publicly accessible)
+[使用 GNU + OPENMPI](leonardo_cpu_with_gnu_openmpi.md)（目前最稳定的配置，且依赖库可公开访问）
 
-[Using Intel + OneAPI](leonardo_cpu_with_intel_oneapi.md) (Under tests & requiring access to the FUAL8_MHD project)
+[使用 Intel + OneAPI](leonardo_cpu_with_intel_oneapi.md)（测试中，且需要 FUAL8_MHD 项目的访问权限）
 
-[Using Intel + OneAPI + Raven Libraries](leonardo_cpu_with_raven_libraries.md) (Under tests & using the copied libraries from Raven)
+[使用 Intel + OneAPI + Raven 库](leonardo_cpu_with_raven_libraries.md)（测试中，使用从 Raven 复制的库）
 
-## File Systems
-Most important are $HOME (user specific) and $WORK (project specific), see the LEONARDO User Guide for details. BE AWARE THAT $HOME IS THE ONLY FILE SYSTEM THAT GETS BACKED UP! (suspended for now)
+## 文件系统
+最重要的是 $HOME（用户专属）与 $WORK（项目专属），详情参见 LEONARDO 用户指南。请注意，$HOME 是唯一会做备份的文件系统！（目前暂停）
 
-One can check quota with:
+可用如下命令检查配额：
 
 bash
 cindata
 
-## Batch System
-- Basic commands:
+## 批处理系统
+- 基本命令：
 ```bash
 sbatch <jobscript>                          # Submit a job script
 sbatch -d afterok:<jobid> <jobscript>       # Submit a job script to start after <jobid> is finished
@@ -86,8 +79,8 @@ squeue -u <username>                        # List all own jobs
 scancel <jobid>                             # Delete a queued or running batch job
 ```
 
-- Example job script
-Example job script for 2*8 MPI tasks on 2 different nodes with 14 OpenMP threads each. Note: You need to add _0 to your project name, e.g., FUA38_MHD_0
+- 作业脚本示例
+作业脚本示例：2*8 个 MPI 任务分布在 2 个不同节点上，每个任务使用 14 个 OpenMP 线程。注意：需要在项目名后加上 _0，例如 FUA38_MHD_0
 
 ```bash
 #!/bin/bash
@@ -120,23 +113,23 @@ export I_MPI_THREAD_LEVEL_DEFAULT=funneled #multiple
 
 srun --cpu-bind=cores --cpus-per-task=$SLURM_CPUS_PER_TASK ./jorek_model600 < jorek_namelist > logfile
 ```
-## Accounting
-To check the used resources on Leonardo DCGP, use:
+## 资源核算
+要查看 Leonardo DCGP 上已使用的资源，请使用：
 
 ```bash
 saldo -b --dcgp
 ```
-To check more details (containing the usage of all the users) one can use:
+要查看更详细的信息（包含所有用户的使用情况），可使用：
 
 ```bash
 saldo -ra PROJECT_NAME --dcgp
 ```
-Available partitions (see also [here](https://wiki.u-gov.it/confluence/display/SCAIUS/EUROfusion+users%3A+Marconi+and+Leonardo+environments)):
+可用的分区（另见[此处](https://wiki.u-gov.it/confluence/display/SCAIUS/EUROfusion+users%3A+Marconi+and+Leonardo+environments)）：
 
-- Serial partition lrd_all_serial. 2 dedicated login-type nodes. Max 4 physical core per job, max walltime 4 hours. Jobs are free (compute resources are not accounted). Good for running jorek2_postproc for example.
+- 串行分区 lrd_all_serial。2 个专用的登录型节点。每个作业最多 4 个物理核，最大墙钟时间 4 小时。作业免费（不核算计算资源）。例如适合运行 jorek2_postproc。
 
-- Production partition dcgp_fua_prod. 258 compute nodes dynamically allocated. Max 16 nodes per job, max walltime 24 hours. For big production runs (min 17 full nodes, max 64 nodes) you can specify the QOS dcgp_qos_fuabprod.
+- 生产分区 dcgp_fua_prod。258 个动态分配的计算节点。每个作业最多 16 个节点，最大墙钟时间 24 小时。对于大型生产运行（最少 17 个整节点，最多 64 个节点），可以指定 QOS dcgp_qos_fuabprod。
 
-- Debug partition dcgp_fua_dbg. 2 compute nodes dynamically allocated. Max 2 nodes, max walltime 10 min.
+- 调试分区 dcgp_fua_dbg。2 个动态分配的计算节点。最多 2 个节点，最大墙钟时间 10 分钟。
 
-- Low priority queue on the production partition. Max 16 nodes, max walltime 8 hours. Jobs are free (compute resources are not accounted). This can be used by specifying the FUA38_LOWPRIO_0 account (ask CINECA to be added to this 'project') and the QOS qos_fualowprio. Good to save project resources. Typically jobs start in the weekend after their submission.
+- 生产分区上的低优先级队列。最多 16 个节点，最大墙钟时间 8 小时。作业免费（不核算计算资源）。可通过指定 FUA38_LOWPRIO_0 账户（需向 CINECA 申请加入该"项目"）与 QOS qos_fualowprio 来使用。适合节省项目资源。这类作业通常会在提交后的周末开始运行。

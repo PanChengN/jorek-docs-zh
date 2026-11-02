@@ -1,28 +1,21 @@
 ---
-
+title: "初始化"
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 动理学粒子初始化 
 
-原文页面：[initialization](https://iterorganization.github.io/JOREK/physics/kinetic_models/initialization.html)　·　源文件：`physics/kinetic_models/initialization.md`
-</div>
+所谓初始化，我们指的是在 kinetic_main 开始模拟之前，粒子所获得的初始分布。初始化可以通过 3 种方式进行：或者不初始化任何内容，或者从重启文件初始化粒子，或者按某种初始分布初始化粒子。
 
-# Kinetic particle initialization 
+# 不初始化 
+只需在 namelist 中设置 restart_particles=.f.，并且不要为 part_group_configs(...)%init_function 与 %init_pdf 设置任何内容。这意味着在 kinetic_main 开始模拟时，尚无模拟粒子。例如，这对于中性粒子模拟很有用，因为中性粒子会在模拟过程中通过（壁）复合自动被充入/生成。 
 
-With initialization we mean what the particles get as original distribution before the simulation with kinetic_main starts. Initialization can be done in 3 ways, either nothing is initialized, the particles are initialized from a restart file, or the particles are initialized according to some initial distribution.
+# 重启粒子 
+要从文件重启粒子，请设置 restart_particles=.t.。在初始化期间，kinetic_main 会自动在模拟文件夹中查找 part_restart.h5 文件，并把该文件中的所有组直接加载进模拟。为此，你的 namelist 输入文件中也需要有相应的组。这意味着你的 namelist 输入中需要有与重启前各组具有相同 %id、%Z、%mass 与 %type 的条目，但你可以改变每组的 %n_particles（不过目前只能增大，不能减小）。
 
-# No initialization 
-Simply set restart_particles=.f. in the namelist, and set nothing for part_group_configs(...)%init_function and %init_pdf. This means that at the start of the simulation with kinetic_main, there will be no simulated particles yet. This is for instance useful for doing neutrals simulations which will be puffed/generated through (wall) recombination automatically during the simulation. 
+如果你希望新模拟中的 part_groups 比 restart_file 中的更多或更少，建议通过把 namelist 输入 "part_groups_in_use" 设为你希望在新模拟中使用的 ID 列表来表明你的意图（例如 `part_groups_in_use = "D01" "N01"`）。如果你想从 part_restart.h5 文件中丢弃某些组，你**必须**指定 "part_groups_in_use"。你的输出文件中会出现信息，说明哪些组已加载、哪些组已被丢弃。
 
-# Restarting the particles 
-To restart the particles from a file, set restart_particles=.t. During initialization, kinetic_main will automatically look for a part_restart.h5 file in the simulation folder and load all the groups from that file directly into the simulation. To do this, you need the corresponding groups in your namelist input file as well. This means you need to have entries in your namelist input with the same %id, %Z, %mass and %type as before the groups before restart, but you can vary each group's %n_particles (although at the moment you can only increase it, not decrease it).
+part_restart.h5 文件在每次 kinetic_main 模拟成功结束时自动生成，并且每 500 个 jorek 步会生成一个中间文件 "interim_part_restart.h5"（若已存在先前的中间重启文件，则将其覆盖，以节省磁盘空间，因为这些重启文件可达数 GB 数据）。 
 
-If you want to do your new simulation with more or less part_groups than are present in the restart_file, it is advised to specify your intention by setting the namelist input "part_groups_in_use" to the list of IDs that you want to use in your new simulation (e.g. `part_groups_in_use = "D01" "N01"`). If you want to drop groups from the part_restart.h5 file, you **have** to specify "part_groups_in_use". You will get messages in your output file stating which groups have been loaded and which groups have been dropped.
+# 按给定分布初始化粒子 
 
-The part_restart.h5 files are generated automatically at the end of each successful simulation with kinetic_main, and every 500 jorek steps, an intermediate "interim_part_restart.h5" file will be generated (that overwrites a previous interim restart file if that exists, to save on disk space as these restart files can be GBs of data). 
-
-# Initialize the particles according to a given distribution 
-
-!!! Add initializers here (@James)
+!!! 在此处补上初始化器（@James）

@@ -7,25 +7,18 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 扩散系数与传导系数计算器
 
-原文页面：[Get D_perp and ZK_perp for Stationary Profiles](https://iterorganization.github.io/JOREK/howto/physics_options/plasma_functions_and_coefficients/diffusion_coef.html)　·　源文件：`howto/physics_options/plasma_functions_and_coefficients/diffusion_coef.md`
-</div>
+许多 JOREK 用户在长时间仿真（n=0）中难以维持稳态的 H 模 ne 与 T 剖面。要做到这一点，需要选择与下列内容一致的输运系数：
 
-# Calculator for Diffusivity and Conductivity Coefficients
+- 所施加的粒子源与加热源，以及
+- 期望的目标剖面或平衡剖面（假定为磁面函数）。
 
-Many JOREK users struggle to maintain stationary H-mode ne and T profiles over long simulations (n=0). Achieving this requires selecting transport coefficients consistent with:
+下面说明如何使用相关工具来完成这件事。
 
-- the imposed particle source and heating sources, and
-- the desired target or equilibrium profiles (assumed flux functions).
+## 步骤 1：从平衡中获取度规、源与目标剖面
 
-We explain below how to use some tools for doing this.
-
-## Step 1: Get Metric, Source, and Target Profiles from the Equilibrium
-
-For that, we will simply use [`jorek2_postproc`](../../introduction_to_jorek_diagnostics.md#jorek2_postproc), with the command `pol_contour_integrals`. This is what you will have to do inside postproc:
+为此，直接使用 [`jorek2_postproc`](../../introduction_to_jorek_diagnostics.md#jorek2_postproc)，命令为 `pol_contour_integrals`。在 postproc 中需要执行的操作如下：
 
 ```text
 namelist input
@@ -35,21 +28,21 @@ for step 0 do
 done
 ```
 
-This will export a file with all necessary profiles (metric, target, sources) to obtain your diffusion coefficients:
+这会导出一个包含全部所需剖面（度规、目标、源）的文件，用于求解扩散系数：
 
 ```text
 postproc/pol_contour_integrals_s000000.dat
 ```
 
-## Step 2: Get the Coefficients with Python
+## 步骤 2：用 Python 求系数
 
-Run the Python script in `jorek_repo/util/obtain_diff_coefficients.py`:
+运行 `jorek_repo/util/obtain_diff_coefficients.py` 中的 Python 脚本：
 
 ```bash
 python jorek_repo/util/obtain_diff_coefficients.py postproc/pol_contour_integrals_s000000.dat --skiprows 2
 ```
 
-This will generate your ready-to-use coefficients in the files:
+这会在以下文件中生成可直接使用的系数：
 
 ```text
 D_profile.dat
@@ -58,25 +51,25 @@ kappa_e.dat
 kappa_t.dat   # Total temperature
 ```
 
-Add those to your input file in `d_perp_file`, `zk_i_perp_file`, `zk_e_perp_file`, and `zk_perp_file`. Then you are ready to go.
+在输入文件的 `d_perp_file`、`zk_i_perp_file`、`zk_e_perp_file` 和 `zk_perp_file` 中引用这些文件。之后即可开始计算。
 
-## Solved Equation
+## 所求解的方程
 
-You can find the employed method here. It is basically a 1D diffusion + sources equation in equilibrium, which has an analytical solution.
+所采用的方法可在此处找到。它本质上是平衡态下的一维扩散＋源方程，具有解析解。
 
 **J. Artola**  
-*October 29, 2021*
+*2021 年 10 月 29 日*
 
-Let's take the equilibrium continuity equation
+取平衡连续性方程
 
 $$
 \nabla \cdot \left(D\nabla \rho\right) = -S,
 \tag{1}
 $$
 
-where $S$ includes all sinks/sources, including flows.
+其中 $S$ 包含所有汇／源，也包括流动项。
 
-By transforming the equation into flux-aligned coordinates and doing some algebra, we find an analytical solution for $D$:
+将方程变换到磁面对齐坐标并作一些代数运算后，可得到 $D$ 的解析解：
 
 $$
 D(\psi_N)
@@ -92,9 +85,9 @@ D(\psi_N)
 \tag{2}
 $$
 
-Here, $\left\langle S \right\rangle_{\psi_N'}$ is the flux-surface-averaged net source. One can also derive this equation from the divergence theorem of calculus.
+这里 $\left\langle S \right\rangle_{\psi_N'}$ 是磁面平均的净源。该方程也可由散度定理导出。
 
-We have defined the following geometrical coefficients:
+我们定义了如下几何系数：
 
 $$
 \alpha(\psi_N)
@@ -104,7 +97,7 @@ R |\nabla\psi|\,dl_{\mathrm{pol}},
 \tag{3}
 $$
 
-and
+以及
 
 $$
 \gamma(\psi_N)
@@ -115,88 +108,88 @@ $$
 \tag{4}
 $$
 
-where $dl_{\mathrm{pol}}$ is the differential line element of the poloidal contour of the flux surface.
+其中 $dl_{\mathrm{pol}}$ 是磁面极向轮廓的微分线元。
 
-## Remarks
+## 说明
 
-- Equation (2) does not work in the SOL. In that region, the diffusion has to be manually set in order to obtain a reasonable $\rho$ at the separatrix.
+- 式 (2) 在 SOL 中不适用。在该区域内必须手动设定扩散，才能在分界面处得到合理的 $\rho$。
 
-- When the SOL is included, Eq. (2) does not completely constrain $\rho$, since Eq. (1) is free up to a global constant in $\rho$. SOL sources and sinks, or boundary conditions, must be tuned for that purpose.
+- 当包含 SOL 时，式 (2) 并不能完全确定 $\rho$，因为式 (1) 在 $\rho$ 上可相差一个整体常数。为此需要调节 SOL 中的源与汇，或调节边界条件。
 
-- Equation (2) diverges at $\psi_N = 0$ or when
+- 式 (2) 在 $\psi_N = 0$ 处或当
 
   $$
   \rho' = 0.
   $$
 
-  The profile must be smoothed in those situations. Also, a source must be given; otherwise a unique solution does not exist.
+  时发散。在这些情况下必须对剖面作平滑处理。此外必须给定源，否则不存在唯一解。
 
-- Flow terms can be included in $\left\langle S \right\rangle$ by averaging them with `jorek2_postproc`.
+- 流动项可以用 `jorek2_postproc` 作平均后计入 $\left\langle S \right\rangle$。
 
-- The same formula can be applied to the temperature equation.
+- 同一公式也可用于温度方程。
 
-## Caveats and Hardcoded Parameters in the Python Script
+## Python 脚本中的注意事项与硬编码参数
 
-The Python script is intentionally configured via hardcoded constants near the top of the file (rather than many command-line flags). Before using the tool on a new case, you should review these parameters.
+该 Python 脚本有意通过文件顶部附近的硬编码常数来配置（而不是提供大量命令行开关）。在新算例上使用该工具之前，应先检查这些参数。
 
-The most important settings are the MIN/MAX bounds for numerical stability.
+最重要的设置是用于数值稳定性的 MIN/MAX 边界。
 
-**SOLUTIONS of the equation do not exist if sources are active but gradients are zero**. For example, flat profiles may exist only in the absence of sources. **Non-monotonic target profiles have no solutions in a diffusion(only)+source problem.**
+**若源处于激活状态而梯度为零，则方程不存在解**。例如，平坦剖面只能在无源的情况下存在。**在仅含扩散＋源的问题中，非单调的目标剖面没有解。**
 
-### 1. Numerical Tolerances (`EPS_*`)
+### 1. 数值容差（`EPS_*`）
 
-These control how the script detects regions where the analytic formula is ill-conditioned.
+这些参数控制脚本如何识别解析公式病态的区域。
 
-- `EPS_INT`: Threshold for considering the cumulative integral of the source term "approximately zero".
-- `EPS_DER_RHO`, `EPS_DER_Ti`, `EPS_DER_Te`, `EPS_DER_T`: Thresholds for considering derivatives "approximately zero".
+- `EPS_INT`：判定源项累积积分"近似为零"的阈值。
+- `EPS_DER_RHO`、`EPS_DER_Ti`、`EPS_DER_Te`、`EPS_DER_T`：判定导数"近似为零"的阈值。
 
-If the `EPS_DER_*` thresholds are too small, numerical noise can produce extremely large coefficients.
-If they are too large, you may incorrectly classify broad regions as "flat/unconstrained".
+若 `EPS_DER_*` 阈值过小，数值噪声可能产生极大的系数。
+若阈值过大，则可能把大片区域误判为"平坦／无约束"。
 
-### 2. MIN/MAX Bounds (Critical for Numerical Stability)
+### 2. MIN/MAX 边界（对数值稳定性至关重要）
 
-After computing and cleaning the profiles, the script clips the coefficients to hardcoded ranges:
+在计算并清理剖面之后，脚本会把系数截断到硬编码范围内：
 
-- Density diffusivity bounds: `D_MIN_RHO`, `D_MAX_RHO`.
-- Heat conductivity bounds: `KAPPA_I_MIN`, `KAPPA_I_MAX`, `KAPPA_E_MIN`, `KAPPA_E_MAX`, `KAPPA_T_MIN`, `KAPPA_T_MAX`.
+- 密度扩散系数边界：`D_MIN_RHO`、`D_MAX_RHO`。
+- 热传导系数边界：`KAPPA_I_MIN`、`KAPPA_I_MAX`、`KAPPA_E_MIN`、`KAPPA_E_MAX`、`KAPPA_T_MIN`、`KAPPA_T_MAX`。
 
-Use these limits to avoid numerical problems (too small or too large diffusion).
+用这些限值避免数值问题（扩散过小或过大）。
 
-### 3. Core Handling (`EXTR_CORE_PSIN`)
+### 3. 芯部处理（`EXTR_CORE_PSIN`）
 
-Near the magnetic axis, profiles/metrics can be poorly defined or noisy. The script enforces a clean core behavior on the FINAL computed coefficient profiles:
+在磁轴附近，剖面／度规可能定义不佳或含有噪声。脚本对最终计算得到的系数剖面强制施加规整的芯部行为：
 
-- It fits a straight line using the first two points with `psi_N >= EXTR_CORE_PSIN`.
-- It overwrites all coefficient values for `psi_N < EXTR_CORE_PSIN` using that line.
+- 使用满足 `psi_N >= EXTR_CORE_PSIN` 的前两个点拟合一条直线。
+- 用该直线覆盖 `psi_N < EXTR_CORE_PSIN` 处的所有系数值。
 
-Adjust `EXTR_CORE_PSIN` if needed:
+必要时调整 `EXTR_CORE_PSIN`：
 
-- Increase it if the axis region is unreliable/noisy.
-- Decrease it if you trust the core values.
+- 若轴附近区域不可靠／含噪声，则增大该值。
+- 若信任芯部的数值，则减小该值。
 
-### 4. SOL Extension (`EXTEND_TO_PSIN` and Ramp Parameters)
+### 4. SOL 延展（`EXTEND_TO_PSIN` 与斜坡参数）
 
-The script extends each coefficient profile up to `EXTEND_TO_PSIN` by:
+脚本按以下方式把每个系数剖面延展到 `EXTEND_TO_PSIN`：
 
-- Adding `N_SOL_POINTS` points beyond the last input point.
-- Using a constant tail equal to the last computed value (default).
-- Optionally applying a smooth arctan ramp in the SOL.
+- 在最后一个输入点之外增加 `N_SOL_POINTS` 个点。
+- 采用等于最后计算值的常数尾部（默认）。
+- 可选地在 SOL 中施加平滑的 arctan 斜坡。
 
-Controls:
+控制参数：
 
-- `EXTEND_TO_PSIN`, `N_SOL_POINTS`.
-- `RAMP_AMP` (0 means no ramp), `RAMP_CENTER`, `RAMP_WIDTH`.
+- `EXTEND_TO_PSIN`、`N_SOL_POINTS`。
+- `RAMP_AMP`（0 表示不加斜坡）、`RAMP_CENTER`、`RAMP_WIDTH`。
 
-This is useful if you want enhanced transport in the SOL while leaving the core/edge (psi_N <= 1) unchanged.
+若希望在 SOL 中增强输运，同时保持芯部／边界（psi_N <= 1）不变，这一功能很有用。
 
-## Practical Troubleshooting
+## 实用故障排查
 
-If you see spikes in the coefficients:
+若系数出现尖峰：
 
-- Tighten the relevant MAX values.
-- Consider increasing `EPS_DER_*` (avoid dividing by very small derivatives).
+- 收紧相应的 MAX 值。
+- 考虑增大 `EPS_DER_*`（避免除以极小的导数）。
 
-If profiles still evolve in time:
+若剖面仍随时间演化：
 
-- Check that sources and target gradients are physically compatible.
-- Consider using `--hard-fail-impossible` to identify incompatible regions early.
+- 检查源与目标梯度在物理上是否相容。
+- 考虑使用 `--hard-fail-impossible` 以尽早识别不相容的区域。

@@ -7,22 +7,15 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 设置平行热传导
 
-原文页面：[Set Up Parallel Heat Conduction (ZKpar)](https://iterorganization.github.io/JOREK/howto/physics_options/plasma_functions_and_coefficients/ZKpar.html)　·　源文件：`howto/physics_options/plasma_functions_and_coefficients/ZKpar.md`
-</div>
+`ZKpar` 参数控制 JOREK 单位下的平行热传导系数。可使用常数系数，也可使用类 Spitzer–Härm 的温度依赖 $T^{5/2}$。在离子与电子温度分开演化的模型中，两个系数分别独立配置。
 
-# Setting Up Parallel Heat Conduction
+本页介绍模型 600 与 750 所使用的通用 `conductivity_parallel` 实现。
 
-The `ZKpar` parameters control the parallel heat-conduction coefficient in JOREK units. You can use a constant coefficient or the Spitzer–Härm-like temperature dependence $T^{5/2}$. In models with separate ion and electron temperatures, the two coefficients are configured independently.
+## 单温度设置
 
-This page describes the common `conductivity_parallel` implementation used by models 600 and 750.
-
-## One-temperature setup
-
-For a model that evolves a single MHD temperature $T=T_i+T_e$, use `ZK_par`:
+对于只演化单一 MHD 温度 $T=T_i+T_e$ 的模型，使用 `ZK_par`：
 
 ```fortran
 ZK_par             = 1.d0  ! Central parallel heat-conduction coefficient
@@ -30,7 +23,7 @@ ZKpar_T_dependent  = .true.
 ZK_par_max         = 1.d20
 ```
 
-Here, `ZK_par` is the coefficient at the equilibrium central temperature `T_0`. When `ZKpar_T_dependent = .true.`, JOREK evaluates
+这里，`ZK_par` 是平衡中心温度 `T_0` 处的系数。当 `ZKpar_T_dependent = .true.` 时，JOREK 计算
 
 $$
 \kappa_{\parallel}(T)
@@ -38,9 +31,9 @@ $$
     \left(\frac{T_{\mathrm{corr}}}{T_0}\right)^{5/2}.
 $$
 
-## Separate ion and electron temperatures
+## 离子与电子温度分开
 
-When $T_i$ and $T_e$ are evolved separately, use `ZK_i_par` and `ZK_e_par`:
+当 $T_i$ 与 $T_e$ 分开演化时，使用 `ZK_i_par` 与 `ZK_e_par`：
 
 ```fortran
 ZK_i_par            = 1.d0 ! Central ion coefficient
@@ -49,7 +42,7 @@ ZKpar_T_dependent   = .true.
 ZK_par_max          = 1.d20
 ```
 
-The common routine is applied independently to each species:
+通用子程序分别独立作用于每种粒子：
 
 $$
 \begin{aligned}
@@ -62,58 +55,58 @@ $$
 \end{aligned}
 $$
 
-`ZK_par_max` is shared by the ion and electron coefficients.
+`ZK_par_max` 由离子与电子系数共用。
 
-## Choosing the central coefficient
+## 选择中心系数
 
-JOREK calculates nominal Spitzer–Härm coefficients from the central plasma parameters and prints them in the log for reference. For separate-temperature models, look for
+JOREK 根据中心等离子体参数计算标称 Spitzer–Härm 系数，并打印到日志中供参考。对温度分开的模型，请查找
 
 ```text
 ZK_e_par_SpitzerHaerm (not input parameter; printed for reference in JOREK units)
 ZK_i_par_SpitzerHaerm (not input parameter; printed for reference in JOREK units)
 ```
 
-For a one-temperature model, look for
+对单温度模型，请查找
 
 ```text
 ZK_par_SpitzerHaerm (not input parameter; printed for reference in JOREK units)
 ```
 
-These are diagnostic reference values, not input parameters. JOREK does **not** automatically assign them to `ZK_par`, `ZK_i_par`, or `ZK_e_par`. To use the nominal Spitzer–Härm value, read it from a short initialization run and copy it to the corresponding input parameter.
+这些是诊断参考值，不是输入参数。JOREK **不会**自动把它们赋给 `ZK_par`、`ZK_i_par` 或 `ZK_e_par`。若要使用标称 Spitzer–Härm 值，请从一次较短的初始化运行中读取该值，并把它复制到相应的输入参数。
 
-## Available options
+## 可用选项
 
-### Constant parallel conduction
+### 常数平行热传导
 
-Disable the temperature scaling with
+用以下设置关闭温度标度
 
 ```fortran
 ZKpar_T_dependent = .false.
 ```
 
-The coefficient is then equal to `ZK_par`, or to `ZK_i_par` and `ZK_e_par` in a separate-temperature model. The negative-temperature override described below is evaluated independently and can still replace this value.
+此时系数等于 `ZK_par`；在温度分开的模型中等于 `ZK_i_par` 与 `ZK_e_par`。下文描述的负温度覆盖逻辑独立求值，仍可替换该值。
 
-### Maximum coefficient
+### 最大系数
 
-When the $T^{5/2}$ scaling produces a value larger than `ZK_par_max`, the coefficient is clipped:
+当 $T^{5/2}$ 标度给出的值大于 `ZK_par_max` 时，系数被截断：
 
 $$
 \kappa_{\parallel}=\kappa_{\parallel,max}.
 $$
 
-Configure the limit with, for example,
+用例如以下设置配置该上限
 
 ```fortran
 ZK_par_max = 1.d20 ! Default
 ```
 
-This limit is mainly a numerical safeguard against excessively large parallel conduction in hot regions. It is applied to the single-temperature, ion, and electron coefficients.
+该上限主要是一种数值保护措施，用于防止高温区域出现过大的平行热传导。它同时作用于单温度、离子与电子系数。
 
-### Minimum temperature used in the scaling
+### 标度中采用的最低温度
 
-The $T^{5/2}$ expression uses the positive corrected temperature. See [Correct Negative Densities / Temperatures](/howto/corr_neg.html) for the temperature correction.
+$T^{5/2}$ 表达式使用修正后的正温度。温度修正见 [修正负密度／温度](/howto/corr_neg.html)。
 
-When `ZKpar_T_dependent = .true.`, the decision to freeze the coefficient is based on the raw, uncorrected temperature. If $T_{raw}<T_{min,ZK\parallel}$, JOREK uses
+当 `ZKpar_T_dependent = .true.` 时，是否冻结系数依据未经修正的原始温度判断。若 $T_{raw}<T_{min,ZK\parallel}$，JOREK 采用
 
 $$
 \kappa_{\parallel}
@@ -121,7 +114,7 @@ $$
     \left(\frac{T_{min,ZK\parallel}}{T_0}\right)^{5/2}.
 $$
 
-The corresponding inputs are
+相应的输入为
 
 ```fortran
 T_min_ZKpar  = 1.d-6 ! Single-temperature model
@@ -129,18 +122,18 @@ Ti_min_ZKpar = 1.d-6 ! Ion temperature
 Te_min_ZKpar = 1.d-6 ! Electron temperature
 ```
 
-All values are in JOREK temperature units. Their preset sentinel value is `-1.d12`; during initialization, any value below `-1.d10` is replaced by the general `T_min` setting. Therefore, if these parameters are not specified, their effective value is `T_min`.
+所有值均采用 JOREK 温度单位。其预置哨兵值为 `-1.d12`；初始化期间，任何小于 `-1.d10` 的值都会被替换为通用的 `T_min` 设置。因此，若不指定这些参数，其有效值即为 `T_min`。
 
 
-## Input parameters at a glance
+## 输入参数一览
 
-| Parameter | Purpose | Preset value |
+| 参数 | 用途 | 预置值 |
 |---|---|---:|
-| `ZK_par` | Central coefficient for a single temperature | `1.d0` |
-| `ZK_i_par` | Central ion coefficient | `1.d0` |
-| `ZK_e_par` | Central electron coefficient | `1.d0` |
-| `ZKpar_T_dependent` | Apply the $T^{5/2}$ dependence | `.true.` |
-| `ZK_par_max` | Maximum temperature-dependent coefficient | `1.d20` |
-| `T_min_ZKpar` | Minimum single temperature used in the scaling | `-1.d12`, then replaced by `T_min` |
-| `Ti_min_ZKpar` | Minimum ion temperature used in the scaling | `-1.d12`, then replaced by `T_min` |
-| `Te_min_ZKpar` | Minimum electron temperature used in the scaling | `-1.d12`, then replaced by `T_min` |
+| `ZK_par` | 单温度模型的中心系数 | `1.d0` |
+| `ZK_i_par` | 离子中心系数 | `1.d0` |
+| `ZK_e_par` | 电子中心系数 | `1.d0` |
+| `ZKpar_T_dependent` | 是否施加 $T^{5/2}$ 依赖 | `.true.` |
+| `ZK_par_max` | 温度依赖系数的最大值 | `1.d20` |
+| `T_min_ZKpar` | 标度中采用的最低单温度 | `-1.d12`，随后被 `T_min` 替换 |
+| `Ti_min_ZKpar` | 标度中采用的最低离子温度 | `-1.d12`，随后被 `T_min` 替换 |
+| `Te_min_ZKpar` | 标度中采用的最低电子温度 | `-1.d12`，随后被 `T_min` 替换 |

@@ -6,36 +6,29 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 模拟 JET 的相关信息
 
-原文页面：[JET](https://iterorganization.github.io/JOREK/machines/jet.html)　·　源文件：`machines/jet.md`
-</div>
+## 等离子体电流与环向场的方向
 
-# Information relevant for simulating JET
-
-## Direction of plasma current and toroidal field
-
-Standard operation in JET is with $I_p$ and $B_t$ both running clockwise when looking from the top. In JOREK, since $\mathbf{B} = \nabla\psi\times \nabla\phi + F~\nabla\phi$ and $\phi$ also runs clockwise, this means that one should have $\psi_{axis}>\psi_{bnd}$.
+JET 的标准运行时，从上方俯视 $I_p$ 与 $B_t$ 均沿顺时针方向。在 JOREK 中，由于 $\mathbf{B} = \nabla\psi\times \nabla\phi + F~\nabla\phi$ 且 $\phi$ 同样沿顺时针方向，这意味着应有 $\psi_{axis}>\psi_{bnd}$。
 
 
-## From EFIT to JOREK
+## 从 EFIT 到 JOREK
 
-Equilibrium data reconstructed by EFIT may be converted into JOREK input data by using [eqdsk2jorek.f90](../howto/eqdsk2jorek).
+由 EFIT 重建的平衡数据可用 [eqdsk2jorek.f90](../howto/eqdsk2jorek) 转换为 JOREK 输入数据。
 
-**Note:** The sign convention for $\psi$ in EFIT (at least at JET) is opposite to the one in JOREK, i.e. a standard JET equilibrium has $\psi_{axis}^{EFIT}<\psi_{bnd}^{EFIT}$. As a consequence, we use $\psi_{JOREK}=-\psi_{EFIT}$ and $ff^\prime_{JOREK}=-ff^\prime_{EFIT}$.
+**注：** EFIT 中 $\psi$ 的符号约定（至少对 JET 而言）与 JOREK 相反，即标准 JET 平衡有 $\psi_{axis}^{EFIT}<\psi_{bnd}^{EFIT}$。因此取 $\psi_{JOREK}=-\psi_{EFIT}$，$ff^\prime_{JOREK}=-ff^\prime_{EFIT}$。
 
-## MGI and SPI relevant information
+## MGI 与 SPI 相关信息
 
-Slides (not publicly available) from S. Jachmich which contain information on **MGI experiments** and show the position of the various Disruption Mitigation Valves (DMVs).
+S. Jachmich 的幻灯片（未公开），含 **MGI 实验**信息，并标出各破裂缓解阀（DMV）的位置。
 
-The **SPI system** installed in 2019 replaces DMV1. Its toroidal position, in JOREK coordinates, is therefore $\phi=6.08$, considering that $\phi=0$ corresponds to the middle of Octant 1. Some information on the SPI system can be found in these [slides](https://tsdw.pppl.gov/Talks/2017/Lexar/Monday%20Session%201/Baylor.pdf) from L. Baylor.
+2019 年安装的 **SPI 系统**取代了 DMV1。因此在 JOREK 坐标下其环向位置为 $\phi=6.08$，这里 $\phi=0$ 对应第 1 八分之一扇区的中心。SPI 系统的部分信息见 L. Baylor 的这份[幻灯片](https://tsdw.pppl.gov/Talks/2017/Lexar/Monday%20Session%201/Baylor.pdf)。
 
-## Synthetic diagnostics
+## 合成诊断
 
-- [KB5 bolometer](jet_synthetic_KB5_bolometer)
+- [KB5 辐射热计](jet_synthetic_KB5_bolometer)
 
-## JET ELM tutorial
+## JET ELM 教程
 
-- [JET ELM tutorial](jet_tutorial)
+- [JET ELM 教程](jet_tutorial)

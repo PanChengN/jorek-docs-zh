@@ -7,51 +7,44 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 在 TOK Linux 集群上运行 JOREK（2025 年安装）
 
-原文页面：[TOK Cluster](https://iterorganization.github.io/JOREK/compiling/compilation_and_libraries/hpc_pc_configurations/tok.html)　·　源文件：`compiling/compilation_and_libraries/hpc_pc_configurations/tok.md`
-</div>
+## 基本信息
 
-# Run JOREK on the TOK Linux cluster (installed 2025)
+- [关于 TOK 集群的信息](https://hpc.wiki.ipp.mpg.de/tok_batch_cluster_in_garching)
 
-## Basic information
-
-- [Information about the TOK cluster](https://hpc.wiki.ipp.mpg.de/tok_batch_cluster_in_garching)
-
-**Two login nodes are available** (only for compilation and submission of jobs):
+**有两个登录节点可用**（仅用于编译与提交作业）：
 
 ```bash
 ssh tok[11-12].ipp.mpg.de
 ```
 
-**Pool of interactive nodes** (to run small tests):
+**交互节点池**（用于运行小型测试）：
 
-For running small interactive tests, the TOK-I cluster `toki01...toki12.ipp.mpg.de` is available with slightly older hardware.
+为运行小型交互测试，可使用硬件略旧的 TOK-I 集群 `toki01...toki12.ipp.mpg.de`。
 
-**Compute nodes:**
+**计算节点：**
 
-- 72 nodes
-- 2× AMD EPYC 9754 CPUs per node, each with 128 cores and 2.25 GHz base clock speed
-- Memory per node: 768 GB
-- Operating system: SLES15
+- 72 个节点
+- 每个节点 2 颗 AMD EPYC 9754 CPU，每颗 128 核，基础频率 2.25 GHz
+- 每节点内存：768 GB
+- 操作系统：SLES15
 
-## Modules required
+## 所需模块
 
-Basic set for compilation:
+编译所需的基本模块集：
 
 ```bash
 module load intel/2025.1 impi/2021.15 mkl/2025.1 fftw-mpi/3.3.10 hdf5-mpi/1.14.1
 ```
 
-Additional module for running interactively (without SLURM):
+交互运行（不使用 SLURM）所需的附加模块：
 
 ```bash
 module load impi-interactive
 ```
 
-Additional modules for post-processing analysis, visualization, data, and code sharing:
+后处理分析、可视化、数据与代码共享所需的附加模块：
 
 ```bash
 module load visit
@@ -63,14 +56,14 @@ module load imagemagick
 module load datashare
 ```
 
-You can either add these modules to your `~/.bashrc` file (not recommended, as clashes with other environments can be hard to debug), or use the `module save/restore` functionality.
+你可以将这些模块加入 `~/.bashrc` 文件（不推荐，因为与其他环境的冲突很难排查），也可以使用 `module save/restore` 功能。
 
-## Compiling JOREK and Libraries
+## 编译 JOREK 与依赖库
 
-> **Warning:** There seems to be an issue when JOREK is run on clusters at IPP (TOK-I, TOK, DRACO, and COBRA) with more than one MPI task per harmonic. The run hangs at the first PASTIX call during the very first time-step. In such a situation, the combination of `Pastix_5.2.3` and `Scotch_5.1.12b` has been seen to fix this issue.
+> **警告：** 在 IPP 的集群（TOK-I、TOK、DRACO 与 COBRA）上，当每个谐波使用多于一个 MPI 任务运行 JOREK 时似乎存在问题。运行会在第一个时间步中的首次 PASTIX 调用处挂起。在这种情况下，`Pastix_5.2.3` 与 `Scotch_5.1.12b` 的组合已被证实可以解决该问题。
 
-- [Installation/compilation of libraries and JOREK](../compiling.md) works in the normal way.
-- You can simply use the libraries already compiled by Ihor Holod (you may need to ask Matthias Hoelzl for access) via the following `Makefile.inc` file:
+- [依赖库与 JOREK 的安装／编译](../compiling.md)按常规方式进行。
+- 也可以直接使用 Ihor Holod 已编译好的库（可能需要向 Matthias Hoelzl 申请访问权限），对应的 `Makefile.inc` 文件如下：
 
 ```makefile
 # JOREK configuration file for compilation on the TOK cluster at IPP Garching
@@ -165,41 +158,41 @@ HDF5INCLUDE = $(HDF5_HOME)/include
 HDF5LIB     = -L$(HDF5_HOME)/lib -lhdf5hl_fortran -lhdf5_hl -lhdf5_fortran -lhdf5 -lz  -Wl,-rpath,$(HDF5_HOME)/lib
 ```
 
-## File systems
+## 文件系统
 
-- Best is to use `/tokp/work/<user>` (your home directory) for your simulations
-- Your quota usage should be 2 TB in `/tokp/work/<user>` by default, and this data will automatically be backed up
-- **Be careful when using scratch directories, as there are no automatic backups**
+- 最好将仿真放在 `/tokp/work/<user>`（你的主目录）
+- 默认情况下你在 `/tokp/work/<user>` 的配额为 2 TB，且这些数据会自动备份
+- **使用 scratch 目录时要小心，因为没有自动备份**
 
-## Batch submission
+## 批处理提交
 
-- Submit a job:
+- 提交作业：
 
 ```bash
 sbatch jobscript
 ```
 
-- Check job status:
+- 查看作业状态：
 
 ```bash
 squeue -u <username>
 ```
 
-- Cancel a job:
+- 取消作业：
 
 ```bash
 scancel <jobid>
 ```
 
-- List available queues (partitions):
+- 列出可用队列（分区）：
 
 ```bash
 sinfo
 ```
 
-### Example job scripts
+### 作业脚本示例
 
-#### Serial job
+#### 串行作业
 
 ```bash
 #!/bin/bash -l
@@ -226,7 +219,7 @@ export OMP_PLACES=cores
 srun ./jorek_model199 < ./intear
 ```
 
-#### OpenMP job
+#### OpenMP 作业
 
 ```bash
 #!/bin/bash -l
@@ -253,7 +246,7 @@ export OMP_PLACES=cores
 srun ./jorek_model199 < ./intear | tee logfile
 ```
 
-#### OpenMP + MPI job
+#### OpenMP + MPI 作业
 
 ```bash
 #!/bin/bash -l
@@ -280,23 +273,23 @@ export OMP_PLACES=cores
 srun ./jorek_model199 < ./intear | tee logfile
 ```
 
-More example job scripts for the TOK cluster can be found [here](https://hpc.wiki.ipp.mpg.de/tok_batch_cluster_in_garching).
+TOK 集群的更多作业脚本示例见[此处](https://hpc.wiki.ipp.mpg.de/tok_batch_cluster_in_garching)。
 
 ## VNC Viewer
 
-The setup of a Virtual Network Connection server is outlined [here](https://www.mpcdf.mpg.de/services/computing/software/vnc-at-the-mpcdf).
+虚拟网络连接（VNC）服务器的搭建在[此处](https://www.mpcdf.mpg.de/services/computing/software/vnc-at-the-mpcdf)有概述。
 
-In addition to these commands, it has been observed that visualization software can crash on the new systems, seemingly due to errors related to required fonts. It is therefore recommended to add the following flag when setting up the VNC server:
+除上述命令外，已观察到可视化软件在新系统上可能崩溃，原因似乎与所需字体有关的错误。因此建议在建立 VNC 服务器时加上以下选项：
 
 ```bash
 vncserver -fp "built-ins"
 ```
 
-## Might be useful
+## 也许有用
 
-### Depending jobs
+### 具有依赖关系的作业
 
-- Add the following to your `~/.bashrc` file (it might not exist, so create it if necessary):
+- 将以下内容加入 `~/.bashrc` 文件（该文件可能不存在，必要时请创建）：
 
 ```bash
 function qsubchain() {
@@ -318,7 +311,7 @@ unset depend thejobid thejobids
 }
 ```
 
-- You can then submit two or more job scripts at once, where the second job only starts when the first one has finished, and so on:
+- 之后即可一次提交两个或更多作业脚本，其中第二个作业仅在第一个作业完成后启动，依此类推：
 
 ```bash
 $ qsubchain jobscript1 jobscript2

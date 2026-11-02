@@ -6,25 +6,18 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 原子物理
+目前对以下原子物理过程进行了建模，通常使用 OpenADAS（[[adas|简要概述]]）提供的系数：
 
-原文页面：[Atomic Processes](https://iterorganization.github.io/JOREK/physics/kinetic_models/neutrals_and_impurities/ncs_ics_atomic_processes.html)　·　源文件：`physics/kinetic_models/neutrals_and_impurities/ncs_ics_atomic_processes.md`
-</div>
+**中性粒子：**
+  * *线辐射*：背景等离子体的能量汇。
+  * *电离*：动理学中性粒子 -> 背景流体离子。
+  * *复合*：背景流体离子 -> 动理学中性粒子。
+  * *电荷交换*：此处建模为背景流体离子与动理学离子之间的弹性碰撞，改变粒子速度并贡献到平行动量耦合项。
+  * [中性粒子间碰撞](../../howto/neutral_neutral_collisions.md)
 
-# Atomic physics
-Currently the following atomic physics processes are modeled, usually using coefficients from OpenADAS ([[adas|Brief overview]]):
-
-**Neutrals:**
-  * *Line radiation*: energy sink for background plasma.
-  * *Ionization*: kinetic neutral -> background fluid ion.
-  * *Recombination*: background fluid ion -> kinetic neutral.
-  * *Charge-exchange*: modeled here as elastic collision between a background fluid- and kinetic ion, changes particle velocity and contributes to parallel momentum coupling term.
-  * [Neutral neutral collisions](../../howto/neutral_neutral_collisions.md)
-
-**Impurities:**
-  * *Radiation*: including line radiation, Bremsstrahlung and contribution from recombination.
-  * *Ionization*: increases charge state by one.
-  * *Recombination*: decreases charge state by one.
-  * *Collisions*: currently binary collisions with the background plasma ions, resulting in neoclassical effects.
+**杂质：**
+  * *辐射*：包括线辐射、轫致辐射以及复合的贡献。
+  * *电离*：电荷态加一。
+  * *复合*：电荷态减一。
+  * *碰撞*：目前为与背景等离子体离子的二元碰撞，由此产生新经典效应。

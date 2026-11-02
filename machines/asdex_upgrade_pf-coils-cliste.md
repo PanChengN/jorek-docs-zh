@@ -5,36 +5,29 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# PF 线圈
 
-原文页面：[PF coils](https://iterorganization.github.io/JOREK/machines/asdex_upgrade_pf-coils-cliste.html)　·　源文件：`machines/asdex_upgrade_pf-coils-cliste.md`
-</div>
+**E-Mail 2.3.2016：**
 
-# PF coils
+*下面是我从 AUG 的 MachineDescription 文件中抄出的行——它并不好读，但我也想不出更好的呈现方式。第一块只是线圈名称，第二块是随后两段描述中"有效"段的数目。第三块是每个"段"的匝数——这些划分在我看来相当随意，不过是为了让每段既不太大、也不呈非矩形。它是一个 18x6 的数组，对应 18 个线圈、每个线圈最多 6 段——很多线圈的段数更少。最后一块则更复杂：18 行 x 6 段 x 每段 4 个数据点，给出各段的 R、z、dr、dz，匝数取自第三块数据。*
 
-**E-Mail 2.3.2016:**
-
-*I've copied the lines from the AUG MachineDescription file below - it's not exactly easy to read, but I can't really think of a better way to present it. The first chunk is just the coil names, the second is the number of "active" segments in the two following descriptions. The third chunk is the number of turns per 'segment' - the divisions are relatively arbitrary as far as I can see, but made such that each segment isn't too large or non-rectangular. It's an 18x6 array, for 18 coils with a maximum of 6 segments each - many also have fewer segments. The final one then is a more complicated array of 18 lines x 6 segments x 4 data points each for R,z,dr,dz data for each segment, with the number of turns from the third data chunk.*
-
-*Let me know if this is not clear - it's not exactly easy to get your head around. If you're reading out coil data from a shotfile, then the current just gets equally distributed over all of the turns.*
+*若不清楚请告诉我——这些内容确实不容易看明白。如果是从 shotfile 中读取线圈数据，则电流只是在所有匝之间平均分配。*
 
 *Mike*
 
-**Coil ordering:**
+**线圈顺序：**
 
 ```
 'V1o', 'V1u', 'V2o', 'V2u', 'V3o', 'V3u', 'PSLu', 'PSLo', 'Coio', 'Coiu', 'OHo', 'OHu', 'PSLQuhi', 'PSLQulo', 'PSLQolo', 'PSLQohi', 'OH2o', 'OH2u'
 ```
 
-**Number of segments with non-zero values below:**
+**下方给出非零取值的段数：**
 
 ```
 3, 3, 2, 2, 1, 1, 6, 6, 5, 5, 3, 3, 3, 3, 3, 3, 1, 1
 ```
 
-**Number of turns per segment, one conductor per line:**
+**每段匝数，每行一个导体：**
 
 ```
 35.0000, 31.0000, 27.0000, 0.0000, 0.0000, 0.0000,
@@ -57,7 +50,7 @@ render_with_liquid: false
 81.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000
 ```
 
-**Segment information (R, z, dr, dz, one conductor per line):**
+**段信息（R、z、dr、dz，每行一个导体）：**
 
 ```
 1.3836,2.3582,0.2182,0.3463, 1.5979,2.3582,0.1985,0.3463, 1.9572,2.3582,0.1724,0.3463,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00, 0.00,0.00,0.00,0.00,

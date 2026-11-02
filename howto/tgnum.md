@@ -7,38 +7,31 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# Taylor–Galerkin 稳定化
 
-原文页面：[Run with Taylor-Galerkin Stabilization](https://iterorganization.github.io/JOREK/howto/tgnum.html)　·　源文件：`howto/tgnum.md`
-</div>
+Taylor–Galerkin 稳定化在 `model600` 中可用。它针对选定的对流项添加稳定化，每个受支持的方程有各自独立的系数。所有系数默认为零，即关闭相应的稳定化。
 
-# Taylor–Galerkin stabilization
+当前实现未在 Taylor–Galerkin 项中包含抗磁漂移速度。
 
-Taylor–Galerkin stabilization is available in `model600`. It adds stabilization to selected advective terms, with a separate coefficient for each supported equation. All coefficients default to zero, which disables the corresponding stabilization.
+## `model600` 的输入参数
 
-The current implementation does not include the diamagnetic velocity in the Taylor–Galerkin terms.
+与旧模型不同，`model600` **不**使用按方程索引的 `tgnum` 数组。由于 `model600` 是一个模型族，其演化变量取决于编译期扩展，因此改用命名参数：
 
-## Input parameters for `model600`
-
-Unlike older models, `model600` does **not** use the equation-indexed `tgnum` array. Because `model600` is a model family whose evolved variables depend on compile-time extensions, it uses named parameters instead:
-
-| Parameter | Equation | When it is relevant |
+| 参数 | 方程 | 生效条件 |
 |---|---|---|
-| `tgnum_u` | Perpendicular momentum | Always available |
-| `tgnum_rho` | Main-plasma density | Always available |
-| `tgnum_T` | Total temperature | Single-temperature model: `with_TiTe=.false.` |
-| `tgnum_Ti` | Ion temperature | Two-temperature model: `with_TiTe=.true.` |
-| `tgnum_Te` | Electron temperature | Two-temperature model: `with_TiTe=.true.` |
-| `tgnum_vpar` | Parallel momentum | `with_vpar=.true.` |
-| `tgnum_rhoimp` | Impurity density | `with_impurities=.true.` |
+| `tgnum_u` | 垂直动量 | 始终可用 |
+| `tgnum_rho` | 主等离子体密度 | 始终可用 |
+| `tgnum_T` | 总温度 | 单温度模型：`with_TiTe=.false.` |
+| `tgnum_Ti` | 离子温度 | 双温度模型：`with_TiTe=.true.` |
+| `tgnum_Te` | 电子温度 | 双温度模型：`with_TiTe=.true.` |
+| `tgnum_vpar` | 平行动量 | `with_vpar=.true.` |
+| `tgnum_rhoimp` | 杂质密度 | `with_impurities=.true.` |
 
-The general namelist also exposes `tgnum_psi`, `tgnum_zj`, `tgnum_w`, `tgnum_rhon`, `tgnum_nre`, `tgnum_AR`, `tgnum_AZ`, and `tgnum_A3`. The current `model600` element-matrix implementation does not contain Taylor–Galerkin terms controlled by these parameters, so setting them has no effect in `model600`.
+通用 namelist 还提供 `tgnum_psi`、`tgnum_zj`、`tgnum_w`、`tgnum_rhon`、`tgnum_nre`、`tgnum_AR`、`tgnum_AZ` 与 `tgnum_A3`。当前 `model600` 的单元矩阵实现不包含由这些参数控制的 Taylor–Galerkin 项，因此在 `model600` 中设置它们没有效果。
 
-## Basic example
+## 基本示例
 
-For the base, single-temperature `model600` configuration, a possible starting point is:
+对基础的单温度 `model600` 配置，一个可用的起点是：
 
 ```fortran
 tgnum_u   = 0.5d0
@@ -46,7 +39,7 @@ tgnum_rho = 0.5d0
 tgnum_T   = 0.5d0
 ```
 
-For a two-temperature configuration with parallel velocity, use the coefficients associated with the compiled equations:
+对于含平行速度的双温度配置，使用与已编译方程对应的系数：
 
 ```fortran
 tgnum_u    = 0.5d0
@@ -56,18 +49,18 @@ tgnum_Ti   = 0.5d0
 tgnum_Te   = 0.5d0
 ```
 
-If the impurity-density extension is compiled, its stabilization can be enabled separately:
+若编译了杂质密度扩展，可单独启用其稳定化：
 
 ```fortran
 tgnum_rhoimp = 0.5d0
 ```
 
-Do not set both `tgnum_T` and `tgnum_Ti`/`tgnum_Te` for the same executable: only the coefficient or coefficients corresponding to the compiled temperature model are used.
+不要为同一个可执行文件同时设置 `tgnum_T` 与 `tgnum_Ti`／`tgnum_Te`：只有与已编译温度模型对应的那个或那些系数会被使用。
 
-## Choosing the coefficients
+## 系数的选取
 
-A value of `0.5` is a reasonable initial value for testing, but it is not universal. The appropriate value depends on the case, time step, and spatial resolution.
+`0.5` 是测试时合理的初始值，但并不通用。合适的取值取决于算例、时间步与空间分辨率。
 
-Perform a parameter scan that includes the unstabilized case and verify that the selected coefficients do not significantly change resolved physical results, particularly linear growth rates. Set only the coefficients needed for equations showing numerical instability; the coefficients do not need to have identical values.
+进行包含无稳定化情形的参数扫描，并确认所选系数不会显著改变已解析的物理结果，尤其是线性增长率。只为出现数值不稳定的方程设置系数；各系数不必取相同值。
 
-The active values are printed in the JOREK logfile at startup as `tgnum_u`, `tgnum_rho`, and the other named parameters. A printed nonzero value for a compile-time-disabled or unsupported equation does not make that stabilization term active.
+启动时，JOREK 日志文件会以 `tgnum_u`、`tgnum_rho` 及其他命名参数的形式打印生效值。对编译期已禁用或不受支持的方程，即使打印出非零值，也不代表该稳定化项生效。

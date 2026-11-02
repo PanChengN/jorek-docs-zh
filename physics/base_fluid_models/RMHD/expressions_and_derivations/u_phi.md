@@ -7,67 +7,60 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 流函数与电势的推导
 
-原文页面：[Stream Function and Electric Potential Expression](https://iterorganization.github.io/JOREK/physics/base_fluid_models/RMHD/expressions_and_derivations/u_phi.html)　·　源文件：`physics/base_fluid_models/RMHD/expressions_and_derivations/u_phi.md`
-</div>
-
-# Derivation of Stream Function and Electric Potential
-
-The connection between $u$ and $\Phi$ is derived in the following. The starting point is Faraday's law
+下面推导 $u$ 与 $\Phi$ 之间的联系。出发点是法拉第定律
 
 $$\begin{equation}
   \partial_t\mathbf{B}=-\nabla\times\mathbf{E},
 \end{equation}$$
 
-which can also be expressed in the magnetic vector potential:
+该式也可用磁矢势表示：
 
 $$\begin{equation}\label{dAdt}
   \partial_t\mathbf{A}=-\mathbf{E}-\nabla\Phi+\alpha_L\nabla\phi.
 \end{equation}$$
 
-Here, the loop voltage $\alpha_L$ and the electric potential $\Phi$ are introduced as integration constants by removing the curl. From the requirement $\nabla\times(\alpha_L\nabla\phi)=0$ it follows, that $\nabla_\text{pol}\alpha_L$ must vanish. The electric field is given by
+这里，环电压 $\alpha_L$ 与电势 $\Phi$ 是消去旋度后作为积分常数引入的。由 $\nabla\times(\alpha_L\nabla\phi)=0$ 的要求可知，$\nabla_\text{pol}\alpha_L$ 必须为零。电场由下式给出
 
 $$\begin{equation}\label{E}
   \mathbf{E}=-\mathbf{v}\times\mathbf{B}+\eta\mathbf{j}=-F\nabla_\text{pol}u - [\Psi,u]\mathbf{e}_\phi + \eta\mathbf{j},
 \end{equation}$$
 
-When plugging Eq. $\eqref{E}$ into Eq. $\eqref{dAdt}$, we obtain
+将式 $\eqref{E}$ 代入式 $\eqref{dAdt}$，可得
 
 $$\begin{equation}
   \partial_t\mathbf{A}=F\nabla_\text{pol}u + [\Psi,u]\mathbf{e}_\phi - \eta\mathbf{j} - \nabla\Phi + \alpha_L\nabla\phi.
 \end{equation}$$
 
-The loop voltage term is combined with the current in JOREK by introducing $\mathbf{j}_0$:
+在 JOREK 中，通过引入 $\mathbf{j}_0$ 把环电压项与电流合并：
 
 $$\begin{equation}\label{dAdt9}
   \partial_t\mathbf{A}=F\nabla_\text{pol}u + [\Psi,u]\mathbf{e}_\phi - \eta(\mathbf{j}-\mathbf{j}_0) - \nabla\Phi.
 \end{equation}$$
 
-To be fully consistent, $j_0$ needs to be $\frac{\alpha_L}{\eta}\nabla\phi$ with spatially constant $\alpha_L$.
+为完全自洽，$j_0$ 需取为 $\frac{\alpha_L}{\eta}\nabla\phi$，其中 $\alpha_L$ 在空间上为常数。
 
-## When taking $F\equiv F_0$ and neglecting $\eta(\mathbf{j}-\mathbf{j}_0)$:
+## 当取 $F\equiv F_0$ 并忽略 $\eta(\mathbf{j}-\mathbf{j}_0)$ 时：
 
-We get $\partial_t\mathbf{A}=\partial_t\psi\nabla\phi$. Applying $\nabla\phi\times(\dots)$ to Eq. $\eqref{dAdt9}$, we obtain
+可得 $\partial_t\mathbf{A}=\partial_t\psi\nabla\phi$。对式 $\eqref{dAdt9}$ 作用 $\nabla\phi\times(\dots)$，得到
 
 $$\begin{equation}
   F_0\nabla\phi\times\nabla_\text{pol}u=\nabla\phi\times\nabla_\text{pol}\Phi
 \end{equation}$$
 
-which means that electric potential $\Phi$ and velocity stream function $u$ are connected by
+这意味着电势 $\Phi$ 与速度流函数 $u$ 通过下式相联系
 
 $$\begin{equation}
   F_0 u \equiv \Phi.
 \end{equation}$$
 
-(In principle, we have an integration constant $c\phi$ in this equation which is chosen to be zero)
+（原则上该式中还有一个积分常数 $c\phi$，此处取为零）
 
-We can then calculate the local electric field from $E = -\nabla \Phi - \partial_t A$.
+随后可由 $E = -\nabla \Phi - \partial_t A$ 计算局域电场。
 
 $$\begin{equation}
   \mathbf{E} = \left(- F_0 u_R, - F_0 u_Z, - F_0 u_\phi/R - \partial_t \psi/R\right),
 \end{equation}$$
 
-where subscripts denote differentiation and the vector components $(R,Z,\phi)$ are written down separately.
+其中下标表示求导，矢量分量 $(R,Z,\phi)$ 分别写出。

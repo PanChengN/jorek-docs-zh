@@ -7,81 +7,77 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 粒子追踪器中的逃逸电子物理
 
-原文页面：[Runaway Electron Physics in Particle Tracker](https://iterorganization.github.io/JOREK/physics/kinetic_models/runaway_electrons/runaway_electron_pushers.html)　·　源文件：`physics/kinetic_models/runaway_electrons/runaway_electron_pushers.md`
-</div>
+## 推进器
 
-# Runaway electron physics in the particle tracer
+逃逸电子既可通过求解完整的回旋轨道追踪，也可通过求解导向中心的运动追踪。回旋轨道推进器采用保体积算法，该算法保持粒子能量，本质上是经典 Boris 推进器的相对论变体。导向中心推进器用 RK4 方法求解运动方程，不保持能量。时间步的推荐初值为：回旋轨道 1e-12，导向中心 1e-11。推进器及其实现见这篇[文献](https://iopscience.iop.org/article/10.1088/1741-4326/aa95cd)。 
 
-## Pushers
+示例 `particles/examples/ex6_jorek.f90`（回旋轨道）和 `particles/examples/ex7_jorek.f90`（导向中心）展示了相对论推进器的用法。 
 
-Runaway electrons can be traced either by solving the full gyro-orbit or the motion of the guiding center. The gyro-orbit pusher utilizes the volume-preserving algorithm which preserves particle energy and is essentially a relativistic variant of the classical Boris pusher. The guiding center pusher solves the equations of motion with RK4 method, which does not preserve energy. Good starting values for the time-steps are 1e-12 for the gyro-orbit and 1e-11 for the guiding center. The pushers and their implementation are presented in this [publication](https://iopscience.iop.org/article/10.1088/1741-4326/aa95cd). 
+- 回旋运动用 `volume_preserving_push_jorek` 求解，粒子类型为 `particle_kinetic_relativistic`。
+- 导向中心运动用 `runge_kutta_fixed_dt_gc_push_jorek` 求解，粒子类型为 `particle_gc_relativistic`。
 
-Examples `particles/examples/ex6_jorek.f90` (gyro-orbit) and `particles/examples/ex7_jorek.f90` (guiding center) show how the relativistic pushers are used. 
+### 辐射反作用力
 
-- The gyro-motion is solved with `volume_preserving_push_jorek` using particle type `particle_kinetic_relativistic`.
-- The guiding-center motion is solved with `runge_kutta_fixed_dt_gc_push_jorek` using particle type `particle_gc_relativistic`.
+反应堆等离子体中的辐射反作用力只对高能（E » 1 MeV）电子有意义，它可为逃逸电子能量设定上限。JOREK 中实现的辐射反作用力的细节见[此处](https://iopscience.iop.org/article/10.1088/1741-4326/ac75fd/meta)。 
 
-### Radiation reaction force
-
-The radiation reaction force in reactor plasmas is relevant only for energetic (E » 1 MeV) electrons and it can set an upper limit for RE energy. The details of the radiation reaction force implemented in JOREK can be found [here](https://iopscience.iop.org/article/10.1088/1741-4326/ac75fd/meta). 
-
-The radiation reaction force is enabled by calling a different variant of the particle pusher (these functions both push the marker and account for the radiation reaction force): 
+启用辐射反作用力的方式是调用粒子推进器的另一变体（这两个函数既推进标记粒子，也计入辐射反作用力）： 
 
 - `volume_preserving_radiation_push_jorek`
 - `runge_kutta_fixed_dt_gc_push_jorek_radreact`
 
-### Collision operator
+### 碰撞算子
 
-The collision operator is based on the relativistic Fokker-Planck equation, where both plasma and test particle can be relativistic. In particle simulations we are solving the corresponding stochastic equation (the Langevin equation). Therefore particle simulations are not deterministic if collisions are enabled. 
+碰撞算子基于相对论 Fokker-Planck 方程，其中等离子体与检验粒子都可以是相对论性的。在粒子模拟中，我们求解相应的随机方程（Langevin 方程）。因此，若启用碰撞，粒子模拟不是确定性的。 
 
-The collision operator is presented [here](https://iopscience.iop.org/article/10.1088/1741-4326/ac75fd/meta) and [here](https://www.sciencedirect.com/science/article/pii/S0010465517303326). The evaluation requires that look-up tables for special functions are initialized first. You can generate the data file with (the default settings should be OK for all fusion plasmas): 
+碰撞算子见[此处](https://iopscience.iop.org/article/10.1088/1741-4326/ac75fd/meta)和[此处](https://www.sciencedirect.com/science/article/pii/S0010465517303326)。其计算要求首先初始化特殊函数的查找表。可用以下步骤生成数据文件（默认设置对所有聚变等离子体都适用）： 
 
-1. Uncomment the program in `particles/pushers/mod_ccoll_relativistic.f90`
-2. Compile `util/j2p -j 8 mod_ccoll_relativistic`
-3. Run (the generated HDF5 file is `ccolldata`) `./mod_ccoll_relativistic`
+1. 取消 `particles/pushers/mod_ccoll_relativistic.f90` 中程序的注释
+2. 编译 `util/j2p -j 8 mod_ccoll_relativistic`
+3. 运行（生成的 HDF5 文件为 `ccolldata`）`./mod_ccoll_relativistic`
 
-Additionally, you'll need to initialize the ion data which requires ADAS if impurity species is present (currently code assumes main ion species and one impurity where all charge states are treated as individual species): 
+此外，还需要初始化离子数据；若存在杂质组分，这需要 ADAS（当前代码假定一种主离子组分加一种杂质，所有电荷态都作为独立组分处理）： 
 
     call init_imp_adas(0)
     call ccoll_init('ccolldata', dat)
 
-- The collisions in gyro-orbit simulations are applied as `call ccoll_kinetic_relativistic_push`
-- In the guiding center simulations `call ccoll_gc_relativistic_push`
+- 回旋轨道模拟中的碰撞通过 `call ccoll_kinetic_relativistic_push` 施加
+- 在导向中心模拟中通过 `call ccoll_gc_relativistic_push` 施加
 
-Note that these methods only update the momentum of the particle according to the collision operator and therefore need to be used in combination with any of the previously mentioned pushers when evolving the particle in time. The particle operator operates on the whole 3D momentum whereas the guiding center operator has different operators for pitch and energy. Therefore it is possible to have only pitch scattering or only slowing down by commenting the corresponding line in . One minor thing is that the guiding center operator does not have spatial operator. This operator accounts for the classical transport so it's contribution is negligible in most cases (the gyro-orbit operator includes it inherently). Neoclassical transport is included in both operators. 
+注意这些方法只按碰撞算子更新粒子动量，因此在演化粒子随时间变化时需与前述任一推进器配合使用。粒子算子作用于整个三维动量，而导向中心算子对投掷角和能量有各自的算子。因此，通过注释掉  中的相应行，可以只保留投掷角散射或只保留减速。另有一点：导向中心算子没有空间算子。该算子对应经典输运，其贡献在多数情况下可忽略（回旋轨道算子本身已包含它）。两种算子都包含新经典输运。 
 
-For runaway electrons, the effect of the partial screening on collisions is significant. These can be included by calling: 
+译者注：原文此处缺少被注释行所在的文件名，疑为漏字。
+{: .warning }
 
-- Gyro-orbit: `call ccoll_kinetic_relativistic_push_partialscreening`
-- Guiding center: `call ccoll_gc_relativistic_push_partialscreening`
+对逃逸电子而言，部分屏蔽对碰撞的影响很显著。可通过调用以下函数计入： 
 
-The implementation is based on the formulas found in [Hesslow's thesis](https://research.chalmers.se/en/publication/518256). The limitation is that both operators assume that the test particle is an electron (partial screening is not relevant for ions anyway). Also the gyro-orbit operator is in fact the guiding center operator (we perform guiding center transformation in between) so now the full orbit simulations don't have classical transport either. 
+- 回旋轨道：`call ccoll_kinetic_relativistic_push_partialscreening`
+- 导向中心：`call ccoll_gc_relativistic_push_partialscreening`
 
-## Benchmark 
+该实现基于 [Hesslow 的学位论文](https://research.chalmers.se/en/publication/518256)中的公式。其局限在于：两种算子都假定检验粒子是电子（部分屏蔽对离子本就不适用）。此外，回旋轨道算子实际上就是导向中心算子（中间做了导向中心变换），因此现在全轨道模拟也不再具有经典输运。 
 
-When both collisions and radiation reaction force are present, then electrons in presence of an electric field are not accelerated indefinitely but instead they form a so-called bump-on-tail distribution. We use this fact to benchmark the implementation. There are no analytical results, however, so the comparison is done with respect to kinetic code DREAM. The test code, which can also be used with actual JOREK data with small modifications, is located in `particles/examples/test_bump.f90`. 
+## 基准算例 
 
-The results: 
+当碰撞与辐射反作用力同时存在时，电场中的电子不会无限加速，而是形成所谓的尾部隆起（bump-on-tail）分布。我们利用这一事实来校验实现。然而没有解析结果，因此比较是针对动理学程序 DREAM 进行的。测试代码位于 `particles/examples/test_bump.f90`，稍作修改也可用于真实的 JOREK 数据。 
 
-<img src="../../assets/runaway_electron_pushers/Test_bump_corrected.png" alt="Kinetic results agree with DREAM result" width="300">
+结果： 
 
-Results agree with DREAM result. 
+<img src="../../assets/runaway_electron_pushers/Test_bump_corrected.png" alt="动理学结果与 DREAM 结果一致" width="300">
 
-<img src="../../assets/runaway_electron_pushers/2022_test_bump_noe.png" alt="Kinetic results without E field return Maxwellian distribution" width="300">
+结果与 DREAM 结果一致。 
 
-Turning off the electric field in JOREK produces Maxwellian distribution as expected. 
+<img src="../../assets/runaway_electron_pushers/2022_test_bump_noe.png" alt="不含电场时动理学结果回到麦克斯韦分布" width="300">
 
-<img src="../../assets/runaway_electron_pushers/2022_test_bump_ps.png" alt="Excellent match for the bump when the partial screening method is used" width="300">
+在 JOREK 中关闭电场会如预期产生麦克斯韦分布。 
 
-Excellent match with on the bump when using the partial screening model. However, in theory there should be no difference as this test has hydrogen plasma. Therefore the difference is likely due to fact that the partial screening model uses expressions where incident particle is assumed to be highly energetic electron (in particular for the Coulomb logarithm). This could also explain why the Maxwellian is not reproduced that well unless it is an issue with timestep/Monte Carlo noise. 
+<img src="../../assets/runaway_electron_pushers/2022_test_bump_ps.png" alt="使用部分屏蔽方法时隆起部分吻合极好" width="300">
 
-### Plotting 
+使用部分屏蔽模型时与隆起部分吻合极好。然而理论上不应有差别，因为该测试用的是氢等离子体。因此差异很可能源于部分屏蔽模型所用的表达式假定入射粒子是高能电子（尤其是对库仑对数而言）。这也可解释为何麦克斯韦分布未能很好重现——除非这是时间步／蒙特卡洛噪声的问题。 
 
-The following script `plot_bump.py` can be used to plot the benchmark. 
+### 绘图 
+
+以下脚本 `plot_bump.py` 可用于绘制该基准算例。 
 
 ```python
 import numpy as np
@@ -193,7 +189,7 @@ fig.savefig("test_bump.png", format="png", dpi=96*2)
 plt.show()
 ```
 
-The following Python script `dream_bump.py` was used for the DREAM simulation. 
+以下 Python 脚本 `dream_bump.py` 用于 DREAM 模拟。 
 
 ```python
 #!/usr/bin/env python3

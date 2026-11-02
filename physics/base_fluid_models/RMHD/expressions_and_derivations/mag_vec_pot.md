@@ -7,22 +7,15 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 磁矢势
 
-原文页面：[Magnetic Vector Potential](https://iterorganization.github.io/JOREK/physics/base_fluid_models/RMHD/expressions_and_derivations/mag_vec_pot.html)　·　源文件：`physics/base_fluid_models/RMHD/expressions_and_derivations/mag_vec_pot.md`
-</div>
-
-# Magnetic Vector Potential
-
-The ansatz for the magnetic vector potential is ***(this ansatz is not relevant for the derivation of the JOREK equations; details about the Gauge missing)***:
+磁矢势的拟设（ansatz）为***（该拟设与 JOREK 方程的推导无关；关于规范（Gauge）的细节缺失）***：
 
 $$\begin{equation*}
 \mathbf{A}=\nabla\alpha\times\nabla\phi+\psi\nabla\phi
 \end{equation*}$$
 
-where $\partial_3\alpha\equiv 0$ is assumed. The curl of $\mathbf{A}$ is given by
+其中假定 $\partial_3\alpha\equiv 0$。$\mathbf{A}$ 的旋度由下式给出
 
 $$\begin{equation*}\begin{split}
 \nabla\times\mathbf{A}
@@ -31,7 +24,7 @@ $$\begin{equation*}\begin{split}
  &= -\Delta^*\alpha\nabla\phi+\nabla\psi\times\nabla\phi
 \end{split}\end{equation*}$$
 
-As this has to be in agreement with the magnetic field expression $\mathbf{B}=F\nabla\phi+\nabla\psi\times\nabla\phi$, the following condition can be derived:
+由于该式必须与磁场表达式 $\mathbf{B}=F\nabla\phi+\nabla\psi\times\nabla\phi$ 一致，可导出如下条件：
 
 $$\begin{equation*}
   F\equiv-\Delta^*\alpha

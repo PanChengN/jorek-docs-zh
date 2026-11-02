@@ -5,36 +5,29 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 参与文档建设
 
-原文页面：[Contributing to the Docs](https://iterorganization.github.io/JOREK/contributing.html)　·　源文件：`contributing.md`
-</div>
+本站使用 [Jekyll](https://jekyllrb.com) 与 [Just the Docs](https://just-the-docs.com) 主题构建。每个页面都是 `docs/` 下的一个 Markdown 文件。向 `master` 推送会触发 GitHub Actions 的自动构建与部署。
 
-# Contributing to the Docs
+## 访问权限
 
-The site is built with [Jekyll](https://jekyllrb.com) and the [Just the Docs](https://just-the-docs.com) theme. Every page is a Markdown file in `docs/`. Pushing to `master` triggers an automatic GitHub Actions build and deploy.
-
-## Access
-
-The repo is open to collaborators with write access. If you don't have access yet, write to **Luca Greco** to be added.
+仓库对具有写权限的协作者开放。若你尚无权限，请写信给 **Luca Greco** 请求加入。
 
 ---
 
-## Installing prerequisites
+## 安装前置依赖
 
-You need **Ruby ≥ 3.1** and **Bundler**. Git is assumed to already be installed.
+需要 **Ruby ≥ 3.1** 与 **Bundler**。假定 Git 已安装。
 
 **macOS**
 
-The system Ruby is too old. Install a current version via [Homebrew](https://brew.sh):
+系统自带的 Ruby 版本过旧。请通过 [Homebrew](https://brew.sh) 安装当前版本：
 
 ```bash
 brew install ruby
 ```
 
-Then add Ruby to your PATH as Homebrew instructs (something like `export PATH="/opt/homebrew/opt/ruby/bin:$PATH"`), and install Bundler:
+然后按 Homebrew 的指示把 Ruby 加入 PATH（大致为 `export PATH="/opt/homebrew/opt/ruby/bin:$PATH"`），并安装 Bundler：
 
 ```bash
 gem install bundler
@@ -49,11 +42,11 @@ gem install bundler
 
 **Windows**
 
-Use [RubyInstaller](https://rubyinstaller.org/) (select the version with Devkit). Bundler is included.
+使用 [RubyInstaller](https://rubyinstaller.org/)（选择带 Devkit 的版本）。其中已包含 Bundler。
 
 ---
 
-## Local preview
+## 本地预览
 
 ```bash
 git clone git@github.com:<username>/<fork-name>.git
@@ -62,59 +55,59 @@ bundle install        # only needed once, or after Gemfile changes
 bundle exec jekyll serve --baseurl /fork-name
 ```
 
-Open `http://localhost:4000/fork-name/`. Changes to `.md` files are picked up on reload without restarting the server.
+打开 `http://localhost:4000/fork-name/`。对 `.md` 文件的修改在页面重载时即被纳入，无需重启服务器。
 
 ---
 
-## Making a pull request
+## 发起合并请求
 
-1. Clone the fork (once) and keep it up to date (see [Developments](/code_development/development_workflow.md) ):
+1. 克隆 fork（只需一次）并保持更新（见[开发流程](/code_development/development_workflow.md) ）：
    ```bash
    git clone git@github.com:<username>/<fork-name>.git
    git pull origin develop
    ```
-2. Create a branch from `develop`:
+2. 从 `develop` 创建分支：
    ```bash
    git checkout -b my-topic
    ```
-3. Add or edit files, commit, and push the branch:
+3. 添加或编辑文件，提交并推送该分支：
    ```bash
    git add docs/my_page.md
    git commit -m "Add documentation for X"
    git push origin my-topic
    ```
-4. Open a pull request against `develop` of the main repository on GitHub. Once merged, the site redeploys automatically — no further action needed.
+4. 在 GitHub 上向主仓库的 `develop` 发起合并请求。合并后站点会自动重新部署——无需进一步操作。
 
 ---
 
-## Front matter reference
+## front matter 参考
 
-Every page starts with a YAML block delimited by `---`. YAML is whitespace-sensitive and uses `key: value` pairs. A few rules worth knowing:
+每个页面都以由 `---` 包围的 YAML 块开头。YAML 对空白敏感，使用 `key: value` 键值对。有几点值得了解：
 
-- **Strings** generally do not need quotes. Use double quotes if the value contains a colon, `#`, or leading/trailing spaces: `title: "Solver: Details"`.
-- **Booleans** are bare `true` / `false` — no quotes.
-- **Integers** are bare numbers — no quotes.
-- Indentation must be spaces, not tabs.
+- **字符串**通常无需引号。若值中含有冒号、`#` 或首尾空格，请使用双引号：`title: "Solver: Details"`。
+- **布尔值**写作裸的 `true` / `false` —— 不加引号。
+- **整数**写作裸数字 —— 不加引号。
+- 缩进必须使用空格，不能用制表符。
 
-The keys used in this site are listed below. For the full reference see the [Just the Docs navigation docs](https://just-the-docs.com/docs/navigation/).
+本站使用的键列于下表。完整参考见 [Just the Docs 导航文档](https://just-the-docs.com/docs/navigation/)。
 
-| Key | Type | Required | Description |
+| 键 | 类型 | 是否必需 | 说明 |
 |---|---|---|---|
-| `title` | string | yes | Page title shown in the browser tab and sidebar. |
-| `layout` | string | yes | Always `default` for content pages. |
-| `render_with_liquid` | bool | yes | Set to `false` to prevent Jekyll from interpreting `{{` and `{%` as template syntax — important for pages containing code examples. |
-| `nav_order` | integer | no | Position within the parent group in the sidebar. Lower = higher up. Defaults to the page title alphabetically if omitted. |
-| `parent` | string | no | Title of the parent page, exactly as written in that page's `title` field. Nests this page under it in the sidebar. |
-| `grand_parent` | string | no | Title of the grandparent page. Required when `parent` is itself a child (third-level pages). |
-| `has_children` | bool | no | Marks the page as a section that can contain children. |
-| `nav_fold` | bool | no | Collapses the section in the sidebar by default. Only meaningful when `has_children: true`. |
-| `nav_exclude` | bool | no | Hides the page from the sidebar. The page is still built and accessible via its URL. |
+| `title` | string | yes | 显示在浏览器标签页与侧栏中的页面标题。 |
+| `layout` | string | yes | 内容页面一律为 `default`。 |
+| `render_with_liquid` | bool | yes | 设为 `false` 可防止 Jekyll 把 `{{` 与 `{%` 解释为模板语法 —— 对含代码示例的页面很重要。 |
+| `nav_order` | integer | no | 侧栏中在父分组内的位置。数值越小越靠上。省略时按页面标题的字母顺序排列。 |
+| `parent` | string | no | 父页面标题，须与该页 `title` 字段的写法完全一致。在侧栏中把本页嵌套于其下。 |
+| `grand_parent` | string | no | 祖父页面标题。当 `parent` 本身也是子页面（三级页面）时必需。 |
+| `has_children` | bool | no | 把页面标记为可包含子页面的章节。 |
+| `nav_fold` | bool | no | 默认在侧栏中折叠该章节。仅在 `has_children: true` 时有意义。 |
+| `nav_exclude` | bool | no | 在侧栏中隐藏该页面。页面仍会被构建，并可通过其 URL 访问。 |
 
 ---
 
-## Creating a page
+## 创建页面
 
-Every `.md` file under `docs/` is a page. It needs a YAML front matter block:
+`docs/` 下的每个 `.md` 文件都是一个页面。它需要 YAML front matter 块：
 
 ```yaml
 ---
@@ -126,9 +119,9 @@ render_with_liquid: false
 Content goes here.
 ```
 
-That's the minimum. The page will be built and accessible via its URL but will not appear in the sidebar unless you add navigation fields (see below).
+这是最低要求。页面会被构建并可通过其 URL 访问，但除非添加导航字段（见下文），否则不会出现在侧栏中。
 
-To **exclude a page from the sidebar** while still making it linkable:
+若要**把页面从侧栏排除**但仍使其可被链接：
 
 ```yaml
 nav_exclude: true
@@ -136,9 +129,9 @@ nav_exclude: true
 
 ---
 
-## Adding a sidebar section
+## 添加侧栏章节
 
-A sidebar section is just a page with `has_children: true` and `nav_fold: true`. By convention, section landing pages are named `cat_<name>.md` and live in their own subdirectory:
+侧栏章节就是一个带 `has_children: true` 与 `nav_fold: true` 的页面。按约定，章节落地页命名为 `cat_<name>.md`，并放在各自的子目录中：
 
 ```
 docs/
@@ -148,7 +141,7 @@ docs/
     page_b.md
 ```
 
-`cat_mysection.md` front matter:
+`cat_mysection.md` 的 front matter：
 
 ```yaml
 ---
@@ -161,7 +154,7 @@ render_with_liquid: false
 ---
 ```
 
-Child pages reference the section by its `title`:
+子页面通过该章节的 `title` 引用它：
 
 ```yaml
 ---
@@ -175,50 +168,50 @@ render_with_liquid: false
 
 ---
 
-## Managing sidebar elements
+## 管理侧栏元素
 
-| Front matter key | Effect |
+| Front matter 键 | 作用 |
 |---|---|
-| `nav_order` | Position within the parent group (lower = higher up). Applies at every level. |
-| `parent` | Nests the page under a section. Value must exactly match the section's `title`. |
-| `grand_parent` | Required for third-level pages. Value must match the section title (the grandparent). |
-| `has_children: true` | Marks a page as a section that can have children. |
-| `nav_fold: true` | Starts the section collapsed in the sidebar. |
-| `nav_exclude: true` | Hides the page from the sidebar entirely. |
+| `nav_order` | 在父分组内的位置（越小越靠上）。适用于每一层级。 |
+| `parent` | 把页面嵌套到某章节下。值必须与该章节的 `title` 完全一致。 |
+| `grand_parent` | 三级页面必需。值必须与章节标题（祖父页面）一致。 |
+| `has_children: true` | 把页面标记为可含子页面的章节。 |
+| `nav_fold: true` | 使章节在侧栏中初始为折叠状态。 |
+| `nav_exclude: true` | 完全从侧栏隐藏该页面。 |
 
-The navigation supports multiple levels of nesting. The `grand_parent` key always refers to the direct grandparent (one step above `parent`), not necessarily the top-level section.
+导航支持多级嵌套。`grand_parent` 键始终指直接的祖父页面（比 `parent` 高一级），不一定是顶层章节。
 
-To **rename a section**, change the `title` in its `cat_*.md` file and update the `parent` field of every child page to match.
+若要**重命名章节**，修改其 `cat_*.md` 文件中的 `title`，并同步更新每个子页面的 `parent` 字段使其一致。
 
 ---
 
-## Linking between pages
+## 页面之间的链接
 
-Links use standard Markdown syntax with `.md` extensions — the build converts them to `.html` automatically:
+链接使用带 `.md` 扩展名的标准 Markdown 语法 —— 构建时会自动转换为 `.html`：
 
 ```markdown
 See [Normalization](normalization.md) for details.
 ```
 
-For pages in a different directory, use a path relative to the current file:
+对位于不同目录的页面，使用相对于当前文件的路径：
 
 ```markdown
 [Compiling](compiling/compilation_and_libraries/compiling.md)
 ```
 
-Absolute paths from the repo root also work:
+从仓库根目录起的绝对路径也可用：
 
 ```markdown
 [Compiling](compiling/compilation_and_libraries/compiling.md)
 ```
 
-Do not hard-code `.html` extensions — they will break if the site baseurl changes.
+不要硬编码 `.html` 扩展名 —— 若站点 baseurl 变化，这些链接就会失效。
 
 ---
 
-## Images
+## 图片
 
-Keep images next to the page that uses them. Create an `assets/` folder in the same directory as the `.md` file, with a subfolder named after the file:
+图片应放在使用它的页面旁边。在 `.md` 文件所在目录创建 `assets/` 文件夹，并在其中创建以该文件名命名的子文件夹：
 
 ```
 docs/howto/physics_options/physical_terms/
@@ -228,22 +221,22 @@ docs/howto/physics_options/physical_terms/
       my_figure.png
 ```
 
-Reference them with a path relative to the `.md` file:
+以相对于该 `.md` 文件的路径引用它们：
 
 ```markdown
 ![Alt text](assets/diamag/my_figure.png)
 ```
 
-To control size, use an HTML `<img>` tag:
+要控制尺寸，使用 HTML 的 `<img>` 标签：
 
 ```html
 <img src="assets/diamag/my_figure.png" alt="Alt text" width="600">
 ```
 
-Prefer PNG or SVG for diagrams and screenshots; keep file sizes reasonable — large binaries slow down the repository for everyone.
+示意图与截图优先使用 PNG 或 SVG；文件大小应保持合理 —— 大的二进制文件会拖慢所有人的仓库。
 
 ---
 
-## Maths
+## 数学公式
 
-Inline LaTeX: `$...$`. Display math: `$$...$$`. MathJax renders both. Standard macros work; avoid bare `||` inside inline math — use `\Vert` instead.
+行内 LaTeX：`$...$`。独立公式：`$$...$$`。MathJax 负责渲染两者。标准宏可用；避免在行内公式中使用裸 `||` —— 请改用 `\\Vert`。

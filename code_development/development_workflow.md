@@ -6,63 +6,56 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 主开发流程
 
-原文页面：[Development Workflow](https://iterorganization.github.io/JOREK/code_development/development_workflow.html)　·　源文件：`code_development/development_workflow.md`
-</div>
-
-# Main Development Workflow
-
-## Committing Guidelines
-- See also [**Coding Guidelines**](develop#coding-guidelines)
+## 提交规范 {#committing-guidelines}
+- 另见[**编码规范**](develop#coding-guidelines)
 
 <!--- - [Slides by Guido (2016-04)](assets/develop//huijsmans_jorek_general_meeting_2016.pdf)
 - [Slides by Matthias (2020-04)](assets/develop/2020-04-mhoelzl-development-coordination.pdf) with some issues coming up regularly and suggested solutions --->
 
 
-## Repository structure
-- The [main repository](https://github.com/iterorganization/JOREK) is public and serves as the central source for JOREK.
-- Developers will create forks of the main repository for their individual development work.
-- Collaborators can be added to forks to enable team-based development on specific features or bug fixes.
-- **Developments in the forks need to be merged back into the main repository as soon as possible**.
+## 仓库结构
+- [主仓库](https://github.com/iterorganization/JOREK)是公开的，作为 JOREK 的中心代码源。
+- 开发者各自创建主仓库的 fork，用于个人的开发工作。
+- 可把协作者加入 fork，以便针对特定功能或 bug 修复开展团队协作。
+- **fork 中的开发成果需尽快合并回主仓库**。
 
 ---
 
-## Setting up the workflow
-1. **Create a github account**
-    - If you do not have one already, setup a github account and make sure your username contains your last name and initial.
+## 配置工作流 {#setting-up-the-workflow}
+1. **创建 github 账号**
+    - 若尚无账号，请创建 github 账号，并确保用户名包含你的姓与名首字母。
 
-2. **Fork the Main Repository**:
-   - If you don't have a fork already, create a new one under your user account. 
-   - Navigate to the [main repository on GitHub](https://github.com/iterorganization/JOREK.git).
-   - Click the "Fork" button to create a personal copy of the repository under your GitHub account.
-   - Add collaborators to your fork if you are working closely with someone else.
+2. **fork 主仓库**：
+   - 若还没有 fork，请在你的用户账号下新建一个。
+   - 打开 [GitHub 上的主仓库](https://github.com/iterorganization/JOREK.git)。
+   - 点击 "Fork" 按钮，在你的 GitHub 账号下创建该仓库的个人副本。
+   - 若与他人紧密协作，可把协作者加入你的 fork。
 
-3. **Clone Your Fork**:
-   - Clone your fork to your local machine:
+3. **克隆你的 fork**：
+   - 把 fork 克隆到本地机器：
 
 ```bash
      git clone https://github.com/<your-username>/<repository-name>.git
      cd <repository-name>
 ```
 
-4. **Set Up the documentation**:
-   - During your development, you will contribute to the documentation. You can preview it as it will appear in 
-   the main repository by setting 'Settings'->'Pages'->'Source' to 'GitHub Actions' *in your fork*. 
-   For faster iteration, however, we recommend building the documentation locally.
-   You can find instructions for this in the [documentation setup guide](/docs/contributing.md).
+4. **配置文档**：
+   - 开发过程中你会为文档做贡献。可在*你的 fork 中*把 'Settings'->'Pages'->'Source' 设为 'GitHub Actions'，
+   以预览文档在主仓库中的呈现效果。
+   不过为加快迭代，建议在本地构建文档。
+   相关说明见[文档配置指南](/docs/contributing.md)。
 
-5. **Set Up the Main Repository as an Upstream Remote**:
-   - Add the main repository as an upstream remote to keep your fork in sync:
+5. **把主仓库设为上游远端**：
+   - 将主仓库添加为 upstream 远端，以保持 fork 同步：
 
 ```bash
      git remote add upstream https://github.com/iterorganization/JOREK.git
 ```
 
-6. **Sync Your Fork with the Main Repository**:
-   - Regularly fetch and merge changes from the main repository:
+6. **把 fork 与主仓库同步**：
+   - 定期抓取并合并主仓库的变更：
 
 ```bash
      git fetch upstream
@@ -70,125 +63,123 @@ render_with_liquid: false
 ```
 
 
-## Development and Bugfixes
+## 开发与 bug 修复
 
-1. **Develop Features or Fix Bugs**:
-   - Create a new branch for each feature or bug fix:
+1. **开发功能或修复 bug**：
+   - 为每个功能或 bug 修复新建分支：
 
 ```bash
      git checkout -b <feature|bugfix>/branch-name
 ```
 
-   - Commit your changes to the branch:
+   - 把修改提交到该分支：
 
 ```bash
      git add .
      git commit -m "Description of changes"
 ```
 
-2. **Push Changes to Your Fork**:
-   - Push your branch to your fork:
+2. **把变更推送到你的 fork**：
+   - 将分支推送到你的 fork：
 
 ```bash
      git push origin <feature-or-bugfix-branch>
 ```
 
-3. **Create a Pull Request**:
-   - Open a pull request (PR) from your fork's branch to the main repository's `develop` branch.
-       - From the main page of your fork's repository a button with "Contribute" will appear
-       - Click on the button and then "Open Pull Request"
-       - Fill out the Pull Request Form describing the Pull Request in a way that is understandable to the whole community
-   - Resolve potential merge conflicts and verify the automatic regression tests are passing.
-   - Ensure the PR is reviewed and approved before merging by at least two people. 
+3. **创建合并请求**：
+   - 从你的 fork 分支向主仓库的 `develop` 分支发起合并请求（PR）。
+       - 在你的 fork 仓库主页上会出现一个 "Contribute" 按钮
+       - 点击该按钮，然后选择 "Open Pull Request"
+       - 填写合并请求表单，以整个社区都能理解的方式描述该合并请求
+   - 解决可能存在的合并冲突，并确认自动回归测试通过。
+   - 确保合并前该 PR 已至少由两人评审并批准。
 
 
-## Best practices
-- Merge changes from the main repository into your fork frequently to avoid large merge conflicts. This is especially important for long developments
-- Keep feature and bug fix branches small and focused.
-- Ensure all changes are reviewed (by at leat 2 people) before merging into the main repository.
-- Make sure to create new [regression tests](nrt) for your developments.
-- Bug fixes should be developed independently of feature development.
-- Merge bug fixes from the main repository into your fork as soon as they are available:
+## 最佳实践
+- 经常把主仓库的变更合并到你的 fork，以避免大型合并冲突。这对长期开发尤为重要
+- 功能分支与 bug 修复分支应保持小而聚焦。
+- 确保所有变更在合并进主仓库前都已评审（至少 2 人）。
+- 务必为你的开发新增[回归测试](nrt)。
+- bug 修复应与功能开发独立进行。
+- 主仓库中的 bug 修复一旦可用，就尽快合并到你的 fork：
 
 ```bash
     git fetch upstream
     git merge upstream/develop
 ```
 
-## Using the GitHub Issue Tracker
-Use the [GitHub Issue Tracker](https://github.com/iterorganization/JOREK/issues) to bring up important bugfixes and discussions on new developments or to make a feature request.
+## 使用 GitHub 问题跟踪器
+使用 [GitHub 问题跟踪器](https://github.com/iterorganization/JOREK/issues)提出重要的 bug 修复、新开发讨论或功能请求。
 
-1. **Creating Issues**:
-  - Provide a clear and concise title and description.
-  - Include relevant details such as steps to reproduce a bug, expected behavior, or the motivation for a new feature.
-  - Mention specific users with `@username` to make them aware of the issue.
-  - Use appropriate labels (e.g., `bug`, `enhancement`, `discussion`) to categorize issues.
+1. **创建问题（Issue）**：
+  - 提供清晰简洁的标题与描述。
+  - 包含相关细节，例如复现 bug 的步骤、预期行为，或新功能的动机。
+  - 用 `@username` 提及特定用户，使其了解该问题。
+  - 使用合适的标签（如 `bug`、`enhancement`、`discussion`）对问题分类。
 
-2. **Linking Pull Requests**:
-  - Reference issues in pull requests using keywords like `Fixes #<issue-number>` to automatically close the issue when the PR is merged.
-  - Ensure the issue is resolved and all discussions are addressed before closing.
-  - More infos here about [linking an issue to a PR](https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/linking-a-pull-request-to-an-issue)
-
-
+2. **关联合并请求**：
+  - 在合并请求中用 `Fixes #<issue-number>` 这类关键词引用问题，以便 PR 合并时自动关闭该问题。
+  - 关闭前确保问题已解决、所有讨论已回应。
+  - 关于[把问题关联到 PR](https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/linking-a-pull-request-to-an-issue)的更多信息见此
 
 
-## Migration to GitHub
-During the migration to GitHub, the history of commit hashes will change. Follow these steps to ensure a smooth transition:
 
-1. **Push Your Branches Before Migration (end of July)**:
-   - Before the migration, push all your local branches to the current repository:
+
+## 迁移到 GitHub
+迁移到 GitHub 的过程中，提交哈希的历史会改变。请按以下步骤确保平稳过渡：
+
+1. **迁移前推送你的分支（7 月底）**：
+   - 迁移之前，把所有本地分支推送到当前仓库：
 
 ```bash
      git push origin <branch-name>
 ```
 
-2. **Retrieve Your Branch After Migration**:
-   - After the migration, contact **jorek-devel@jorek.eu** to retrieve your new branch from the private GitHub repository where old branches are saved during the migration period, **please include your GitHub username in the email**.
+2. **迁移后取回你的分支**：
+   - 迁移之后，请联系 **jorek-devel@jorek.eu**，从迁移期间保存旧分支的私有 GitHub 仓库中取回你的新分支，**请在邮件中附上你的 GitHub 用户名**。
 
-3. **Set Up Your Fork with the Old Branch**:
-   - Be sure to have followed the steps in [Setting Up the Workflow](#setting-up-the-workflow)
+3. **用旧分支配置你的 fork**：
+   - 确保已按[配置工作流](#setting-up-the-workflow)中的步骤操作
 
-   - Clone your fork of the new main repository:
+   - 克隆新主仓库的你的 fork：
 
 ```bash
      git clone git@github.com:<your-username>/<fork-repo>.git
      cd <fork-repo>
 ```
 
-   - Add the private repository (containing the old branches) as a remote:
+   - 把（包含旧分支的）私有仓库添加为远端：
 
 ```bash
      git remote add old-repo git@github.com:N-Schwarz/jorek-backup.git
 ```
 
-   - Fetch your old branch:
+   - 抓取你的旧分支：
 
 ```bash
      git fetch old-repo <branch-name>
 ```
 
-   - Create a branch in your fork based on the old branch:
+   - 基于旧分支在你的 fork 中创建分支：
 
 ```bash
      git checkout -b <branch-name> old-repo/<branch-name>
 ```
 
-   - Push the branch to your fork:
+   - 把该分支推送到你的 fork：
 
 ```bash
      git push -u origin <branch-name>
 ```
 
-  - You might need to use the following command to make the branch track your fork
+  - 可能需要用以下命令让该分支跟踪你的 fork
 
 ```bash             
      git branch feature/m600refluid  -u origin/feature/m600refluid
 ```
 
-   The old branch and the public repository share the same history, so the
-   commits attach where they always were: nothing is rewritten and there are
-   no conflicts to resolve. 
+   旧分支与公开仓库共享同一历史，因此提交仍附着在原来的位置：没有内容被重写，
+   也不需要解决冲突。
 
 ---
-
 

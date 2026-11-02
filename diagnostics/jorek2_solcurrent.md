@@ -5,22 +5,15 @@ render_with_liquid: false
 parent: "General"
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
-
-原文页面：[jorek2_SOLcurrent](https://iterorganization.github.io/JOREK/diagnostics/jorek2_solcurrent.html)　·　源文件：`diagnostics/jorek2_solcurrent.md`
-</div>
-
 ## jorek2_SOLcurrent
 
-This diagnostics postprocesses jorek_restart.h5 to determine scrape-off layer currents (thermo electric current between target plates) by solving Stangeby eq 17.29. Run it as 
+该诊断对 jorek_restart.h5 做后处理，通过求解 Stangeby 式 17.29 来确定刮削层（SOL）电流（靶板之间的热电电流）。运行方式为
 
 ```
 jorek2_SOLcurrent < input
 ```
 
-with "input" the input namelist file used for running jorek (jorek_model600 < input). The output it generates will be put into a folder "SOLcurrent" (which will be generated if it does not exist yet), and the file is called "stepXXXXXX.dat" (e.g. step000200.dat if jorek_restart.h5 was jorek00200.h5). The content of the output file is the solution of the equation per fluxline along the boundary with some intermediate output. Example output (truncated to two output lines rather than the n_bnd_elements output lines in reality):
+其中 "input" 是运行 jorek 所用的输入 namelist 文件（jorek_model600 < input）。生成的输出会放入 "SOLcurrent" 文件夹（若该文件夹尚不存在则会自动创建），文件名为 "stepXXXXXX.dat"（例如当 jorek_restart.h5 是 jorek00200.h5 时，文件名为 step000200.dat）。输出文件的内容是沿边界对每条磁力线求解该方程的结果，并附带若干中间输出。输出示例如下（此处截断为两行，实际输出行数为 n_bnd_elements）：
 
 ```
  #            R_b               Z_b             Phi_b               R_e               Z_e             Phi_e              ne_b              ne_e              Te_b              Te_e                 L      av_sigma_par         P_h - P_c           pe_term         j_hat_par             j_par             bdotn            j_wall                dl             I_loc
@@ -28,20 +21,20 @@ with "input" the input namelist file used for running jorek (jorek_model600 < in
     5.56420000E+00   -4.54188649E+00    0.00000000E+00    4.16796881E+00   -3.90608038E+00   -6.46920674E+00    4.45768773E+17    4.09077666E+17    4.51369085E-01    5.35422967E-01    3.17676936E+01    3.72828298E+03   -8.04289104E-02    3.90718320E-01    8.92291495E-02    4.20341276E+01   -5.26322395E-02   -1.93477645E+00    1.51329629E-02   -1.02361670E+00
 ```
 
-_b means at the beginning of the fieldline for which the equation is solved, _e at the end of the fieldline, R,Z and Phi are the coordinates, ne, Te electron density and temperature, L connection length, av_sigma_par the average parallel conductivity, P_h-P_c the pressure drop along the fluxtube from the hot to cold end (this can be used as sanity check by comparing the pressures at the (R_b,Z_b,Phi_b) location to the (R_e,Z_e,Phi_e) location), pe_term the pressure integral term in the equation (the last term), j_hat_par the solution to the equation, j_par the physical thermo-electric parallel current density at location (R_b,Z_b,Phi_b), bdotn the pitch angle dot product at (R_b,Z_b,Phi_b), j_wall the thermo-electric current density on the wall (so accounting for pitch angle), dl the poloidal extent of this flux tube, I_loc the current onto the wall of this flux tube.
+_b 表示所求解方程对应磁力线的起点，_e 表示该磁力线的终点，R、Z、Phi 为坐标，ne、Te 为电子密度与温度，L 为连接长度，av_sigma_par 为平均平行电导率，P_h-P_c 为沿磁通管从热端到冷端的压降（可用作合理性检查，把 (R_b,Z_b,Phi_b) 处的压力与 (R_e,Z_e,Phi_e) 处的压力相比较），pe_term 为方程中的压力积分项（即最后一项），j_hat_par 为方程的解，j_par 为 (R_b,Z_b,Phi_b) 处的物理热电平行电流密度，bdotn 为 (R_b,Z_b,Phi_b) 处的螺距角点积，j_wall 为壁上的热电电流密度（已计入螺距角），dl 为该磁通管的极向长度，I_loc 为该磁通管打到壁上的电流。
 
-Running the diagnostics takes about ~3 minutes on a single omp core if jorek2_SOLcurrent is compiled without DEBUG options for a production FE grid of n_bnd_elements ~ 500, or less if using omp parallelisation (set "export OMP_NUM_THREADS=..." before calling the diagnostic). While running the diagnostic the output will let you know where in the process it is, usually the "Initialising element neighbours" takes about half the time, with the other half being the actual fieldline tracing and solving for the equation (of which you will receive intermediate progress updates as "starting point =         49 of        482")
+对于 n_bnd_elements ~ 500 的生产级有限元网格，若 jorek2_SOLcurrent 编译时未开启 DEBUG 选项，在单个 omp 核上运行该诊断约需 3 分钟；若使用 omp 并行（在调用诊断前设置 "export OMP_NUM_THREADS=..."）则更快。诊断运行过程中，输出会告知你当前进行到哪一步，通常 "Initialising element neighbours" 约占一半时间，另一半用于实际的磁力线追踪与方程求解（其间会给出形如 "starting point =         49 of        482" 的中间进度更新）
 
-When the diagnostic is finished, it will let you know the sum of all I_loc values as a sanity check:
+诊断结束时，它会给出所有 I_loc 值之和作为合理性检查：
 
 ```
 Sanity check: total current over the whole wall (i.e. discretisation error, usually of order 10 A, should be negligible compared to target current, usually of order 10 kA) =    -0.11341611E+02 A
 ```
 
-In principle this sum should go to 0 as the amount of current per flux tube should be the same at the inner and outer target, but with opposite sign.
+原则上这个和应趋于 0，因为每条磁通管在内靶与外靶上的电流大小应相同、符号相反。
 
 
-To calculate the actual target currents, use any programming language of your choice to postprocess the stepXXXXXX.dat file based on what extent of the currents you want to take into account. Example code in python below:
+要计算实际的靶板电流，可用你熟悉的任意编程语言对 stepXXXXXX.dat 做后处理，具体取决于你希望计入多大范围内的电流。下面给出 Python 示例代码：
 
 ```python
 #importing modules
@@ -90,20 +83,20 @@ for j in range(len(j_SOL_dat[plot_from:])):
     plt.legend()
     plt.show()
 ```
-This prints the currents at the two targets and the sum over all currents (the sanity check mentioned earlier):
+该脚本会打印两个靶板上的电流以及所有电流之和（即前面提到的合理性检查）：
 ```
 sum I_loc = -0.01 kA
 I_SOL into   IT = 15.5 kA
 I_SOL out of OT = 15.5 kA
 ```
-And generates a number of plots, such as:
+并生成一系列图，例如：
 
 ![](j_par_jorek2_solcurrent.png?400)
 
-In this figure it can be seen that the calculation for tracers starting at the inner target are the same as for tracers starting at the outer target, as should be the case.
+从这张图可以看出，从内靶出发的示踪粒子与从外靶出发的示踪粒子所得到的计算结果相同，这本应如此。
 
-On the sign of j in this routine: current is defined as positive if it comes out of the wall at the starting position (R_b,Z_b,Phi_b). Usually the outer target is hotter, so current usually flows from OT to IT, giving positive sign at the OT and negative sign at the IT.
+关于该程序中标量 j 的符号约定：若电流在起点位置 (R_b,Z_b,Phi_b) 从壁流出，则定义为正。通常外靶温度更高，电流一般从 OT 流向 IT，因此 OT 处为正号、IT 处为负号。
 
-A simple bash script could be used to loop over many restart files, to avoid the labour of running it manually for each restart file separately.
+可以写一个简单的 bash 脚本对许多重启文件循环处理，从而免去逐个重启文件手动运行的麻烦。
 
-For more information on implementation, results on an ITER case and comparison to SOLPS results of SOL current, see [Daniël's Msc. Thesis report](https://research.tue.nl/files/340298012/1367803_-Maris_D.-MSc_thesis_Thesis-_NF.pdf) section 4.1
+关于实现细节、ITER 算例的计算结果以及与 SOLPS 的 SOL 电流结果对比，见 [Daniël 的硕士论文报告](https://research.tue.nl/files/340298012/1367803_-Maris_D.-MSc_thesis_Thesis-_NF.pdf) 第 4.1 节

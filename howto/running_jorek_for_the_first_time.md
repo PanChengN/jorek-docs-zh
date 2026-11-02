@@ -376,8 +376,7 @@ cp jorekXXXXX.h5 jorek_restart.h5
 
 <img src="assets/running_jorek_for_the_first_time/tutorial_intear-current-pert.png" alt="Alt text" width="600">
 
-### jorek2_postproc
-
+### jorek2_postproc {#jorek2_postproc}
 工具 `jorek2_postproc` 可以对仿真的许多方面做快速分析。你可以通过调用下面的命令以交互方式运行它：
 
 ```bash

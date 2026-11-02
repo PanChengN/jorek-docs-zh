@@ -5,31 +5,24 @@ render_with_liquid: false
 parent: "Running JOREK"
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
-
-原文页面：[rst_bin2hdf5](https://iterorganization.github.io/JOREK/diagnostics/rst_bin2hdf5.html)　·　源文件：`diagnostics/rst_bin2hdf5.md`
-</div>
-
 ## rst_bin2hdf5
-- See also [hdf5-tools](hdf5-tools.md)
+- 另见 [hdf5-tools](hdf5-tools.md)
 
-This tool is used to convert jorek00XXX.rst files to hdf5 format.
-The first argument is the file to convert. If no argument is present, it will use jorek_restart.rst.
-Example usage:
+该工具用于把 jorek00XXX.rst 文件转换为 hdf5 格式。
+第一个参数是要转换的文件。若未给出参数，则使用 jorek_restart.rst。
+用法示例：
 
   rst_bin2hdf5 jorek00001.rst
 
-Other options:
+其他选项：
 
   ```
   rst_bin2hdf5 -v --verbose
   rst_bin2hdf5 -h --help
   ```
 
-##### Compiling
-To compile this, add `USE_HDF5 = 1` to your `Makefile.inc`, and add the following lines showing the linker where the libraries are. (`$H5DIR` is an existing environment variable)
+##### 编译 {#compiling}
+编译此工具时，在 `Makefile.inc` 中加入 `USE_HDF5 = 1`，并加入下列各行，告知链接器依赖库所在位置。（`$H5DIR` 是已有的环境变量）
 
   ```
   #HDF5
@@ -37,5 +30,5 @@ To compile this, add `USE_HDF5 = 1` to your `Makefile.inc`, and add the followin
   HDF5INCLUDE = $(H5DIR)/include
   ```
 
-## rst_hdf52bin
-This tool performs the opposite process as the one outlined above.
+## rst_hdf52bin {#rst_hdf52bin}
+该工具执行与上述过程相反的操作。

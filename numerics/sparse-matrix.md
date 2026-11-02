@@ -6,77 +6,57 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 稀疏矩阵格式
 
-原文页面：[Sparse Matrix Format](https://iterorganization.github.io/JOREK/numerics/sparse-matrix.html)　·　源文件：`numerics/sparse-matrix.md`
-</div>
-
-# Sparse Matrix Format
-
-The central data structure for all linear algebra in JOREK is `type_SP_MATRIX`,
-defined in `datatypes/mod_sparse_matrix.f90`.
-The **primary storage format is block coordinate (BCOO)**: non-zero entries are
-stored as a flat list of dense $b \times b$ blocks,
-sharing the same `irn`/`jcn`/`val` arrays at the scalar level.  A block-CSR
-view (`iblockptr`) is derived from the BCOO data on demand for the iterative
-solver and GPU paths.
+JOREK 中所有线性代数的核心数据结构是 `type_SP_MATRIX`，
+定义在 `datatypes/mod_sparse_matrix.f90` 中。
+**主存储格式为块坐标格式（BCOO, block coordinate）**：非零元以密集 $b \times b$ 块的扁平列表存储，
+在标量层面共用同一套 `irn`/`jcn`/`val` 数组。块 CSR 视图（`iblockptr`）按需从 BCOO 数据导出，供迭代求解器与 GPU 路径使用。
 
 ---
 
-## Block Structure and Degrees of Freedom
+## 块结构与自由度
 
-JOREK uses bicubic Hermite finite elements.  Each physical mesh node carries
-$n_\text{dof} = n_\text{dof,1D}^2$ Hermite DOF indices representing the function
-value and its poloidal derivatives ($\partial_R$, $\partial_Z$,
-$\partial_R\partial_Z$).  For the default cubic order (`n_order = 3`) this gives
-$n_\text{dof} = 2^2 = 4$ Hermite DOF indices per physical node.  Each Hermite
-DOF index occupies its own **block row** of size $b$ in the global matrix — so
-"node $i$" in the matrix always refers to Hermite DOF index $i$, not a physical
-mesh point.
+JOREK 使用双三次 Hermite 有限元。每个物理网格节点携带
+$n_\text{dof} = n_\text{dof,1D}^2$ 个 Hermite 自由度索引，对应该处的函数值及其极向导数（$\partial_R$、$\partial_Z$、
+$\partial_R\partial_Z$）。对默认的三次阶数（`n_order = 3`），每个物理节点有
+$n_\text{dof} = 2^2 = 4$ 个 Hermite 自由度索引。每个 Hermite
+自由度索引在全局矩阵中占据独立的**块行**，大小为 $b$——因此矩阵中的
+"节点 $i$" 始终指 Hermite 自由度索引 $i$，而不是物理网格点。
 
-The block size and global matrix dimension are
+块大小与全局矩阵维数为
 
 $$b = n_\text{var} \times n_\text{tor}, \qquad
 n_\text{global} = N_\text{unique} \times b$$
 
-where $n_\text{var}$ is the number of MHD variables, $n_\text{tor}$ is the number
-of retained toroidal Fourier modes, and
-$N_\text{unique}$ is the count of unique Hermite DOF indices.  The product $b$
-is stored in `a_mat%block_size`.
+其中 $n_\text{var}$ 是 MHD 变量个数，$n_\text{tor}$ 是保留的环向傅里叶模数，
+$N_\text{unique}$ 是唯一 Hermite 自由度索引的数目。乘积 $b$ 存放在 `a_mat%block_size` 中。
 
-**Axis sharing.** At the magnetic axis all $N_\text{axis}$ axis nodes share a
-single function-value Hermite DOF index (global index 1).  Their derivative DOF
-indices ($\partial_R$, $\partial_Z$, $\partial_R\partial_Z$) remain distinct per
-node.  Compared to a grid without an axis this saves $N_\text{axis} - 1$ indices:
+**轴共享。** 在磁轴上，全部 $N_\text{axis}$ 个轴节点共用一个函数值 Hermite 自由度索引（全局索引 1）。它们的导数自由度索引（$\partial_R$、$\partial_Z$、$\partial_R\partial_Z$）仍按节点各自独立。
+与不带磁轴的网格相比，这节省了 $N_\text{axis} - 1$ 个索引：
 
 $$N_\text{unique}
   = N_\text{nodes} \times n_\text{dof} - (N_\text{axis} - 1)$$
 
-where $N_\text{nodes}$ is the number of physical mesh nodes and
-$N_\text{axis}$ is the number of axis nodes.  The code computes $N_\text{unique}$
-implicitly as the maximum Hermite DOF index over all nodes:
+其中 $N_\text{nodes}$ 是物理网格节点数，$N_\text{axis}$ 是轴节点数。代码以所有节点上
+Hermite 自由度索引的最大值隐式计算 $N_\text{unique}$：
 
 ```fortran
 ng = max(node%index) * block_size  ! = N_unique * b
 ```
 
-A **block row** $i$ corresponds to Hermite DOF index $i$.  It has one
-$b \times b$ nonzero block for each Hermite DOF index $j$ that is coupled to $i$
-through the finite-element stencil.  The number of nonzero blocks in block row
-$i$ is `ijA_size(i)`; the maximum over all block rows is `maxsize`.
+**块行** $i$ 对应 Hermite 自由度索引 $i$。对每个通过有限元模板与 $i$ 耦合的
+Hermite 自由度索引 $j$，该块行都有一个 $b \times b$ 非零块。块行
+$i$ 中非零块的个数是 `ijA_size(i)`；所有块行中的最大值是 `maxsize`。
 
-### DOF ordering and index mapping
+### 自由度排序与索引映射
 
-The scalar row (or column) index of degree of freedom
-(Hermite DOF index $i$, variable $v$, toroidal component $t$) is
+自由度（Hermite 自由度索引 $i$、变量 $v$、环向分量 $t$）的标量行（或列）索引为
 
 $$\text{idx}(i,\,v,\,t) \;=\; (i-1)\,b \;+\; (v-1)\,n_\text{tor} \;+\; t$$
 
-Variable varies slowly (stride $n_\text{tor}$), toroidal mode varies fastest
-(stride 1).  The following diagram shows the layout for a small example
-($N_\text{unique} = 3$, $n_\text{var} = 2$, $n_\text{tor} = 3$, $b = 6$):
+变量变化最慢（步长 $n_\text{tor}$），环向模数变化最快
+（步长 1）。下图给出一个小例子（$N_\text{unique} = 3$、$n_\text{var} = 2$、$n_\text{tor} = 3$、$b = 6$）的布局：
 
 ```
  ┌───┬───┬───┬───┬───┬───┐     ┌───┬───┬───┬───┬───┬───┐     ···
@@ -90,10 +70,9 @@ Variable varies slowly (stride $n_\text{tor}$), toroidal mode varies fastest
  └──────────────────────────────────────────────────────
 ```
 
-The same ordering applies to rows and columns.  A $b \times b$ block
-$B(i,j)$ therefore decomposes into $n_\text{var} \times n_\text{var}$
-sub-blocks of size $n_\text{tor} \times n_\text{tor}$, one per
-variable-coupling pair:
+行与列采用相同的排序。因此一个 $b \times b$ 块
+$B(i,j)$ 分解为 $n_\text{var} \times n_\text{var}$
+个大小为 $n_\text{tor} \times n_\text{tor}$ 的子块，每个变量耦合对一个：
 
 ```
  Block B(node i, node j)
@@ -116,53 +95,50 @@ variable-coupling pair:
 
 ---
 
-## Primary Format: Block COO (BCOO)
+## 主格式：块 COO（BCOO）
 
-### Scalar-level arrays
+### 标量级数组
 
-| Array | Size | Content |
+| 数组 | 大小 | 内容 |
 | --- | --- | --- |
-| `irn` | `nnz` | Global scalar row index of each scalar non-zero (1-based) |
-| `jcn` | `nnz` | Global scalar column index of each scalar non-zero (1-based) |
-| `val` | `nnz` | Value of each scalar non-zero |
+| `irn` | `nnz` | 每个标量非零元的全局标量行索引（以 1 为基） |
+| `jcn` | `nnz` | 每个标量非零元的全局标量列索引（以 1 为基） |
+| `val` | `nnz` | 每个标量非零元的数值 |
 
-Blocks are stored **contiguously** in these arrays: block $k$ (1-indexed)
-occupies positions $(k-1)b^2 + 1$ through $k b^2$ in all three arrays.
-Within a block the $b^2$ entries are laid out in **row-major order**
-(local row varies slowly, local column varies fast):
-entry $(r, c)$ of the block sits at offset $b(r-1) + c$ from the block start.
-The ordering of blocks themselves is arbitrary (COO), though in practice the
-assembly proceeds row-by-row so blocks of the same block row appear
-consecutively.
+块在这些数组中**连续**存放：第 $k$ 个块（以 1 为基）
+占据三个数组中从 $(k-1)b^2 + 1$ 到 $k b^2$ 的位置。
+块内 $b^2$ 个元素按**行主序**排列
+（局部行变化慢，局部列变化快）：
+块的元素 $(r, c)$ 位于距块起点的偏移 $b(r-1) + c$ 处。
+块本身的顺序是任意的（COO），不过实际组装是按行进行的，因此同一块行的块在存贮中连续出现。
 
-### Block-level structure arrays
+### 块级结构数组
 
-| Array | Size | Content |
+| 数组 | 大小 | 内容 |
 | --- | --- | --- |
-| `ijA_size` | `my_ind_size` | Number of nonzero blocks in block row $i$ |
-| `irn_jcn` | `my_ind_size × maxsize` | `irn_jcn(i,k)` is the **block column index** of the $k$-th nonzero block of block row $i$ |
-| `ijA_index` | `my_ind_size × maxsize` | `ijA_index(i,k)` is the **1-indexed scalar position in `val`** of the first entry of the $k$-th nonzero block of block row $i$ |
+| `ijA_size` | `my_ind_size` | 块行 $i$ 中非零块的个数 |
+| `irn_jcn` | `my_ind_size × maxsize` | `irn_jcn(i,k)` 是块行 $i$ 第 $k$ 个非零块的**块列索引** |
+| `ijA_index` | `my_ind_size × maxsize` | `ijA_index(i,k)` 是块行 $i$ 第 $k$ 个非零块首元素在 `val` 中的**以 1 为基的标量位置** |
 
-These three arrays provide a random-access view into the BCOO list without
-requiring a sorted order.
+这三个数组提供了对 BCOO 列表的随机访问视图，无需依赖排序。
 
-### Status flags
+### 状态标志
 
-| Flag | Set when |
+| 标志 | 置位条件 |
 | --- | --- |
-| `bcsr_mapped` | `iblockptr` and `jcn_block` have been computed |
-| `device_mapped` | Matrix arrays have been allocated on the GPU |
-| `scaled` | Diagonal row/column scaling has been applied |
-| `equilibrated` | Full equilibration scaling has been applied |
+| `bcsr_mapped` | 已计算 `iblockptr` 与 `jcn_block` |
+| `device_mapped` | 矩阵数组已在 GPU 上分配 |
+| `scaled` | 已施加对角行／列缩放 |
+| `equilibrated` | 已施加完全均衡缩放 |
 
 ---
 
-## Storage Layout: Worked Example
+## 存储布局：算例演示
 
-The following example uses **3 block rows, 3 block columns, b = 2**,
-giving $n_\text{global} = 6$ and 7 nonzero blocks ($\text{nnz} = 7 \times 4 = 28$).
+下面的例子使用 **3 个块行、3 个块列，b = 2**，
+得到 $n_\text{global} = 6$ 和 7 个非零块（$\text{nnz} = 7 \times 4 = 28$）。
 
-### 1 — Block-level sparsity pattern
+### 1 — 块级稀疏模式
 
 ```
          bcol 1   bcol 2   bcol 3
@@ -175,9 +151,9 @@ brow 3 │        │ B(3,2) │ B(3,3) │
        └────────┴────────┴────────┘
 ```
 
-### 2 — Flat BCOO: val / irn / jcn
+### 2 — 扁平 BCOO：val / irn / jcn
 
-Block $k$ occupies positions $(k-1)\,b^2+1$ through $k\,b^2$ in all three arrays.
+第 $k$ 个块占据三个数组中从 $(k-1)\,b^2+1$ 到 $k\,b^2$ 的位置。
 
 ```
  ┌─────────┬─────────┬─────────┬─────────┬─────────┬─────────┬─────────┐
@@ -187,7 +163,7 @@ Block $k$ occupies positions $(k-1)\,b^2+1$ through $k\,b^2$ in all three arrays
   block 1    block 2   block 3   block 4   block 5   block 6   block 7
 ```
 
-Zooming into block 1 — B(1,1) stored **row-major** over its $b^2 = 4$ scalars:
+放大到第 1 个块——B(1,1) 按其 $b^2 = 4$ 个标量以**行主序**存放：
 
 ```
  position in val:   1     2     3     4
@@ -196,10 +172,10 @@ Zooming into block 1 — B(1,1) stored **row-major** over its $b^2 = 4$ scalars:
  jcn:               1     2     1     2     (global scalar col)
 ```
 
-### 3 — Block-structure arrays
+### 3 — 块结构数组
 
-`ijA_size`, `irn_jcn`, and `ijA_index` provide random-access into the flat
-BCOO list without requiring a sorted order:
+`ijA_size`、`irn_jcn` 和 `ijA_index` 提供对扁平
+BCOO 列表的随机访问，无需依赖排序：
 
 ```
  brow │ ijA_size │  irn_jcn(brow, :)  │  ijA_index(brow, :)
@@ -209,15 +185,14 @@ BCOO list without requiring a sorted order:
   3   │    2     │   2    3           │   21   25
 ```
 
-`irn_jcn(i,k)` is the global block-node index of the coupled node (= block column number).
-`ijA_index(i,k)` is the 1-indexed scalar position in `val` where that block starts —
-e.g. `ijA_index(2,3) = 17` means B(2,3) starts at `val(17)`, so its entry
-$(r,c)$ is at `val(17 + b*(r-1) + c - 1)`.
+`irn_jcn(i,k)` 是所耦合节点的全局块节点索引（= 块列号）。
+`ijA_index(i,k)` 是该块起始处 `val` 中以 1 为基的标量位置——
+例如 `ijA_index(2,3) = 17` 表示 B(2,3) 从 `val(17)` 开始，因此其元素
+$(r,c)$ 位于 `val(17 + b*(r-1) + c - 1)`。
 
-### 4 — Derived BCSR: iblockptr
+### 4 — 导出的 BCSR：iblockptr
 
-After `set_block_csr_permutations`, `iblockptr` expresses the same BCOO data
-as a CSR row pointer over blocks:
+经过 `set_block_csr_permutations` 之后，`iblockptr` 把同一份 BCOO 数据表达为块上的 CSR 行指针：
 
 ```
  iblockptr:   1               3                      6               8
@@ -227,22 +202,20 @@ as a CSR row pointer over blocks:
               └─ brow 1 ──┘   └──── brow 2 ──────┘   └─ brow 3 ──┘
 ```
 
-Block row $i$ owns flat-list positions `iblockptr(i)` … `iblockptr(i+1)−1`,
-so the `bcsr_matv` inner loop can stride directly through `val` with a fixed
-offset of $b^2$ per block.
+块行 $i$ 拥有扁平列表位置 `iblockptr(i)` … `iblockptr(i+1)−1`，
+因此 `bcsr_matv` 的内层循环可直接以每块 $b^2$ 的固定偏移在 `val` 上跨步。
 
 ---
 
-## Derived Format: Block CSR (BCSR)
+## 导出格式：块 CSR（BCSR）
 
-The BCSR view is computed lazily by
-`set_block_csr_permutations()` in `matrix/sorting_module.f90`
-the first time it is needed (flag `bcsr_mapped`).
+BCSR 视图在首次需要时（标志 `bcsr_mapped`）由
+`matrix/sorting_module.f90` 中的 `set_block_csr_permutations()` 惰性计算。
 
-### What the conversion does
+### 转换做了什么
 
-`set_block_csr_permutations` iterates over the flat BCOO block list and
-counts how many blocks belong to each block row:
+`set_block_csr_permutations` 遍历扁平 BCOO 块列表，
+统计每个块行拥有多少个块：
 
 ```fortran
 do i = 1, nnz_blocks
@@ -254,46 +227,36 @@ end do
 ! prefix-sum iblockptr → CSR row pointers
 ```
 
-Two new arrays are allocated and populated:
+会分配并填充两个新数组：
 
-| Array | Size | Content |
+| 数组 | 大小 | 内容 |
 | --- | --- | --- |
-| `iblockptr` | `my_ind_size + 1` | Block CSR row pointer: block row $i$ owns blocks `iblockptr(i)` … `iblockptr(i+1)-1` |
-| `jcn_block` | `nnz_blocks` | Block column index of block $j$ in BCSR enumeration |
+| `iblockptr` | `my_ind_size + 1` | 块 CSR 行指针：块行 $i$ 拥有块 `iblockptr(i)` … `iblockptr(i+1)-1` |
+| `jcn_block` | `nnz_blocks` | BCSR 枚举中第 $j$ 个块的块列索引 |
 
-The `val`, `irn`, and `jcn` arrays are **not reordered**; `iblockptr` simply
-expresses the existing BCOO order as a CSR structure.  This is correct because
-the prefix-sum construction assigns block-index ranges in sequential order, so
-it only produces valid pointers when the flat BCOO list is already **sorted by
-block row** — all blocks of row 1 before all blocks of row 2, and so on.
-This ordering is guaranteed by the row-by-row finite-element assembly.
+`val`、`irn` 和 `jcn` 数组**不重排**；`iblockptr` 只是把既有的 BCOO 顺序表达为 CSR 结构。这样做之所以正确，是因为前缀和构造按顺序分配块索引区间，
+所以只有当扁平 BCOO 列表已**按块行排序**时——即第 1 行的所有块都在第 2 行的所有块之前，依此类推——它才会产生有效的指针。
+这一顺序由逐行的有限元组装保证。
 
-### Scalar CSR 
+### 标量 CSR 
 
-A separate scalar CSR conversion is performed by `convert_sorting()` when
-required (e.g. PaStiX).  This routine:
+需要时（例如 PaStiX），由 `convert_sorting()` 另行执行一次标量 CSR 转换。该例程：
 
-1. Sorts `jcn` and `val` within each scalar row into ascending column order.
-2. Overwrites `irn(1:nr+1)` **in-place** with the resulting scalar CSR row
-   pointers (computed internally as a local array and then copied in).
+1. 在每个标量行内把 `jcn` 与 `val` 按列号升序排序。
+2. 用所得的标量 CSR 行指针**就地**覆写 `irn(1:nr+1)`
+   （内部先算在局部数组中，再拷入）。
 
-After this call `irn` no longer holds row indices — its first `nr+1` entries
-are now scalar CSR row pointers.  The remaining entries of `irn` past `nr+1`
-are stale and should not be read.  Note that `a_mat%iptr` is a separate array
-pointer that is **not** set by `convert_sorting`; callers that need the row
-pointer under the `iptr` name must copy or alias it explicitly.
+该调用之后 `irn` 不再存放行索引——其前 `nr+1` 个元素此刻是标量 CSR 行指针。`irn` 中 `nr+1` 之后的其余元素已失效，不应读取。注意 `a_mat%iptr` 是另一个独立的数组指针，**不**由 `convert_sorting` 设置；需要在 `iptr` 名下取得行指针的调用方必须显式复制或做别名。
 
 ---
 
-## MPI Distribution
+## MPI 分布
 
-The matrix is distributed across MPI ranks by **block rows**: each rank owns
-a contiguous, non-overlapping range of block rows and stores all non-zero entries
-that fall in those rows.  Column indices (`jcn`, `jcn_block`) are always global —
-a local row can couple to any column in the full matrix, regardless of which rank
-owns that column's rows.
+矩阵按**块行**分布到各 MPI 进程：每个进程拥有一段连续且互不重叠的块行，
+并存储落在这些行中的所有非零元。列索引（`jcn`、`jcn_block`）始终是全局的——
+本地行可以与完整矩阵中任意一列耦合，不论该列所在的行由哪个进程拥有。
 
-### Partitioning
+### 划分
 
 ```text
 rank 0       rank 1       rank 2         ...     rank P-1
@@ -306,63 +269,54 @@ rank 0       rank 1       rank 2         ...     rank P-1
  = 1          = K₀+1       = K₁+1                = K+1
 ```
 
-Each rank's range is `[my_ind_min, my_ind_max]` (1-based block-row indices).
-The global directory arrays `index_min(1:ncpu)` and `index_max(1:ncpu)` let any
-rank compute any other rank's range.
+每个进程的范围是 `[my_ind_min, my_ind_max]`（以 1 为基的块行索引）。
+全局目录数组 `index_min(1:ncpu)` 与 `index_max(1:ncpu)` 让任意进程都能算出其他进程的范围。
 
-The local scalar row count and index offset follow directly:
+本地标量行数与索引偏移直接由此得到：
 
 $$n_r = \texttt{my_ind_size} \times b, \qquad
   \text{offset} = (\texttt{my_ind_min} - 1) \times b$$
 
-where $b$ is the block size.  Global scalar row index $g$ maps to local scalar
-row $g - \text{offset}$.
+其中 $b$ 是块大小。全局标量行索引 $g$ 映射为本地标量行 $g - \text{offset}$。
 
-### Assembly
+### 组装
 
-Assembly is purely local: each rank loops over its own element set and checks
-whether a test-function block row falls within `[my_ind_min, my_ind_max]` before
-adding a contribution.  No inter-rank communication is required during matrix
-fill.
+组装完全是本地的：每个进程遍历自己的单元集，在累加贡献之前检查某测试函数块行是否落在 `[my_ind_min, my_ind_max]` 内。矩阵填充过程中不需要进程间通信。
 
-### Distribution Modes
+### 分布模式
 
-| Field | Type | Meaning |
+| 字段 | 类型 | 含义 |
 | --- | --- | --- |
-| `ng` | integer | Global scalar dimension $n_\text{global}$ |
-| `nr` | integer | Locally owned scalar rows (`my_ind_size × b`) |
-| `nc` | integer | Locally owned scalar columns (= `ng` for row-distributed) |
-| `nnz` | integer | Locally owned scalar non-zeros |
-| `my_ind_min`, `my_ind_max` | integer | Inclusive block-row range of this rank |
+| `ng` | integer | 全局标量维数 $n_\text{global}$ |
+| `nr` | integer | 本地拥有的标量行（`my_ind_size × b`） |
+| `nc` | integer | 本地拥有的标量列（行分布时等于 `ng`） |
+| `nnz` | integer | 本地拥有的标量非零元个数 |
+| `my_ind_min`, `my_ind_max` | integer | 本进程的闭区间块行范围 |
 | `my_ind_size` | integer | `my_ind_max − my_ind_min + 1` |
-| `index_min(:)`, `index_max(:)` | integer(ncpu) | Block-row ranges of all ranks |
-| `ncpu` | integer | Number of MPI ranks |
-| `comm` | integer | MPI communicator |
-| `row_distributed` | logical | `.true.` — rows partitioned (standard transient matrix) |
-| `col_distributed` | logical | `.true.` — columns also partitioned (PaStiX path) |
-| `reduced` | logical | `.true.` — full matrix replicated on all ranks |
+| `index_min(:)`, `index_max(:)` | integer(ncpu) | 所有进程的块行范围 |
+| `ncpu` | integer | MPI 进程数 |
+| `comm` | integer | MPI 通信器 |
+| `row_distributed` | logical | `.true.`——按行划分（标准的瞬态矩阵） |
+| `col_distributed` | logical | `.true.`——列也划分（PaStiX 路径） |
+| `reduced` | logical | `.true.`——完整矩阵在所有进程上各存一份 |
 
-The standard configuration for the global transient matrix is
-`row_distributed = .true.`, `col_distributed = .false.`, `reduced = .false.`.
+全局瞬态矩阵的标准配置是
+`row_distributed = .true.`、`col_distributed = .false.`、`reduced = .false.`。
 
-**`col_distributed`** is set for the PaStiX direct solver, which requires a
-column-distributed CSR input.  After `convert_sorting()`, `irn` is overwritten
-with scalar CSR row pointers and the column partition information is used to
-determine the local column range.
+**`col_distributed`** 为 PaStiX 直接求解器而设，该库要求输入为列分布的 CSR。`convert_sorting()` 之后 `irn` 被标量 CSR 行指针覆写，列划分信息用于确定本地列范围。
 
-**`reduced`** is used for matrices that must be available in full on every rank
-(e.g. certain preconditioner sub-matrices).  In this mode `nnz` counts global
-non-zeros and `irn`/`jcn`/`val` hold the complete matrix on every process.
+**`reduced`** 用于必须在每个进程上都有完整副本的矩阵
+（例如某些预条件器子矩阵）。此模式下 `nnz` 统计的是全局非零元个数，`irn`/`jcn`/`val` 在每个进程上都保存完整矩阵。
 
 ---
 
-## Format Used by Each Consumer
+## 各类使用方所采用的格式
 
-| Consumer | Format | Key arrays |
+| 使用方 | 格式 | 关键数组 |
 | --- | --- | --- |
-| Direct assembly / FE routines | BCOO | `irn`, `jcn`, `val`, `ijA_size`, `irn_jcn`, `ijA_index` |
-| Matrix–vector products (CPU) | BCOO / BCSR | `iblockptr`, `irn`, `jcn`, `val` |
-| Matrix–vector products (GPU) | Scalar CSR / BCSR | `iblockptr`, `iptr`/`irn`, `jcn`, `val` |
-| MUMPS direct solve | Scalar COO (row-distributed) | `irn`, `jcn`, `val` |
-| PaStiX direct solve | Scalar CSR (column-distributed) | `iptr`, `jcn`, `val` |
-| STRUMPACK direct solve | Scalar COO | `irn`, `jcn`, `val` |
+| 直接组装／有限元例程 | BCOO | `irn`, `jcn`, `val`, `ijA_size`, `irn_jcn`, `ijA_index` |
+| 矩阵—向量乘积（CPU） | BCOO / BCSR | `iblockptr`, `irn`, `jcn`, `val` |
+| 矩阵—向量乘积（GPU） | 标量 CSR / BCSR | `iblockptr`, `iptr`/`irn`, `jcn`, `val` |
+| MUMPS 直接求解 | 标量 COO（行分布） | `irn`, `jcn`, `val` |
+| PaStiX 直接求解 | 标量 CSR（列分布） | `iptr`, `jcn`, `val` |
+| STRUMPACK 直接求解 | 标量 COO | `irn`, `jcn`, `val` |

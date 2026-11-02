@@ -5,25 +5,18 @@ render_with_liquid: false
 parent: "General"
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
-
-原文页面：[jorek2_wall_forces](https://iterorganization.github.io/JOREK/diagnostics/jorek2_wall_forces.html)　·　源文件：`diagnostics/jorek2_wall_forces.md`
-</div>
-
 # jorek2_wall_forces
 
-This program reads JOREK restart files and calculates the total wall forces. **You need to run your simulations in full free-boundary mode (including the n=0 mode)**. Otherwise you cannot know the vacuum fields outside the plasma domain. For more information on how to run in free-boundary see [here](jorek-starwall-faqs.md). 
+本程序读取 JOREK 重启文件并计算总壁力。**必须以完全自由边界模式（含 n=0 模）运行模拟**。否则无法得知等离子体区域之外的真空场。关于如何以自由边界模式运行，参见[此处](jorek-starwall-faqs.md)。 
 
-It involves the computation of expensive volume integrals in the plasma, so run it in parallel with several MPI processes for large cases. Submit the same job scripts that you would use for JOREK (just replacing "jorek_modelXXX" by "jorek2_wall_forces". To compile it just type
+它涉及等离子体内昂贵的体积分计算，因此对于大算例应使用多个 MPI 进程并行运行。提交与 JOREK 相同的作业脚本即可（只需把 "jorek_modelXXX" 换成 "jorek2_wall_forces"。编译时只需输入
 
    make -j 8 jorek2_wall_forces
 
-Update 30.11.22 New input file 
+更新 30.11.22 新的输入文件 
 
-To select the given JOREK restart files create a file named wall_forces.nml
-with the following format
+要选择给定的 JOREK 重启文件，请创建一个名为 wall_forces.nml 的文件
+，格式如下
    &wall_forces
    istart     = 100  ! start index of restart file
    iend       = 1000 ! end index of restart file
@@ -32,10 +25,10 @@ with the following format
    n_phi_int  = 64   ! number of points for integration in the toroidal direction (to get B-field)
    
    /
-The forces are exported to the total_wall_forces_istart..iend..scale_fact.dat file
+力输出到 total_wall_forces_istart..iend..scale_fact.dat 文件
 
-For older versions the wall_forces.nml just requires one line with istart iend delta_step:
+对于较旧的版本，wall_forces.nml 只需一行 istart iend delta_step：
    0 1000 100
-The result is stored in total_wall_forces.dat
+结果保存在 total_wall_forces.dat 中
 
-IMPORTANT: To compute the total wall forces, an integral over a close surface containing the STARWALL wall is performed ([equation 7 in this paper](https://iopscience.iop.org/article/10.1088/1741-4326/aa8876/meta)). The routine assumes a given ordering of the triangles describing this surface, which is an scaled value of the STARWALL wall. Thus depending of how this ordering is done in STARWALL, the triangle normals may flip sign and so the computed forces. TODO: enforce always outward pointing normals in the routine to ensure the correct sign of the total forces
+重要：为计算总壁力，需对包含 STARWALL 壁面的闭合曲面做积分（[本文中的公式 7](https://iopscience.iop.org/article/10.1088/1741-4326/aa8876/meta)）。该例程假定描述该曲面的三角形具有给定的排列顺序，而该曲面是 STARWALL 壁面的缩放版本。因此，取决于 STARWALL 中该顺序是如何确定的，三角形法向可能反号，计算出的力也随之反号。TODO：在例程中强制法向始终朝外，以确保总力的符号正确

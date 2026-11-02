@@ -7,29 +7,22 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+本页旨在说明如何编译、配置并运行 STARWALL 代码，以用于 JOREK 的自由边界仿真。
 
-原文页面：[Running and setting up STARWALL](https://iterorganization.github.io/JOREK/physics/model_extensions/freebound/running_STARWALL.html)　·　源文件：`physics/model_extensions/freebound/running_STARWALL.md`
-</div>
-
-This page intends to explain how to compile, setup and run the STARWALL code for free-boundary simulations in JOREK.
-
-## Getting the source code
-Clone the code, currently at the ITER bitbucket server
+## 获取源代码 {#getting-the-source-code}
+克隆代码，目前位于 ITER 的 bitbucket 服务器
 
 ```bash
 git clone --branch develop ssh://git@git.iter.org/stab/starwall.git starwall/
 ```
 
-## Compiling
-To compile you need a FORTRAN compiler with MPI and also the [**MKL**](https://en.wikipedia.org/wiki/Math_Kernel_Library) library that includes SCaLAPACK. First you need to set up a configuration file for your machine and name it as `config.in` in the main directory. For example, for ITER, go to the STARWALL folder and do
+## 编译 {#compiling}
+编译需要一个带 MPI 的 FORTRAN 编译器，还需要包含 SCaLAPACK 的 [**MKL**](https://en.wikipedia.org/wiki/Math_Kernel_Library) 依赖库。首先需要为自己的机器准备一个配置文件，并在主目录中将其命名为 `config.in`。例如对 ITER，进入 STARWALL 文件夹并执行
 
 ```bash
 cp configs/config.iter config.in
 ```
-and be sure that the MKL modules are well linked
+并确保 MKL 模块已正确链接
 
 ```bash
 MKL_HOME=$(MKLROOT)
@@ -37,27 +30,27 @@ LAPACK_LIB = $(MKL_HOME)/lib/intel64/libmkl_sequential.a -Wl,--start-group  $(MK
 
 LIB = $(LAPACK_LIB)
 ```
-To compile simply do
+编译只需执行
 
 ```bash
 make clean 
 make
 ```
-The executable to run is
+要运行的可执行文件是
 ```bash
 ./starwall/o_3d/STARWALL_JOREK_Linux
 ```
 
-## Running
+## 运行
 
-Create a run folder for STARWALL wherever you find convenient (e.g. `run_starwall`)
+在任意方便的位置为 STARWALL 创建一个运行文件夹（例如 `run_starwall`）
 
-### Getting the boundary.txt file
-1. Run JOREK with `freeboundary=.t.` in the input file. JOREK will stop and the **boundary.txt** file with the geometry of the coupling surface will appear in the folder.
-2. Copy **boundary.txt** to the `run_starwall` folder.
+### 获取 boundary.txt 文件
+1. 在输入文件中设置 `freeboundary=.t.` 运行 JOREK。JOREK 会停止，并在文件夹中出现含耦合面几何的 **boundary.txt** 文件。
+2. 把 **boundary.txt** 复制到 `run_starwall` 文件夹。
 
-### Create a STARWALL input file
-Choose whatever name you prefer (e.g. `input_starwall`). See the following example for ITER, **the input parameters** are explained [here](#parameter-overview)
+### 创建 STARWALL 输入文件
+文件名可任意选择（例如 `input_starwall`）。以 ITER 的下例为参照，**输入参数**在[此处](#parameter-overview)说明
 ```bash
 &PARAMS
   ! Calculate response matrix for:
@@ -119,78 +112,75 @@ Choose whatever name you prefer (e.g. `input_starwall`). See the following examp
 /
 ```
 
-### Submitting the job
-**STARWALL is a MPI only code**, there is no OpenMP being used. Therefore, in your job file, you must set the following parameters before running
+### 提交作业 {#submitting-the-job}
+**STARWALL 是仅 MPI 的代码**，不使用 OpenMP。因此在作业文件中，运行前必须设置以下参数
 ```bash
   #SBATCH --ntasks-per-node= Number of cpus per node of your machine
   #SBATCH --cpus-per-task  =1
   
   export OMP_NUM_THREADS=1
 ```
-Then the command to run STARWALL is simply
+随后运行 STARWALL 的命令很简单
 
 ```bash
   mpirun STARWALL_JOREK_Linux input_starwall > output_starwall
 ```
-Depending on the size of your problem and the number of cpus that you use it may take from minutes to several hours. For ITER demanding simulations, it may take about 8 hours with 4-8 compute nodes. 
+视问题规模与所用 CPU 数量，耗时从几分钟到数小时不等。对 ITER 的高要求仿真，用 4–8 个计算节点约需 8 小时。
 
-Right at the start of the run, STARWALL produces the “wall.vtk” that you can plot with visit or paraview to visualize the geometry of the wall that you have specified in the input file. You can see the output information from STARWALL in output_starwall. 
+运行一开始，STARWALL 就会生成“wall.vtk”，可用 visit 或 paraview 绘制，以可视化你在输入文件中指定的壁几何。STARWALL 的输出信息可在 output_starwall 中查看。
 
-Finally, the response file should appear in your running folder
+最后，运行文件夹中应出现响应文件
 
 ```bash
   ./starwall-response.dat
 ```
-which you will need to copy or link to the JOREK directory.
+你需要把它复制或链接到 JOREK 目录。
 
-## Parameter setup
-
-### Parameter overview
-
-| Input Parameter | Explanation |
+## 参数配置 {#parameter-setup}
+### 参数总览 {#parameter-overview}
+| 输入参数 | 说明 |
 |---|---|
-| `n_harm` | Number of toroidal harmonics, see [Select modes and harmonics](#select-modes-and-harmonics) |
-| `n_tor` | Toroidal mode numbers to be included, see [Select modes and harmonics](#select-modes-and-harmonics) |
-| `nv` | Number of toroidal grid points representing the plasma in STARWALL |
+| `n_harm` | 环向谐波个数，见[选择模与谐波](#select-modes-and-harmonics) |
+| `n_tor` | 要包含的环向模数，见[选择模与谐波](#select-modes-and-harmonics) |
+| `nv` | 在 STARWALL 中表示等离子体的环向网格点数 |
 
-Usually no need to change the following ones:
+以下参数通常无需改动：
 
-| Input Parameter | Explanation |
+| 输入参数 | 说明 |
 |---|---|
-| `i_response` | 2 -- don't touch |
-| `delta` | 0.001 -- don't touch |
-| `n_points` | 10 -- don't touch |
-| `nwall` | 1 -- don't touch for simple walls |
+| `i_response` | 2 —— 不要改动 |
+| `delta` | 0.001 —— 不要改动 |
+| `n_points` | 10 —— 不要改动 |
+| `nwall` | 1 —— 简单壁不要改动 |
 
-Additionally, for a **simple closed wall** represented by Fourier harmonics (see [Setting up a simple wall](#setting-up-a-simple-wall) for details):
+此外，对由傅里叶谐波表示的**简单闭合壁**（详见[配置简单壁](#setting-up-a-simple-wall)）：
 
-| Input Parameter | Explanation |
+| 输入参数 | 说明 |
 |---|---|
-| `eta_thin_w` | Thin wall resistivity, see [Wall and coil resistivities](#wall-and-coil-resistivities) |
-| `nwu` | Number of poloidal points to represent the simple wall |
-| `nwv` | Number of toroidal points to represent the simple wall |
-| `mn_w` | Number of harmonics to describe the simple wall geometry |
-| `n_w(*)` | Toroidal mode number of the harmonics describing the simple wall geometry |
-| `m_w(*)` | Poloidal mode number of the harmonics describing the simple wall geometry |
-| `rc_w(*)` | Cosine harmonics for R describing the simple wall geometry |
-| `rs_w(*)` | Sine harmonics for R describing the simple wall geometry |
-| `zc_w(*)` | Cosine harmonics for Z describing the simple wall geometry |
-| `zs_w(*)` | Sine harmonics for Z describing the simple wall geometry |
+| `eta_thin_w` | 薄壁电阻率，见[壁与线圈电阻率](#wall-and-coil-resistivities) |
+| `nwu` | 表示简单壁的极向点数 |
+| `nwv` | 表示简单壁的环向点数 |
+| `mn_w` | 描述简单壁几何的谐波个数 |
+| `n_w(*)` | 描述简单壁几何的各谐波的环向模数 |
+| `m_w(*)` | 描述简单壁几何的各谐波的极向模数 |
+| `rc_w(*)` | 描述简单壁几何的 R 的余弦谐波 |
+| `rs_w(*)` | 描述简单壁几何的 R 的正弦谐波 |
+| `zc_w(*)` | 描述简单壁几何的 Z 的余弦谐波 |
+| `zs_w(*)` | 描述简单壁几何的 Z 的正弦谐波 |
 
-Additionally when including **coils** (see [Include coils](#include-coils) for details):
+此外，在包含**线圈**时（详见[包含线圈](#include-coils)）：
 
-| Input Parameter | Explanation |
+| 输入参数 | 说明 |
 |---|---|
-| `pol_coil_file` | File name, axisymmetric coils for free boundary equilibrium, vertical feedback etc |
-| `rmp_coil_file` | File name, non-axisymmetric active coils |
-| `diag_coil_file` | File name, coils of arbitrary geometry used as virtual diagnostics |
-| `voltage_coil_file` | File name (not working yet) |
+| `pol_coil_file` | 文件名，用于自由边界平衡、垂直反馈等的轴对称线圈 |
+| `rmp_coil_file` | 文件名，非轴对称主动线圈 |
+| `diag_coil_file` | 文件名，用作虚拟诊断的任意几何线圈 |
+| `voltage_coil_file` | 文件名（尚未可用） |
 
 
 
-### Setting up a simple wall
-
-The following example sets up a wall with the geometry $R=10+1.2\cos(\theta)$ and $Z=1.2\sin(\theta)$ which is represented by 32 poloidal and 32 toroidal points (i.e., 2×32×32=2048 triangles):
+### 配置简单壁 {#setting-up-a-simple-wall}
+下例配置一个几何为 $R=10+1.2\cos(\theta)$、$Z=1.2\sin(\theta)$ 的壁，它由 32 个极向点和 32 个环向点表示（即 2×32×32=2048 个三角形）：
 
 ```fortran
 &PARAMS_WALL
@@ -203,19 +193,18 @@ The following example sets up a wall with the geometry $R=10+1.2\cos(\theta)$ an
 /
 ```
 
-For the parameter `eta_thin_w`, refer to [How to set up wall and coil resistivities?](#how-to-set-up-wall-and-coil-resistivities).
+关于参数 `eta_thin_w`，参见[如何设置壁与线圈电阻率？](#how-to-set-up-wall-and-coil-resistivities)。
 
-### Select modes and harmonics
+### 选择模与谐波 {#select-modes-and-harmonics}
+`n_harm` 表示谐波个数，`n_tor` 列出相应的环向模数。几个例子：
 
-`n_harm` denotes the number of harmonics, and `n_tor` lists the corresponding toroidal mode numbers. A few examples:
-
-| Toroidal mode numbers | `n_harm` | `n_tor` |
+| 环向模数 | `n_harm` | `n_tor` |
 |---|---|---|
 | 0 | 1 | 0 |
 | 0,1,2 | 3 | 0,1,2 |
 | 4,8 | 2 | 4,8 |
 
-Search in the JOREK logfile for the following section which reports harmonics taken into account in the response:
+在 JOREK 日志文件中搜索下面这段，它报告响应中计入的谐波：
 
 ```
 -----------------------------------------------------------------------------
@@ -226,39 +215,38 @@ i_tor                   = 2 (n=1 cos), 3 (n=1 sin)
 -----------------------------------------------------------------------------
 ```
 
-**Note:**
-* Modes present in JOREK, but not present in the STARWALL response will be treated with ideal wall boundary conditions.
-* For modes present in STARWALL but not included in JOREK, the vacuum response will be ignored.
+**注意：**
+* 存在于 JOREK 但不在 STARWALL 响应中的模，将按理想壁边界条件处理。
+* 存在于 STARWALL 但未包含在 JOREK 中的模，其真空响应将被忽略。
 
-### How to set up wall and coil resistivities?
+### 如何设置壁与线圈电阻率？ {#how-to-set-up-wall-and-coil-resistivities}
+壁与线圈电阻率**在 STARWALL 中**设置，方法如下。JOREK 参数 `wall_resistivity_fact` 可同时缩放壁与线圈的电阻率。
 
-Wall and coil resistivities are set up **in STARWALL** as explained below. The JOREK parameter `wall_resistivity_fact` allows scaling both wall and coil resistivities at the same time.
+#### 壁
 
-#### Wall
-
-The wall resistivity is set up in STARWALL by the parameter `eta_thin_w`. From the material property $\eta_{wall,SI}$ [Ω·m] and the wall thickness $d_{wall}$ [m], you can calculate the "thin wall resistivity" as:
+壁电阻率由 STARWALL 中的参数 `eta_thin_w` 设置。由材料属性 $\eta_{wall,SI}$ [Ω·m] 与壁厚 $d_{wall}$ [m]，可按下式计算“薄壁电阻率”：
 
 $$\eta_{thin,SI}=\frac{\eta_{wall,SI}}{d_{wall}} \text{ [Ω]}$$
 
-Set `eta_thin_w` to this SI value.
+把 `eta_thin_w` 设为此 SI 值。
 
-#### Coils
+#### 线圈
 
-For the coils, the input parameter `resist` refers to the resistance of the coil in Ohm (if the coil has more than one turn, this value refers to all turns combined). The corresponding $\eta_{thin,norm}$ is calculated automatically from it.
+对线圈，输入参数 `resist` 指线圈的电阻，单位为欧姆（若线圈多于 1 匝，该值指所有匝合计）。相应的 $\eta_{thin,norm}$ 由它自动算出。
 
-### Include coils
-Coils need to be added in STARWALL via additional coil files. The names of these files are specified in the main STARWALL input file via the following parameters:
+### 包含线圈 {#include-coils}
+线圈需通过额外的线圈文件添加到 STARWALL 中。这些文件的名称在主 STARWALL 输入文件中由以下参数指定：
 
-| Input Parameter | Explanation |
+| 输入参数 | 说明 |
 |---|---|
-| `pol_coil_file` | File name, axisymmetric coils for free boundary equilibrium, vertical feedback, etc. |
-| `rmp_coil_file` | File name, non-axisymmetric active coils |
-| `diag_coil_file` | File name, coils of arbitrary geometry used as virtual diagnostics |
-| `voltage_coil_file` | File name (not working yet) |
+| `pol_coil_file` | 文件名，用于自由边界平衡、垂直反馈等的轴对称线圈 |
+| `rmp_coil_file` | 文件名，非轴对称主动线圈 |
+| `diag_coil_file` | 文件名，用作虚拟诊断的任意几何线圈 |
+| `voltage_coil_file` | 文件名（尚未可用） |
 
-Some example coil files can be found in the STARWALL repository in the folder `coil_inputs/`. Each coil file contains two sections.
+一些示例线圈文件可在 STARWALL 仓库的 `coil_inputs/` 文件夹中找到。每个线圈文件包含两段。
 
-**The first section** only contains general information about the coil set:
+**第一段**只包含线圈组的一般信息：
 
 ```fortran
 &coil_set_nml
@@ -267,7 +255,7 @@ Some example coil files can be found in the STARWALL repository in the folder `c
 /
 ```
 
-**The second section** contains the details about the coil properties:
+**第二段**包含线圈属性的细节：
 
 ```fortran
 &coils_nml
@@ -275,9 +263,9 @@ Some example coil files can be found in the STARWALL repository in the folder `c
 /
 ```
 
-Here the properties of each coil are specified as described in the following sections.
+这里按以下各节所述指定每个线圈的属性。
 
-#### General fields for each coil independent of the type
+#### 与类型无关的每个线圈的通用字段
 
 ```fortran
 coil(1)%name            ! name of the coil
@@ -285,9 +273,9 @@ coil(1)%coil_type       ! can be axisym_thick, axisym_fila, general_thin (see be
 coil(1)%resist          ! resistance of the coil in Ohm
 ```
 
-Depending on the `coil_type`, additional information needs to be provided as explained below.
+视 `coil_type` 而定，还需按下文所述提供额外信息。
 
-#### Axisymmetric coils with dR and dZ extent (`coil_type=axisym_thick`)
+#### 具有 dR 与 dZ 范围的轴对称线圈（`coil_type=axisym_thick`）
 
 ```fortran
 coil(1)%R               ! Position in R (center of coil)
@@ -300,9 +288,9 @@ coil(1)%ntorpts         ! Number of toroidal points
 coil(1)%nturns          ! Number of turns for the coil
 ```
 
-**Update (25.04.2022):** It is now possible to specify coil bands at different radial and vertical positions to represent current loops of the same electric circuit, for example. The number of parts is given by `nparts_coil`. Each part has values for R, Z, dR, and dZ. Each part can be subdivided into several bands in R and Z directions as before. The old input files are backwards compatible.
+**更新（25.04.2022）：** 现在可以在不同的径向与垂直位置指定线圈带，例如用以表示同一电路中的电流回路。分部数由 `nparts_coil` 给出。每一部分都有 R、Z、dR 与 dZ 的取值。每一部分都可像以前那样在 R 与 Z 方向细分为若干带。旧输入文件向后兼容。
 
-**Input with new options:**
+**使用新选项的输入：**
 
 ```fortran
 coil(1)%nparts_coil      ! Number of coil parts N
@@ -316,7 +304,7 @@ coil(1)%ntorpts          ! Number of toroidal points
 coil(1)%n_thick_turns(N) ! Number of turns per coil part
 ```
 
-#### Axisymmetric coils specified by filaments (`coil_type=axisym_fila`)
+#### 由细丝指定的轴对称线圈（`coil_type=axisym_fila`）
 
 ```fortran
 coil(1)%n_fila          ! Number of filaments for the coil
@@ -327,7 +315,7 @@ coil(1)%Z_fila          ! Z-position of each filament
 coil(1)%ntorpts         ! Number of toroidal points
 ```
 
-#### 3D coil specified by a list of points (`coil_type=general_thin`)
+#### 由点列指定的 3D 线圈（`coil_type=general_thin`）
 
 ```fortran
 coil(1)%n_pts           ! Number of points along the coil
@@ -340,4 +328,3 @@ coil(1)%dir3d(n_pts*3)  ! OPTIONAL: for each point, give the direction of the ba
                         ! The norm corresponds to the coil width.
                         ! The order is dx1, dy1, dz1, ..., dxN, dyN, dzN
 ```
-

@@ -6,22 +6,15 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 时间积分 
 
-原文页面：[Time Integration](https://iterorganization.github.io/JOREK/numerics/time-integration.html)　·　源文件：`numerics/time-integration.md`
-</div>
-
-# Time integration 
-
-The time-integration of a set of equations of the form 
+对形如
 
 $$
 \frac{\partial \mathbf{A(u)}}{\partial t} = \mathbf{B}(\mathbf{u},t) \tag{1}
 $$
 
-can be discretized by the general form  (refer to Beam80 and Hirsch91, Chapter 11.1)
+的方程组，其时间积分可用如下一般形式离散（参见 Beam80 与 Hirsch91 第 11.1 章）
 
 $$
 (1+\xi) \, \mathbf{A}^{n+1} - (1+2\xi) \, \mathbf{A}^{n} + \xi \, \mathbf{A}^{n-1}
@@ -32,15 +25,15 @@ $$
 \right] \tag{2}
 $$
 
-which guarantees second-order accuracy, if $\phi+\theta-\xi = 1/2$. Superscripts like $\mathbf{B}^n$ indicate at which timestep the corresponding expression is evalued.
+当 $\phi+\theta-\xi = 1/2$ 时，该形式保证二阶精度。形如 $\mathbf{B}^n$ 的上标表示相应表达式是在哪个时间步上求值的。
 
-The linearization 
+线性化
 
 $$
 \mathbf{H}^{n+1} \approx \mathbf{H}^n + \left[ \frac{\partial \mathbf{H}}{\partial \mathbf{u}} \right]^n \cdot \delta \mathbf{u}^n \tag{3}
 $$
 
-where $\mathbf{H} = \mathbf{A}$ or $\mathbf{H} = \mathbf{B}$, which is described in Reference Hirsch91, Chapter 11.3, allows to rewrite Equation (2) in the following way, where $\phi = 0$ has been chosen.
+其中 $\mathbf{H} = \mathbf{A}$ 或 $\mathbf{H} = \mathbf{B}$。该线性化见参考文献 Hirsch91 第 11.3 章，它允许把式 (2) 改写为如下形式，其中取 $\phi = 0$。
 
 $$
 \begin{split}
@@ -51,19 +44,19 @@ $$
 \end{split} \tag{4}
 $$
 
-Here, 
+此处，
 
 $$
   \delta\mathbf{u}^n \equiv \mathbf{u}^{n+1}-\mathbf{u}^n \tag{5}
 $$
 
-After some simplifications, and using the backward linearization
+经若干化简，并使用后向线性化
 
 $$
   \mathbf{H}^{n-1}\approx \mathbf{H}^n-\left[\frac{\partial \mathbf{H}}{\partial \mathbf{u}}\right]^n\cdot\delta\mathbf{u}^{n-1}, \tag{6}
 $$
 
-one obtains
+可得
 
 $$
   \boxed{
@@ -72,15 +65,15 @@ $$
   }, \tag{7}
 $$
 
-which is the time-integration scheme implemented in JOREK. Certain parameter choices correspond to well-known time integration methods as listed in Table 1. The parameter $\xi$ is denoted ''zeta'' in the code.
+这就是 JOREK 中实现的时间积分格式。某些参数取值对应众所周知的时间积分方法，如表 1 所列。参数 $\xi$ 在代码中记作 ''zeta''。
 
-| $\theta$ | $\xi$ | Method | input parameter `time_evol_scheme` |
+| $\theta$ | $\xi$ | 方法 | 输入参数 `time_evol_scheme` |
 |----------|------|--------|------------------------------------|
-| 1/2 | 0 | **Crank-Nicolson scheme (default)** | `"Crank-Nicholson"` |
-| 1 | 1/2 | **BDF2 (Gears) scheme** | `"Gears"` |
-| 1 | 0 | Implicit Euler scheme (usually not used) | `"implicit Euler"` |
+| 1/2 | 0 | **Crank-Nicolson 格式（默认）** | `"Crank-Nicholson"` |
+| 1 | 1/2 | **BDF2（Gears）格式** | `"Gears"` |
+| 1 | 0 | 隐式 Euler 格式（通常不使用） | `"implicit Euler"` |
 
-Explicitly, the terms $(\partial\mathbf{A}/\partial{\mathbf{u}})\cdot\delta\mathbf{u}$ and $(\partial\mathbf{B}/\partial{\mathbf{u}})\cdot\delta\mathbf{u}$ lead to the following transformations of expressions: 
+具体而言，项 $(\partial\mathbf{A}/\partial{\mathbf{u}})\cdot\delta\mathbf{u}$ 与 $(\partial\mathbf{B}/\partial{\mathbf{u}})\cdot\delta\mathbf{u}$ 导致如下表达式变换：
 
 $$
 \begin{aligned}
@@ -92,19 +85,19 @@ $$
 \end{aligned} \tag{8}
 $$
 
-Here, $g$ and $h$ denote arbitrary variables and $x$ an arbitrary coordinate. For instance, $\partial j/\partial\phi$ turns into $\partial(\delta j)/\partial\phi$.
+此处 $g$ 与 $h$ 表示任意变量，$x$ 表示任意坐标。例如 $\partial j/\partial\phi$ 变为 $\partial(\delta j)/\partial\phi$。
 
-## Generalized equations
+## 广义方程
 
-Consider a set of equations of the form
+考虑形如
 
 $$
 \sum_i a_i(\mathbf{u},t)\frac{\partial \mathbf{A}_i( \partial\mathbf{u})}{t} = \mathbf{B}(\mathbf{u},t), \tag{9}
 $$
 
-where the $a_i$'s can in general be spatial differential operators. A discretization similar to (2) (with $\phi=0$) can be derived for such equations.
+的方程组，其中 $a_i$ 一般可以是空间微分算子。对此类方程可以导出与 (2) 类似的离散（取 $\phi=0$）。
 
-Consider first the explicit (forward) and implicit (backward) Euler schemes. In both cases, the time derivative $\partial\mathbf{A}/\partial t$ is replaced by the difference quotient $(\mathbf{A}^{n+1}-\mathbf{A}^n)/\Delta t$, with everything else being evaluated at time step $n$ for explicit Euler and time step $n+1$ for implicit Euler:
+先考虑显式（前向）与隐式（后向）Euler 格式。两种情形下时间导数 $\partial\mathbf{A}/\partial t$ 都替换为差商 $(\mathbf{A}^{n+1}-\mathbf{A}^n)/\Delta t$，其余各项在显式 Euler 中于时间步 $n$ 取值，在隐式 Euler 中于时间步 $n+1$ 取值：
 
 $$
 \begin{aligned}
@@ -113,20 +106,20 @@ $$
 \end{aligned} \tag{10}
 $$
 
-The Crank-Nicolson scheme is simply an average of the two Euler schemes:
+Crank-Nicolson 格式就是两种 Euler 格式的平均：
 
 $$
 \sum_i (\frac{1}{2}a_i^{n+1}+\frac{1}{2}a_i^n)(\mathbf{A}_i^{n+1}-\mathbf{A}_i^n) = \Delta t(\frac{1}{2}\mathbf{B}^{n+1}+\frac{1}{2}\mathbf{B}^n). \tag{11}
 $$
 
-On the other hand, the BDF2 scheme derives a second order approximation for the time derivative at time step $n+1$ by Taylor expanding $\mathbf{A}_i^n$ and $\mathbf{A}_i^{n-1}$ around $\mathbf{A}_i^{n+1}$:
+另一方面，BDF2 格式通过在 $\mathbf{A}_i^{n+1}$ 附近对 $\mathbf{A}_i^n$ 与 $\mathbf{A}_i^{n-1}$ 作 Taylor 展开，得到时间步 $n+1$ 处时间导数的二阶近似：
 
 $$
 \mathbf{A}_i^n = \mathbf{A}_i^{n+1} - \Delta t\left(\frac{\partial \mathbf{A}_i}{\partial t}\right)^{n+1} + \frac{(\Delta t)^2}{2}\left(\frac{\partial^2\mathbf{A}_i}{\partial t^2}\right)^{n+1} + ... \\
 \mathbf{A}_i^{n-1} = \mathbf{A}_i^{n+1} - 2\Delta t\left(\frac{\partial \mathbf{A}_i}{\partial t}\right)^{n+1} + 2(\Delta t)^2\left(\frac {\partial^2 \mathbf{A}_i}{\partial t^2}\right)^{n+1} + ... \tag{12}
 $$
 
-Solving both of the above expressions for the first order time derivative, one obtains
+将上述两式都对一阶时间导数求解，可得
 
 $$
 \begin{aligned}
@@ -135,28 +128,26 @@ $$
 \end{aligned} \tag{13}
 $$
 
-It follows that
+由此得到
 
 $$
 \left(\frac{\partial \mathbf{A}_i}{\partial t}\right)^{n+1} = a(*)+b(**) = \frac{(a+\frac{1}{2}b)\mathbf{A}_i^{n+1}-a\mathbf{A}_i^n-\frac{1}{2}b\mathbf{A}_i^{n-1}+(\frac{1}{2}a+b)\Delta t\left(\frac{\partial^2 \mathbf{A}_i}{\partial t^2}\right)^{n+1}}{\Delta t}, \tag{14}
 $$
 
-where $a+b=1$. To obtain second order accuracy, the condition $\frac{1}{2}a+b=0$ is imposed, resulting in $a=2$ and $b=-1$. Evaluating equation (9) at time step $n+1$ and substituting in the second order approximation for $\partial\mathbf{A}/\partial t$ at time step $n+1$, the BDF2 scheme is obtained:
+其中 $a+b=1$。为获得二阶精度，施加条件 $\frac{1}{2}a+b=0$，于是 $a=2$、$b=-1$。在时间步 $n+1$ 处计算式 (9)，并代入时间步 $n+1$ 处 $\partial\mathbf{A}/\partial t$ 的二阶近似，即得 BDF2 格式：
 
 $$
 \sum_i a_i^{n+1} (\frac{3}{2}\mathbf{A}_i^{n+1}-2\mathbf{A}_i^n+\frac{1}{2}\mathbf{A}_i^{n-1}) = \Delta t\mathbf{B}^{n+1}. \tag{15}
 $$
 
-Generalizing equations (10), (11) and (15), one can write:
+将式 (10)、(11) 与 (15) 推广，可以写成：
 
 $$
 \sum_i [\theta a_i^{n+1} + (1-\theta)a_i^n][(1+\xi)\mathbf{A}_i^{n+1} - (1+2\xi)\mathbf{A}_i^n + \xi\mathbf{A}_i^{n-1}] = \Delta t[\theta\mathbf{B}^{n+1} + (1-\theta)\mathbf{B}^n]. \tag{16}
 $$
 
-By plugging in the corresponding values for $\theta$ and $\xi$ from Table 1, the Crank-Nicolson, BDF2 and implicit Euler schemes can be recovered from equation (16).
+代入表 1 中相应的 $\theta$ 与 $\xi$ 取值，即可由式 (16) 得到 Crank-Nicolson、BDF2 与隐式 Euler 格式。
 
-### References
+### 参考文献
   * **[Beam80]** Beam, R.M. and Warming, R.F. Alternating direction implicit methods for parabolic equations with a mixed derivative. SIAM Journal on Scientific and Statistical Computing, 1(1), 131 (1980). ISSN 01965204. [[http://dx.doi.org/10.1137/0901007|doi:10.1137/0901007]]
   * **[Hirsch91]**: Hirsch, C. Numerical computation of internal and external flows. Volume 1: Fundamentals of Numerical Discretization. J. Wiley, Chichester (1991). ISBN 9780471923855.
-
-

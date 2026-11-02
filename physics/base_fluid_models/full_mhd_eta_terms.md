@@ -7,25 +7,18 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 全 MHD 中电阻项的弱形式积分
+# 引言
 
-原文页面：[Weak-Form Resistive Term in Full MHD](https://iterorganization.github.io/JOREK/physics/base_fluid_models/full_mhd_eta_terms.html)　·　源文件：`physics/base_fluid_models/full_mhd_eta_terms.md`
-</div>
+本页说明全 MHD 中电阻项如何通过分部积分处理。这样做的主要原因是避免二阶导数——在全 MHD 中，二阶导数会因快波而既含噪声又数值不稳定。
 
-# Weak-Form Integration of the Resistive Term in Full MHD
-# Introduction
-
-This wiki explains how the resistive terms are integrated by parts in Full-MHD. The main reason for doing this is that it avoids 2nd order derivatives, which are noisy and numerically unstable due to fast-waves in Full-MHD.
-
-The main issue with this is that, in principle, integration by parts comes with boundary terms, implemented in `mod_boundary_matrix_open.f90`, and these can be ignored as long as the variables in question, `AR`, `AZ`, and `A3`, are fixed at the boundary, i.e. Dirichlet boundary conditions. However, this is not the correct thing to do in Full-MHD, because `AR` and `AZ` should in principle remain free. Hence, we attempt to give a derivation of all terms here.
+这样做的主要问题在于：原则上分部积分会带来边界项，这些边界项在 `mod_boundary_matrix_open.f90` 中实现；只要相关变量 `AR`、`AZ` 和 `A3` 在边界上被固定，即采用 Dirichlet 边界条件，这些边界项就可以忽略。然而，在全 MHD 中这样做并不正确，因为 `AR` 和 `AZ` 原则上应保持自由。因此，我们在此尝试给出所有项的推导。
 
 ---
 
-# Resistive term in weak form
+# 弱形式下的电阻项
 
-The resistive term is described in the induction equation as
+电阻项在感应方程中表示为
 
 $$
 \begin{aligned}
@@ -39,15 +32,15 @@ $$
 \end{aligned}
 $$
 
-Note that in JOREK, $\vec{B}$, like the velocity $\vec{u}$, is expressed with its physical component $B^{\phi}\vec{e}_{\phi}$, whereas the magnetic potential $\vec{A}$ is expressed with its geometrical component
+注意，在 JOREK 中，$\vec{B}$ 与速度 $\vec{u}$ 一样用其物理分量 $B^{\phi}\vec{e}_{\phi}$ 表示，而磁矢势 $\vec{A}$ 则用其几何分量表示
 
 $$
 A^3\nabla\phi = \vec{e}_{\phi}\frac{A^3}{R},
 $$
 
-such that there is a correspondence between the $A^3$ of Full-MHD and the $\psi$ of reduced-MHD.
+因此，全 MHD 的 $A^3$ 与约化 MHD 的 $\psi$ 之间存在对应关系。
 
-The above expression for $\vec{J}$ can be rearranged and expressed with divergence terms, which will make the integration by parts clearer later on. First, note that for a vector like $\vec{B}$, expressed with the physical toroidal component $B^{\phi}\vec{e}_{\phi}$, we have
+上述 $\vec{J}$ 的表达式可以重新整理，用散度项表示，这会使后续的分部积分更清晰。首先注意，对于像 $\vec{B}$ 这样以物理环向分量 $B^{\phi}\vec{e}_{\phi}$ 表示的矢量，有
 
 $$
 \nabla\cdot\vec{B}
@@ -58,7 +51,7 @@ $$
 + \frac{1}{R}\partial_{\phi}B^{\phi}.
   $$
 
-Therefore,
+因此，
 
 $$
 \begin{aligned}
@@ -75,7 +68,7 @@ J^{\phi}
 \end{aligned}
 $$
 
-Therefore, in weak form, with the test function $V$, and integrating over the volume $\Omega$, bounded by the surface $\xi$, the resistive term gives
+因此，在弱形式下，取检验函数 $V$，在由表面 $\xi$ 包围的体积 $\Omega$ 上积分，电阻项给出
 
 $$
 \begin{aligned}
@@ -93,15 +86,15 @@ $$
 
 ---
 
-# Integration by parts
+# 分部积分
 
-We now proceed to integrate by parts each term from the projection along the three vectors $\vec{e}_R$, $\vec{e}_Z$, and $\vec{e}_{\phi}$. On the domain boundary $\xi$, we define the normal vector as
+下面我们对沿 $\vec{e}_R$、$\vec{e}_Z$ 和 $\vec{e}_{\phi}$ 三个矢量投影得到的每一项分别作分部积分。在区域边界 $\xi$ 上，定义法向量为
 
 $$
 \vec{n} = n^R\vec{e}_R + n^Z\vec{e}_Z .
 $$
 
-In JOREK, since the boundary of our domain is toroidally axisymmetric, although this may not be true for stellarator cases, it follows that
+在 JOREK 中，由于我们的区域边界是环向轴对称的（尽管对仿星器情形未必如此），因此有
 
 $$
 \vec{n}\cdot\vec{e}_{\phi} = 0 .
@@ -109,7 +102,7 @@ $$
 
 ---
 
-## Integration of the $\vec{e}_R$ term
+## $\vec{e}_R$ 项的积分
 
 $$
 \begin{aligned}
@@ -176,14 +169,14 @@ $$
     \end{aligned}
     $$
 
-Thus, in `mod_elt_matrix_fft.f90`, the RHS term needed is
+因此，在 `mod_elt_matrix_fft.f90` 中所需的右端项为
 
 ```fortran
 + v * (eta_Z*Bp - eta_p*BZ/R)
 + eta * (v_Z*Bp - v_p*BZ/R)
 ```
 
-while in `mod_boundary_matrix_open.f90`, the RHS term needed is
+而在 `mod_boundary_matrix_open.f90` 中所需的右端项为
 
 ```fortran
 - v * eta * Bp * normal(2)
@@ -191,7 +184,7 @@ while in `mod_boundary_matrix_open.f90`, the RHS term needed is
 
 ---
 
-## Integration of the $\vec{e}_Z$ term
+## $\vec{e}_Z$ 项的积分
 
 $$
 \begin{aligned}
@@ -257,14 +250,14 @@ $$
     \end{aligned}
     $$
 
-Thus, in `mod_elt_matrix_fft.f90`, the RHS term needed is
+因此，在 `mod_elt_matrix_fft.f90` 中所需的右端项为
 
 ```fortran
 + v * (eta_p*BR/R - eta_R*Bp)
 + eta * (v_p*BR/R - v_R*Bp)
 ```
 
-while in `mod_boundary_matrix_open.f90`, the RHS term needed is
+而在 `mod_boundary_matrix_open.f90` 中所需的右端项为
 
 ```fortran
 + v * eta * Bp * normal(1)
@@ -272,9 +265,9 @@ while in `mod_boundary_matrix_open.f90`, the RHS term needed is
 
 ---
 
-## Integration of the $R\vec{e}_{\phi}$ term
+## $R\vec{e}_{\phi}$ 项的积分
 
-Remember that the projection for the toroidal equation includes a factor $R$, so that the time-derivative term of $A^3$, i.e. $\psi$, reads as $\partial_t A^3$ in the code, instead of $\frac{1}{R}\partial_t A^3$, since
+请记住，环向方程的投影含有因子 $R$，因此 $A^3$（即 $\psi$）的时间导数项在代码中写作 $\partial_t A^3$，而不是 $\frac{1}{R}\partial_t A^3$，因为
 
 $$
 \begin{aligned}
@@ -361,9 +354,9 @@ $$
     \end{aligned}
     $$
 
-Finally, for clarity, we describe the RHS terms that are needed in JOREK, remembering that the $d\Omega$ volume integrand contains a factor $R$.
+最后，为清晰起见，我们给出 JOREK 中所需的右端项，同时记住 $d\Omega$ 体积被积函数中含有因子 $R$。
 
-Thus, in `mod_elt_matrix_fft.f90`, the RHS term needed is
+因此，在 `mod_elt_matrix_fft.f90` 中所需的右端项为
 
 ```fortran
 + v * R * (eta_R*BZ - eta_Z*BR)
@@ -371,11 +364,11 @@ Thus, in `mod_elt_matrix_fft.f90`, the RHS term needed is
 - eta * R * v_Z*BR
 ```
 
-while in `mod_boundary_matrix_open.f90`, the RHS term needed is
+而在 `mod_boundary_matrix_open.f90` 中所需的右端项为
 
 ```fortran
 + v * eta * R * BZ * normal(1)
 - v * eta * R * BR * normal(2)
 ```
 
-In practice, this term can be ignored because $A^3$ is fixed on the boundary. However, maybe these terms will need to be included for free-boundary cases.
+实际上，该项可以忽略，因为 $A^3$ 在边界上是固定的。不过，对于自由边界情形，这些项或许需要保留。

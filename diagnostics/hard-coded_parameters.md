@@ -5,41 +5,34 @@ render_with_liquid: false
 parent: "Installation & Compilation"
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+## 物理模型
 
-原文页面：[Hard-Coded Parameters in JOREK](https://iterorganization.github.io/JOREK/diagnostics/hard-coded_parameters.html)　·　源文件：`diagnostics/hard-coded_parameters.md`
-</div>
+第一个"硬编码参数"是 **JOREK 物理模型编号**。它在 Makefile.inc 文件中设置。
 
-## Physics Model
+其他硬编码参数由位于模型目录 models/modelXXX/ 中的 mod_parameters.f90 文件设置：
 
-The first "hard-coded parameter" is the **JOREK physics model number**. It is set in the Makefile.inc file.
-
-The other hard-coded parameters are set by the mod_parameters.f90 file located in the model directory models/modelXXX/:
-
-| Parameter | Description |
+| 参数 | 说明 |
 | --- | --- |
-| n_tor | Number of toroidal mode numbers (cos+sin counted separately) |
-| n_period | Periodicity (n_period=1 means full torus) |
-| n_plane | Number of toroidal planes; n_plane must be >= 2*(n_tor-1) |
-| n_vertex_max | do not change |
-| n_nodes_max | Maximum number of grid nodes |
-| n_elements_max | Maximum number of grid elements (2D Bezier) |
-| n_boundary_max | Maximum number of boundary elements (1D Bezier) |
-| n_pieces_max | Maximum number of pieces in a flux surface representation |
+| n_tor | 环向模数个数（cos 与 sin 分别计数） |
+| n_period | 周期性（n_period=1 表示整个环向） |
+| n_plane | 环向平面个数；n_plane 必须 >= 2*(n_tor-1) |
+| n_vertex_max | 不要修改 |
+| n_nodes_max | 网格节点的最大数目 |
+| n_elements_max | 网格单元的最大数目（二维 Bezier） |
+| n_boundary_max | 边界单元的最大数目（一维 Bezier） |
+| n_pieces_max | 磁面表示中分段的最大数目 |
 
-When changing hard-coded parameters, you should always execute:
+修改硬编码参数时，应始终执行：
   make clean
 
-When changing model you should execute:
+更换模型时，应执行：
   make cleanall
 
-## Script config.sh
+## 脚本 config.sh
 
-The script
+在 trunk 中调用的脚本
   ./util/config.sh
-called from the trunk allows to **show the values of the hard-coded parameters**. You will get an output like this:
+可用于**显示硬编码参数的取值**。将得到如下输出：
   =======================
   Makefile.inc:
   -----------------------
@@ -54,7 +47,7 @@ called from the trunk allows to **show the values of the hard-coded parameters**
     n_pieces_max = 6001
   =======================
 
-The same script can also **modify the hard-coded parameters**:
+同一脚本也可**修改硬编码参数**：
   ./util/config.sh model=303 n_tor=3 n_period=8 n_plane=8
 
-**Important:** When changing the model with the script, make sure that the other parameters are correct as well, since they are set separately for each model in the model-specific mod_parameters.f90 files.
+**重要：** 用该脚本更换模型时，务必确认其他参数也正确，因为它们是分别在各模型专属的 mod_parameters.f90 文件中设置的。

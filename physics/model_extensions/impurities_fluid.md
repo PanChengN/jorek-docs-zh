@@ -7,146 +7,137 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 杂质流体模型
 
-原文页面：[Impurities — Fluid Model](https://iterorganization.github.io/JOREK/physics/model_extensions/impurities_fluid.html)　·　源文件：`physics/model_extensions/impurities_fluid.md`
-</div>
+这类模型包含一个对应杂质密度的场（在代码中为变量 8，即 var_rhoimp）。本页适用于专用杂质模型（如模型 501/502），以及它们的模块化通用模型 600。
 
-# The impurity fluid model
+此类模型可用于例如 [SPI 模拟](spi_tutorial) 或 [MGI 模拟](mgi_tutorial)。
 
-These models contain a field (variable number 8 or var_rhoimp in the code) corresponding to the impurity density. This page applies to dedicated impurity models such as models 501/502, as well as thei modular general model 600.
+## 模型 501/502
 
-Such models can be used for example for [SPI simulations](spi_tutorial) or [MGI simulations](mgi_tutorial).
+**重要提示：** 目前使用模型 501/502 时应设置 `tau_ic = 0.`，即不应包含抗磁效应（这些效应尚未被正确实现）。
 
-## Models 501/502
+### 变量的定义
 
-**Important note:** At present, `tau_ic = 0.` should be set when using models 501/502, i.e. diamagnetic effects should not be included (they are not properly implemented).
-
-### Definition of the variables
-
-**Variable number 5:** In models 501/502, $\rho$ (variable number 5) is the **total** mass density, all species included (but neglecting the electron mass). That is:
+**变量 5：** 在模型 501/502 中，$\rho$（变量 5）是**总**质量密度，包含所有组分（但忽略电子质量）。即：
 
 \begin{aligned}
   \rho = \rho_i + \rho_{imp}
 \end{aligned}
 
-where $\rho_i$ is the main ion density and $\rho_{imp}$ is the impurity density, all charge states included.
+其中 $\rho_i$ 是主离子密度，$\rho_{imp}$ 是包含所有电荷态的杂质密度。
 
-**Pressure:** In models 501/502, the pressure that appears naturally in the energy and momentum equations is the **total** pressure $p$, all species included. In model 501, we assume that all species have a common temperature $T/2$. The pressure is therefore (with non-JOREK normalizations for the moment, to avoid confusions) $p=n_{tot}T/2$, where $n_{tot}$ is the total particle density: $n_{tot}=n_{i}+n_{e}+n_{imp}$. By quasi-neutrality we have $n_e=n_i+\langle Z \rangle_{imp}n_{imp}$. Therefore, $n_{tot}=2n_i+(\langle Z \rangle_{imp}+1)n_{imp}$. Now, $n_i=\rho_i/m_i$ and $n_{imp}=\rho_{imp}/m_{imp}$, so: $n_{tot}=[2\rho_i+\frac{(\langle Z \rangle_{imp}+1)m_i}{m_{imp}}\rho_{imp}]/m_i=[2\rho+(\frac{(\langle Z \rangle_{imp}+1)m_i}{m_{imp}}-2)\rho_{imp}]/m_i$. The pressure can therefore be expressed as (now in JOREK units):
+**压力：** 在模型 501/502 中，能量方程与动量方程中自然出现的压力是包含所有组分的**总**压力 $p$。在模型 501 中，假定所有组分具有共同的温度 $T/2$。因此压力为（此处暂时使用非 JOREK 归一化，以避免混淆）$p=n_{tot}T/2$，其中 $n_{tot}$ 是总粒子密度：$n_{tot}=n_{i}+n_{e}+n_{imp}$。由准中性条件有 $n_e=n_i+\langle Z \rangle_{imp}n_{imp}$。因此，$n_{tot}=2n_i+(\langle Z \rangle_{imp}+1)n_{imp}$。又因 $n_i=\rho_i/m_i$、$n_{imp}=\rho_{imp}/m_{imp}$，故：$n_{tot}=[2\rho_i+\frac{(\langle Z \rangle_{imp}+1)m_i}{m_{imp}}\rho_{imp}]/m_i=[2\rho+(\frac{(\langle Z \rangle_{imp}+1)m_i}{m_{imp}}-2)\rho_{imp}]/m_i$。于是压力可表示为（以下为 JOREK 单位）：
 
 \begin{aligned}
   p=(\rho+\alpha_{imp}\rho_{imp})T/m_{i}
 \end{aligned}
 
-where we define $\alpha_{imp} \equiv \frac{(\langle Z \rangle_{imp}+1)m_i}{2m_{imp}}-1$. Note that we will assume that $\langle Z \rangle_{imp}=\langle Z \rangle_{imp}(T)$, so that $\alpha_{imp}=\alpha_{imp}(T)$.
+其中定义 $\alpha_{imp} \equiv \frac{(\langle Z \rangle_{imp}+1)m_i}{2m_{imp}}-1$。注意我们将假定 $\langle Z \rangle_{imp}=\langle Z \rangle_{imp}(T)$，从而 $\alpha_{imp}=\alpha_{imp}(T)$。
 
-**Variable number 8:** In models 501/502, variable number 8 is $\rho_{imp}$, the impurity mass density, all charge states included.
+**变量 8：** 在模型 501/502 中，变量 8 是 $\rho_{imp}$，即包含所有电荷态的杂质质量密度。
 
-### Normalizations
+### 归一化
 
-| Connection between SI and normalized units | | Description of the quantity / Comment |
+| SI 单位与归一化单位之间的换算 | | 量的说明／备注 |
 |--------------------------------------------|------|----------------------------------------|
-| $\rho_\mathrm{SI}~[\mathrm{kg/m^3}]$ | $=\rho\;\rho_0$ | Total mass density |
-| $\rho_\mathrm{imp,SI}~[\mathrm{kg/m^3}]$ | $=\rho_\mathrm{imp}\;\rho_0$ | Impurity mass density |
-| $n_\mathrm{i,SI}~[\mathrm{m^{-3}}]$ | $=(\rho - \rho_\mathrm{imp})\;n_0$ | Main ion number density |
-| $n_\mathrm{imp,SI}~[\mathrm{m^{-3}}]$ | $=\rho_\mathrm{imp}\;n_0\;\mu_{imp}$ | Impurity number density |
-| $n_\mathrm{e,SI}~[\mathrm{m^{-3}}]$ | $= n_\mathrm{i,SI}\;+\;\langle Z \rangle_{imp}\;n_\mathrm{imp,SI}$ | Electron number density |
+| $\rho_\mathrm{SI}~[\mathrm{kg/m^3}]$ | $=\rho\;\rho_0$ | 总质量密度 |
+| $\rho_\mathrm{imp,SI}~[\mathrm{kg/m^3}]$ | $=\rho_\mathrm{imp}\;\rho_0$ | 杂质质量密度 |
+| $n_\mathrm{i,SI}~[\mathrm{m^{-3}}]$ | $=(\rho - \rho_\mathrm{imp})\;n_0$ | 主离子数密度 |
+| $n_\mathrm{imp,SI}~[\mathrm{m^{-3}}]$ | $=\rho_\mathrm{imp}\;n_0\;\mu_{imp}$ | 杂质数密度 |
+| $n_\mathrm{e,SI}~[\mathrm{m^{-3}}]$ | $= n_\mathrm{i,SI}\;+\;\langle Z \rangle_{imp}\;n_\mathrm{imp,SI}$ | 电子数密度 |
 
-**Having defined:**
+**其中定义：**
 
-| Symbol | Expression | Comment |
+| 符号 | 表达式 | 备注 |
 |--------|------------|---------|
-| $n_0~[m^{-3}]$ | `central_density` $\cdot 10^{20}$ | `central_density` gets a default value in `preset_parameters.f90` and should be specified in the input file |
-| $\rho_0~[kg\;m^{-3}]$ | `central_mass` $\cdot n_0 \cdot m_\text{AMU}$ | `central_mass` gets a default value in `preset_parameters.f90` and should be specified in the input file |
-| $\mu_\mathrm{imp}~[1]$ | `m_i_over_m_imp` $ = m_\mathrm{i}/m_\mathrm{imp}$ | `m_i_over_m_imp` is defined by the impurity species. |
+| $n_0~[m^{-3}]$ | `central_density` $\cdot 10^{20}$ | `central_density` 在 `preset_parameters.f90` 中有默认值，应在输入文件中指定 |
+| $\rho_0~[kg\;m^{-3}]$ | `central_mass` $\cdot n_0 \cdot m_\text{AMU}$ | `central_mass` 在 `preset_parameters.f90` 中有默认值，应在输入文件中指定 |
+| $\mu_\mathrm{imp}~[1]$ | `m_i_over_m_imp` $ = m_\mathrm{i}/m_\mathrm{imp}$ | `m_i_over_m_imp` 由杂质种类确定。 |
 
-### Equations
+### 方程
 
 <!--
-- [Di's note](note501.pdf)
-- [Di's note for model 502](note502.pdf)
-- [Boniface's note](mgi_spi_premixed_modelingdiag.pdf)
+- [Di 的笔记](note501.pdf)
+- [Di 关于模型 502 的笔记](note502.pdf)
+- [Boniface 的笔记](mgi_spi_premixed_modelingdiag.pdf)
 -->
 
-#### Vorticity equation (eq. 2)
+#### 涡量方程（式 2）
 
-The full MHD momentum equation reads:
+完整的 MHD 动量方程写作：
 
 \begin{aligned}
 \rho (\partial_t + \mathbf{v} \cdot \nabla) \mathbf{v}  = \mathbf{j} \times \mathbf{B} - \nabla p + \nu \Delta \mathbf{v} - (\partial_t \rho + \nabla \cdot (\rho \mathbf{v})) \mathbf{v} + S_{\rho_{imp}} \mathbf{v}_{imp}
 \end{aligned}
 
-where $\mathbf{v}_{imp}$ is the velocity of the impurities deposited by the $S_{\rho_{imp}}$ source term. Note the presence of the term $-(\partial_t \rho + \nabla \cdot (\rho \mathbf{v})) \mathbf{v}$ on the RHS. This term, which ensures momentum conservation, is not present in other JOREK models at the moment (21/08/18) but may be included in the future.
+其中 $\mathbf{v}_{imp}$ 是由 $S_{\rho_{imp}}$ 源项注入的杂质的速度。注意右端出现了 $-\left(\partial_t \rho + \nabla \cdot (\rho \mathbf{v})\right) \mathbf{v}$ 这一项。该项保证动量守恒，目前（21/08/18）JOREK 的其他模型中尚无此项，但将来可能会加入。
 
-The reduced MHD vorticity equation is derived by applying the operator $\nabla\phi\cdot\nabla\times(R^2...)$ to the momentum equation. The result in the absence of the $-(\partial_t \rho + \nabla \cdot (\rho \mathbf{v})) \mathbf{v}$ term is presented [here](reduced_mhd). The $-(\partial_t \rho + \nabla \cdot (\rho \mathbf{v})) \mathbf{v}$ term yields an additional term $-\nabla \cdot \left[ R^2 (\partial_t \rho + \nabla \cdot (\rho \mathbf{v})) \nabla_{pol} u \right] $ on the RHS of the vorticity equation (we neglect the contribution from $- (\partial_t \rho + \nabla \cdot (\rho \mathbf{v})) v_{||}\mathbf{B} $). In weak form, this term becomes $ \int - u^* \nabla \cdot \left[ R^2 (\partial_t \rho + \nabla \cdot (\rho \mathbf{v})) \nabla_{pol} u \right] dV$ (where $u^*$ is the test function), which can be transformed into $ \int R^2 (\partial_t \rho + \nabla \cdot (\rho \mathbf{v})) (\nabla u^* \cdot \nabla_{pol} u) dV $ via an integration by parts. In order to implement this term, it is necessary to develop $\nabla \cdot (\rho \mathbf{v})$, which is done [here](div_rho_v).
+约化 MHD 涡量方程由将算子 $\nabla\phi\cdot\nabla\times(R^2...)$ 作用于动量方程得到。不含 $-\left(\partial_t \rho + \nabla \cdot (\rho \mathbf{v})\right) \mathbf{v}$ 项时的结果见[此处](reduced_mhd)。该项在涡量方程右端给出一个附加项 $-\nabla \cdot \left[ R^2 (\partial_t \rho + \nabla \cdot (\rho \mathbf{v})) \nabla_{pol} u \right] $（我们忽略了 $- (\partial_t \rho + \nabla \cdot (\rho \mathbf{v})) v_{||}\mathbf{B} $ 的贡献）。在弱形式下，该项变为 $ \int - u^* \nabla \cdot \left[ R^2 (\partial_t \rho + \nabla \cdot (\rho \mathbf{v})) \nabla_{pol} u \right] dV$（其中 $u^*$ 为检验函数），分部积分后可化为 $ \int R^2 (\partial_t \rho + \nabla \cdot (\rho \mathbf{v})) (\nabla u^* \cdot \nabla_{pol} u) dV $。为实现该项，需要展开 $\nabla \cdot (\rho \mathbf{v})$，展开过程见[此处](div_rho_v)。
 
-#### Definition of current (eq. 3)
+#### 电流的定义（式 3）
 
-This equation remains the same as in other JOREK [reduced MHD models](reduced_mhd):
+该方程与其他 JOREK [约化 MHD 模型](reduced_mhd) 中的相同：
 \begin{aligned}
   j = \Delta^*\psi
 \end{aligned}
 
-#### Definition of vorticity (eq. 4)
+#### 涡量的定义（式 4）
 
-This equation remains the same as in other JOREK [reduced MHD models](reduced_mhd):
+该方程与其他 JOREK [约化 MHD 模型](reduced_mhd) 中的相同：
 \begin{aligned}
   \omega = \Delta_\text{pol} u
 \end{aligned}
 
-#### Global continuity equation (eq. 5)
+#### 全局连续性方程（式 5）
 
-The global continuity equation, i.e. the equation describing the evolution of the total mass density, reads:
+全局连续性方程，即描述总质量密度演化的方程，写作：
 
 \begin{aligned}
 \partial_t \rho = - \nabla \cdot (\rho \mathbf{v}) + \nabla \cdot (D_i \nabla (\rho - \rho_{imp})) + \nabla \cdot (D_{imp} \nabla \rho_{imp}) + S_{\rho_i} + S_{\rho_{imp}}
 \end{aligned}
 
-One important aspect of the model for e.g. [SPI](spi_tutorial) or [MGI simulations](mgi_tutorial) is the volumetric source term $S_{\rho_{imp}}$ through which impurities are deposited. Some information on the parameterization of this term is given [here](particle_source_parameterization).
+对于例如 [SPI](spi_tutorial) 或 [MGI 模拟](mgi_tutorial) 而言，模型的一个重要方面是杂质藉以注入的体源项 $S_{\rho_{imp}}$。关于该项参数化的一些信息见[此处](particle_source_parameterization)。
 
-#### Pressure equation (eq. 6)
+#### 压力方程（式 6）
 
-The pressure equation reads something like:
+压力方程大致写作：
 
 \begin{aligned}
 \partial_t p = - \mathbf{v} \cdot \nabla p - \gamma p \nabla \cdot \mathbf{v} + Conduction + Joule - Radiation - Ionization
 \end{aligned}
 
-assuming that all species have the same ratio of heat capacities $\gamma$, which is the case if we consider mono-atomic impurities and main ions (which we plan to do). We recall that here $p=(\rho+\alpha_{imp}\rho_{imp})T$ (see above).
+这里假定所有组分具有相同的热容比 $\gamma$，若考虑单原子杂质与主离子（这正是我们的计划），则该假定成立。注意此处 $p=(\rho+\alpha_{imp}\rho_{imp})T$（见上文）。
 
-#### Parallel momentum equation (eq. 7)
+#### 平行动量方程（式 7）
 
-The parallel momentum equation is obtained by applying $\mathbf{B} \cdot (...) $ to the full MHD momentum equation (written above, in the Vorticity equation section). The result in the absence of the $-(\partial_t \rho + \nabla \cdot (\rho \mathbf{v})) \mathbf{v}$ term is presented [here](reduced_mhd). To implement the latter, the approximation $\mathbf{B} \cdot \mathbf{v} \approx B^2 v_{\parallel} \approx \frac{F_0^2}{R^2} v_{\parallel} $ is used, which intuitively seems to make sense in reduced MHD. In weak form, the parallel momentum equation therefore gets a RHS term $ \int -(\partial_t \rho + \nabla \cdot (\rho \mathbf{v})) B^2 v_{parallel} $. In order to implement this term, it is necessary to develop $\nabla \cdot (\rho \mathbf{v})$, which is done [here](div_rho_v).
+将 $\mathbf{B} \cdot (...) $ 作用于完整的 MHD 动量方程（已在上文涡量方程一节写出），即得平行动量方程。不含 $-\left(\partial_t \rho + \nabla \cdot (\rho \mathbf{v})\right) \mathbf{v}$ 项时的结果见[此处](reduced_mhd)。为实现后者，采用近似 $\mathbf{B} \cdot \mathbf{v} \approx B^2 v_{\parallel} \approx \frac{F_0^2}{R^2} v_{\parallel} $，从直觉上看这在约化 MHD 中是合理的。因此在弱形式下，平行动量方程得到右端项 $ \int -(\partial_t \rho + \nabla \cdot (\rho \mathbf{v})) B^2 v_{parallel} $。为实现该项，需要展开 $\nabla \cdot (\rho \mathbf{v})$，展开过程见[此处](div_rho_v)。
 
-#### Impurity continuity equation (eq. 8)
+#### 杂质连续性方程（式 8）
 
-The impurity continuity equation, i.e. the equation describing the evolution of the impurity mass density (all charge states included), reads:
+杂质连续性方程，即描述杂质质量密度（含所有电荷态）演化的方程，写作：
 
 \begin{aligned}
 \partial_t \rho_{imp} = - \nabla \cdot (\rho_{imp} \mathbf{v}) + \nabla \cdot (D_{imp} \nabla \rho_{imp}) + S_{\rho_{imp}}
 \end{aligned}
 
-As already mentioned above, one important aspect of the model for e.g. [SPI](spi_tutorial) or [MGI simulations](mgi_tutorial) is the volumetric source term $S_{\rho_{imp}}$ through which impurities are deposited. Some information on the parameterization of this term is given [here](particle_source_parameterization).
+如上文所述，对于例如 [SPI](spi_tutorial) 或 [MGI 模拟](mgi_tutorial) 而言，模型的一个重要方面是杂质藉以注入的体源项 $S_{\rho_{imp}}$。关于该项参数化的一些信息见[此处](particle_source_parameterization)。
 
-### Implementation of the equations
+### 方程的离散实现
 
-- [Global continuity equation](model_501_global_continuity)
-- [Induction equation](model_501_induction)
-- [Vorticity equation](model_501_vorticity)
-- [Pressure equation](model_501_pressure_eq)
-- [Parallel momentum equation](model_501_parallel_momentum)
-- [Impurity continuity equation](model_501_impurity_continuity)
-- **Note:** the equations for the definition of current and vorticity are the same as in other models
+- [全局连续性方程](model_501_global_continuity)
+- [感应方程](model_501_induction)
+- [涡量方程](model_501_vorticity)
+- [压力方程](model_501_pressure_eq)
+- [平行动量方程](model_501_parallel_momentum)
+- [杂质连续性方程](model_501_impurity_continuity)
+- **注：** 电流与涡量定义所用的方程与其他模型相同
 
-### Atomic coefficients
+### 原子系数
 
-Atomic coefficients are taken from the [ADAS database](adas.md). The "baseline" version of models 501/502 assume coronal equilibrium, but a non-equilibrium has been implemented recently (see below).
+原子系数取自 [ADAS 数据库](adas.md)。模型 501/502 的"基线"版本假定体系处于日冕平衡（Coronal Equilibrium），但近期已实现了非平衡情形（见下文）。
 
-### Non-equilibrium impurities
+### 非平衡杂质
 
-A particle based non-equilibrium model has been implemented in JOREK, compatible with 501/502 and 600.
-See [The marker representation of collisional-radiative impurity model](impurities_marker.md).
-
-
+JOREK 中已实现基于粒子的非平衡模型，与 501/502 和 600 兼容。
+见[碰撞辐射杂质模型的标记粒子表示](impurities_marker.md)。

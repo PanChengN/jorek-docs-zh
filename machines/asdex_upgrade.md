@@ -6,44 +6,37 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 模拟 ASDEX Upgrade 的相关信息
+<!-- 部分特定测试算例另见 [ASDEX Upgrade JOREK Wiki](asdex_upgrade_wiki)（**旧版**） -->
 
-原文页面：[ASDEX Upgrade](https://iterorganization.github.io/JOREK/machines/asdex_upgrade.html)　·　源文件：`machines/asdex_upgrade.md`
-</div>
-
-# Information relevant for simulating ASDEX Upgrade
-<!-- For some specific test cases see also [ASDEX Upgrade JOREK Wiki](asdex_upgrade_wiki) (**OLD**) -->
-
-The standard signs in ASDEX Upgrade correspond to the following in JOREK:
+ASDEX Upgrade 中的标准符号在 JOREK 中对应如下：
 
 ```
 F0       > 0
 Psi_axis < Psi_xpoint
 ```
 
-## Overview by Erika Strumberger
+## Erika Strumberger 的概述
 
 <!-- ![](asdex_upgrade [JOREK Wiki]_files\augsign.png){: width="500"} -->
 <img src="assets/asdex_upgrade/augsign.png" width="500" alt="Description of image">
 
-## JOREK Coordinate System
+## JOREK 坐标系
 
 <!-- ![](jorek-coordinates.png){: width="500"} -->
 <img src="assets/asdex_upgrade/jorek-coordinates.png" width="500" alt="Description of image">
 
-## Equilibria
+## 平衡
 
-<!-- ### cliste2jorek Script -->
+<!-- ### cliste2jorek 脚本 -->
 
-<!-- - The [cliste2jorek script](cliste2jorek_script) extracts the equilibrium information of ASDEX Upgrade shotfiles for JOREK. -->
+<!-- - [cliste2jorek 脚本](cliste2jorek_script) 从 ASDEX Upgrade 的 shotfile 中提取平衡信息供 JOREK 使用。 -->
 
-### Conversion of NEMEC Equilibria
+### NEMEC 平衡的转换
 
-- $J_{pol}$ from Cotrans mode0 (`xm_jpol_spol`) $\rightarrow$ calculate $FF'$ from it as below, make fit to smooth
-- $\Delta\Psi_\text{NEMEC}$ is $\Psi_{bnd} - \Psi_{axis}$ in NEMEC coordinates
-- Signs might need to be corrected (see above)
+- 取 Cotrans mode0 的 $J_{pol}$（`xm_jpol_spol`）$\rightarrow$ 由它按下方公式计算 $FF'$，并做拟合使之平滑
+- $\Delta\Psi_\text{NEMEC}$ 在 NEMEC 坐标下即 $\Psi_{bnd} - \Psi_{axis}$
+- 符号可能需要修正（见上）
 
 $$
 \begin{align}
@@ -54,32 +47,32 @@ FF' &= \frac{2\pi}{\Delta\Psi_\text{NEMEC}}\;\frac{\mu_0^2}{4\pi^2}J_{pol}\frac{
 \end{align}
 $$
 
-### Simplified Equilibria for Tests
+### 测试用简化平衡
 
-- [Simplified Equilibria for Tests](asdex_upgrade_simplified-equilibria-for-tests)
-- [Large aspect ratio tearing mode benchmark](asdex_upgrade_large-aspect-ratio-tearing-mode-benchmark)
-- [Simplified X-point tearing mode test case](asdex_upgrade_simplified-x-point-tearing-mode-test-case)
+- [测试用简化平衡](asdex_upgrade_simplified-equilibria-for-tests)
+- [大长径比撕裂模基准算例](asdex_upgrade_large-aspect-ratio-tearing-mode-benchmark)
+- [简化 X 点撕裂模测试算例](asdex_upgrade_simplified-x-point-tearing-mode-test-case)
 
-## Coil geometry
+## 线圈几何
 
-### PF coils
-The coil geometry for STARWALL was extracted from the machine description file provided by Mike Dunne and contains all PF coils.
+### PF 线圈
+STARWALL 所用的线圈几何取自 Mike Dunne 提供的装置描述文件，其中包含全部 PF 线圈。
 
-The tar file contains the original machine description file, the geometry of conducting structures of AUG, the vessel geometry, the PF coils for STARWALL as filaments, the thick band model of the PSL (which was benchmarked against CASTOR3D), and an example input file for STARWALL:
+该 tar 文件包含原始装置描述文件、AUG 导电结构的几何、真空室几何、供 STARWALL 使用的 PF 线圈（以细丝表示）、PSL 的厚带模型（曾与 CASTOR3D 做过基准比对），以及一个 STARWALL 示例输入文件：
 [aug_freeb_input.tar](assets/asdex_upgrade/aug_freeb_input.tar)
 <!-- [aug_freeb_input.tar](https://www.jorek.eu/wiki/lib/exe/fetch.php?media=aug_freeb_input.tar) -->
 
-See also [pf coils](asdex_upgrade_pf-coils-cliste) for the geometry of the PF coils (in magenta in the picture below) and an explanation of the Machine Description file.
+PF 线圈的几何（下图中以品红色标出）以及装置描述文件的说明另见 [pf coils](asdex_upgrade_pf-coils-cliste)。
 
 <!-- ![](aug_coils_eng.png){: width="300"} -->
 <img src="assets/asdex_upgrade/aug_coils_eng.png" width="500" alt="Description of image">
 
-The coil currents for a specific shot can be directly extracted by cliste from the shotfile. During the free-boundary equilibrium the V2 coils are used for the feedback.
-When using the [controller](active_controller_model_for_vertical_stabilization) for active stabilization during the simulation, the CoI coils are used like in the experiment for fast feedback.
+特定 shot 的线圈电流可由 cliste 直接从 shotfile 中提取。自由边界平衡过程中使用 V2 线圈做反馈。
+在模拟中使用[控制器](active_controller_model_for_vertical_stabilization)进行主动稳定时，CoI 线圈像实验中一样用于快速反馈。
 
-<!-- [Coil feedings as ascii and sw input](https://www.jorek.eu/wiki/lib/exe/fetch.php?media=aug_feeding.tar.gz) -->
-The coil feedings were provided by I. Zammuto and transformed into STARWALL data.
-The OH2o and OH2u coils are connected to the OH feeding and also have separate inputs.
+<!-- [以 ascii 与 sw 输入形式给出的线圈供电](https://www.jorek.eu/wiki/lib/exe/fetch.php?media=aug_feeding.tar.gz) -->
+线圈供电由 I. Zammuto 提供，并转换为 STARWALL 数据。
+OH2o 与 OH2u 线圈接在 OH 供电上，同时另有独立输入。
 
 ```
 1. +OH1
@@ -95,10 +88,10 @@ All these feedings are included in the OH file.
 The V1+V2 coils consist of two different circuits each, so there is also a line connecting the two circuits.
 ```
 
-<!-- # RMP Coils
+<!-- # RMP 线圈
 
-- [R. Nazikian's slides 16-07-2015](assets/asdex_upgrade/nazikian_ipp_07152015.pdf) -->
+- [R. Nazikian 的幻灯片 16-07-2015](assets/asdex_upgrade/nazikian_ipp_07152015.pdf) -->
 
-## Literature
-- [Literature on ELM Physics](asdex_upgrade_literature_on_elm_physics)
-- [Literature on Disruption Physics](asdex_upgrade_literature_on_disruption_physics)
+## 文献
+- [ELM 物理文献](asdex_upgrade_literature_on_elm_physics)
+- [破裂物理文献](asdex_upgrade_literature_on_disruption_physics)

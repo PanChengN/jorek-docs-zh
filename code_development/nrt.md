@@ -6,85 +6,78 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 回归测试
+TODO：需依据 github 工作流更新。
 
-原文页面：[Regression Tests](https://iterorganization.github.io/JOREK/code_development/nrt.html)　·　源文件：`code_development/nrt.md`
-</div>
+***回归测试旨在发现意外引入代码的问题。** 回归测试确保：向仓库推送某次提交之后，所选的一组代码结果不发生变化。*
 
-# Regression Testing
-TODO: it needs to be updated based on the github workflow.
+- **每次提交后，测试会在 ITER git 系统上自动运行** —— 见 [ITER Stash 系统](https://git.iter.org/projects/STAB/repos/jorek/branches)中的 "Builds" 列。这确保我们在某次提交"弄坏了代码"时能立即知晓。
+- 如下文所述，在本地自行运行这些测试也很容易。
 
-***Regression testing aims at detecting problems that are accidentally introduced into the code.** A regression test makes sure that a selected set of code results does not change after a commit pushed on the repository.*
+## 测试如何工作？
 
-- **The tests run automatically on the ITER git system after each commit** -- see column "Builds" in the [ITER Stash system](https://git.iter.org/projects/STAB/repos/jorek/branches). This makes sure that we immediately know when a commit "broke something in the code".
-- It is also easy to run the tests locally yourself as described below.
+为缩短执行时间，代码通常**从模拟的非线性阶段重启，且只执行一个时间步**。这次短运行之后，将所得 `nodes%values` 与参考结果作绝对差比较。比较通过 HDF5 工具完成。此外还存在其他类型的测试用例（例如自由边界平衡）。
 
-## How do the tests work?
+- `run_test.sh` 脚本可用于运行测试用例。
+- 若测试成功，脚本返回错误码 0，否则返回非零值（通常退出状态为 1）。该返回码告知 ITER 平台上的 "Bamboo" 软件某个测试未成功。
+- 另外，在输出末尾可看到类似 `Test 'tearing_circ_303' passed.` 的一行。该信息便于用户判断测试是否成功。
 
-To reduce the execution time, the code is typically **restarted in the non-linear phase of a simulation and executed for a single time step**. After this short run, the resulting `nodes%values` are compared for absolute differences to a reference result. The comparison is done via HDF5 tools. Other kinds of test cases (e.g., free boundary equilibrium) exist as well.
+## 用户如何运行测试？
 
-- The `run_test.sh` script allows to run test cases.
-- If a test is successful, the script will return error code 0, otherwise a non-zero value (often with an exit status equal to 1). This return code indicates to the "Bamboo" software on the ITER platform that a test was not successful.
-- Additionally, at the end of the output, you will find a line similar to `Test 'tearing_circ_303' passed.`. This message is useful for the user to know whether the test was successful.
+### 准备步骤
 
-## How to run the tests as a user?
+使用 JOREK 需要常规的准备工作：
 
-### Preparation steps
+- 从 github/ITER git 仓库获取代码（见[此处](../howto/first_steps)）
+- 为所用机器创建 Makefile.inc 文件。示例见 Make.inc/ 目录（另见[编译](../compiling/cat_compiling)）
+- 加载所需模块，例如 `module load intel impi fftw hdf5`。某些机器已备好相应脚本，例如 Helios：`source reg_tests/job_scripts/helios/env.sh`
+- **把 HDF5 依赖库所在目录加入你的 Makefile.inc（见 [HDF5-Tools](../numerics/hdf5tools.md)）**
 
-The normal preparation is necessary for working with JOREK:
+最后需要获取运行回归测试所需的数据：
 
-- Obtain the code from the github/ITER git repository (see [here](../howto/first_steps))
-- Create a Makefile.inc file for the machine you are using. Examples can be found in the folder Make.inc/ (see also [compiling](../compiling/cat_compiling))
-- Load the required modules, for instance `module load intel impi fftw hdf5`. Scripts are available for this purpose for some machines, e.g., for Helios: `source reg_tests/job_scripts/helios/env.sh`
-- **Add the directory where the HDF5 library is located to your Makefile.inc (see [HDF5-Tools](../numerics/hdf5tools.md))**
+- 获取测试所需的重启文件：`reg_tests/get_all_data.sh`。若所用机器无法访问 ITER git 仓库和/或无法直连 jorek.eu，请[按这些说明操作](nrt-preparation-with-rsync)。
 
-Finally you need to obtain data for running the regression tests:
+### 交互式运行单个测试用例
 
-- Obtain the restart files required for the tests: `reg_tests/get_all_data.sh`. In case the machine you are using does not have access to the ITER git repository and/or to jorek.eu directly, please [follow these instructions](nrt-preparation-with-rsync).
-
-### Run a single test case interactively
-
-- Note that **`reg_tests/run_test.sh -h`** will print the list of possible command line options.
-- List all available test cases (name plus short explanation):
+- 注意 **`reg_tests/run_test.sh -h`** 会打印可用命令行选项列表。
+- 列出全部可用测试用例（名称加简短说明）：
 
     ```
     reg_tests/run_test.sh -l
     ```
 
-- If you have access to a machine that can run mpi jobs interactively, just run one test case with the following command (compilation + execution will occur):
+- 若你有可交互运行 mpi 作业的机器，用以下命令运行一个测试用例即可（会进行编译＋执行）：
 
     ```
     reg_tests/run_test.sh -j 8 tear_circ_303
     ```
 
-- It is also possible to split compilation and execution into two commands:
+- 也可以把编译与执行拆成两条命令：
 
     ```
     reg_tests/run_test.sh -p -j 8 tear_circ_303  # compile the binaries required
     reg_tests/run_test.sh -n tear_circ_303       # run without compiling
     ```
 
-### Run a single test case via a job script
+### 通过作业脚本运行单个测试用例
 
-- Compile the jorek executables for the test case (the -p flag specifies that the simulation will not run, only the compilation will be perfomed):
+- 为该测试用例编译 jorek 可执行文件（-p 标志表示不运行模拟，只执行编译）：
 
     ```
     reg_tests/run_test.sh -p -j 8 tear_circ_303
     ```
 
-- Put the following command into your job script and submit it
+- 把以下命令写入作业脚本并提交
 
     ```
     reg_tests/run_test.sh -k -n tear_circ_303
     ```
 
-- For some machines, a batch script is already prepared in `reg_tests/job_scripts`
+- 对某些机器，`reg_tests/job_scripts` 中已备好批处理脚本
 
-### Carry out several test cases at once
+### 一次执行多个测试用例
 
-- All test cases can be executed all at once with these commands
+- 可用以下命令一次执行全部测试用例
 
     ```
     cd reg_tests
@@ -92,7 +85,7 @@ Finally you need to obtain data for running the regression tests:
     run_all.sh
     ```
 
-- All test cases can be submitted as batch jobs via
+- 可通过以下命令把全部测试用例作为批处理作业提交
 
     ```
     cd reg_tests
@@ -100,20 +93,20 @@ Finally you need to obtain data for running the regression tests:
     launch_all.sh
     ```
 
-- Note, that you have to set environment variables, e.g., `export JOREK_HOST=helios` and `export BATCHCOMMAND=sbatch` for the `launch_all.sh` script. You can also equivalently source the following file: reg_tests/job_scripts/helios/env.sh
+- 注意，`launch_all.sh` 脚本需要设置环境变量，例如 `export JOREK_HOST=helios` 与 `export BATCHCOMMAND=sbatch`。也可等价地 source 下列文件：reg_tests/job_scripts/helios/env.sh
 
-## How to create new test cases?
+## 如何创建新的测试用例？
 
-- Create a directory in `reg_tests/testcases`, e.g. `verynew_333`
-- Put an input file named `input` into `reg_tests/testcases/verynew_333`
-- Copy (from another existing test case) a `settings.sh` file into `verynew_333` and modify it to match your needs
-- Launch the initial run that generates the `begin.h5` and `end.h5` files
+- 在 `reg_tests/testcases` 中创建目录，例如 `verynew_333`
+- 把名为 `input` 的输入文件放入 `reg_tests/testcases/verynew_333`
+- （从另一个已有测试用例）复制 `settings.sh` 到 `verynew_333`，并按需要修改
+- 启动首次运行，生成 `begin.h5` 与 `end.h5` 文件
 
     ```
     reg_tests/run test.sh -i verynew_333
     ```
 
-- Send the restart files (`begin.h5`  and `end.h5`) to the web store on jorek.eu. Indeed, reference restart files are stored on a web site `http://jorek.eu/dav_nrt` to prevent the git repository to get too big.
+- 把重启文件（`begin.h5` 与 `end.h5`）发送到 jorek.eu 上的 web store。确实，参考重启文件存放在网站 `http://jorek.eu/dav_nrt` 上，以免 git 仓库变得过大。
 
     ```
     cd reg_tests/testcases/
@@ -121,8 +114,8 @@ Finally you need to obtain data for running the regression tests:
     cd -
     ```
 
-- Note that for some cases, not only the `begin.h5` and `end.h5` files need to be sent to jorek.eu for storage, but also additional files (e.g., STARWALL response for free boundary cases, or RMP field files)
-- You have finished. You may also add verynew_333 in git repository to share the test:
+- 注意，某些算例不仅需把 `begin.h5` 与 `end.h5` 发送到 jorek.eu 存储，还需附加文件（例如自由边界算例的 STARWALL 响应，或 RMP 场文件）
+- 至此完成。你也可以把 verynew_333 加入 git 仓库以分享该测试：
 
     ```
     cd reg_tests/testcases/
@@ -133,35 +126,35 @@ Finally you need to obtain data for running the regression tests:
     git push
     ```
 
-## How do the non-regression scripts work ?
+## 非回归脚本如何工作？
 
-What do the scripts perform when typing `jorek/reg_tests/run_test.sh -k tear_circ_199` ?
+执行 `jorek/reg_tests/run_test.sh -k tear_circ_199` 时，脚本做了什么？
 
-- Compile. Three executables are generated and stored in `reg_tests/testcases/tear_circ_199`:
+- 编译。生成三个可执行文件并存入 `reg_tests/testcases/tear_circ_199`：
 
     ```
     jorek_model199_3, rst_bin2hdf5, rst_hdf52bin
     ```
 
-- Create directory to run the test, then needed files are copied into this directory. Example of a temporary directory name: `reg_tests/tmp13027`
-- Go to this temporary directory to run the test
-- Convert the reference HDF5 file `begin.h5` into `jorek_restart.rst`
-- Launching the scenario stored into `reg_tests/testcases/tear_circ_199/settings.sh`
-- Convert the final state `jorek_restart.rst` into `jorek_restart.h5`
-- Compare the final state `jorek restart.h5` against reference file `end.h5` and print `Test passed` if everything  is fine
+- 创建用于运行测试的目录，然后把所需文件复制到该目录。临时目录名示例：`reg_tests/tmp13027`
+- 进入该临时目录运行测试
+- 把参考 HDF5 文件 `begin.h5` 转换为 `jorek_restart.rst`
+- 启动存放在 `reg_tests/testcases/tear_circ_199/settings.sh` 中的场景
+- 把末态 `jorek_restart.rst` 转换为 `jorek_restart.h5`
+- 把末态 `jorek restart.h5` 与参考文件 `end.h5` 比较，若一切正常则打印 `Test passed`
 
-## How to update a test case?
+## 如何更新测试用例？
 
-For instance after a bug fix, a test case might need to be updated since the code results changed:
+例如在 bug 修复之后，代码结果发生变化，测试用例可能需要更新：
 
-- Launch the test case from scratch with `-i` option (i.e. we do not want to restart from `begin.h5`)
+- 用 `-i` 选项从头启动该测试用例（即不从 `begin.h5` 重启）
 
     ```
     reg_tests/run_test.sh -i tear_circ_199
     ```
 
-- In case of success, `begin.h5` and `end.h5` are stored into `reg_tests/testcases/tear_circ_199` overwriting older files
-- Then, it is required to update the restart files on the web site `http://jorek.eu/dav_nrt` with the command
+- 若成功，`begin.h5` 与 `end.h5` 会存入 `reg_tests/testcases/tear_circ_199`，覆盖旧文件
+- 随后需用以下命令更新网站 `http://jorek.eu/dav_nrt` 上的重启文件
 
     ```
     cd reg_tests/testcases/
@@ -169,7 +162,7 @@ For instance after a bug fix, a test case might need to be updated since the cod
     cd -
     ```
 
-- Then, after you have run this, the `.version` file in your test directory will contain the latest version name of your test. You need to commit and push this to the git server, otherwise the tests on the ITER will not know about your latest versione, e.g.:
+- 然后，执行完之后，测试目录中的 `.version` 文件将包含该测试最新的版本名。需把它提交并推送到 git 服务器，否则 ITER 上的测试不会知道你最新的版本，例如：
 
     ```
     git add reg_tests/testcases/tear_circ_303/.version
@@ -177,17 +170,17 @@ For instance after a bug fix, a test case might need to be updated since the cod
     git push
     ```
 
-- A set of job scripts that can be used on supercomputers are stored in `reg_tests/job_scripts/`. This can help you to run a full case in order to update the restart files.
+- `reg_tests/job_scripts/` 中存放了一组可在超级计算机上使用的作业脚本。这有助于你运行完整算例以更新重启文件。
 
-## How to refresh locally stored restart files?
+## 如何刷新本地存放的重启文件？
 
-Before retrieving the new files, you need to remove previous files. The commands are:
+取回新文件之前，需先删除旧文件。命令为：
 
 ```
 reg_tests/cleanup.sh
 reg_tests/get_all_data.sh
 ```
 
-## Automated non-regression testing
+## 自动化非回归测试
 
-- Test are running in "Bamboo" on the ITER platform, see [here](https://ci.iter.org/browse/STAB-JOREK)
+- 测试在 ITER 平台上的 "Bamboo" 中运行，见[此处](https://ci.iter.org/browse/STAB-JOREK)

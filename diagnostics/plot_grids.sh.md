@@ -5,15 +5,8 @@ render_with_liquid: false
 parent: "Running JOREK"
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
-
-原文页面：[plot_grids.sh](https://iterorganization.github.io/JOREK/diagnostics/plot_grids.sh.html)　·　源文件：`diagnostics/plot_grids.sh.md`
-</div>
-
 ## plot_grids.sh
-This utility plots the grid to the screen, to a png file or a postscript file.
+该工具可将网格绘制到屏幕、png 文件或 postscript 文件。
 
   ```
   Usage: plot_grids.sh [options]

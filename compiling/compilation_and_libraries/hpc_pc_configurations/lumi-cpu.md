@@ -7,54 +7,46 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 在 LUMI CPU 分区（LUMI-C）上运行 JOREK
 
-原文页面：[LUMI-CPU](https://iterorganization.github.io/JOREK/compiling/compilation_and_libraries/hpc_pc_configurations/lumi-cpu.html)　·　源文件：`compiling/compilation_and_libraries/hpc_pc_configurations/lumi-cpu.md`
-</div>
+## 获取访问权限
+- 联系相应的 PI 将你加入项目
+- 设置 [SSH 密钥](https://docs.lumi-supercomputer.eu/firststeps/SSH-keys/)
+  - `ssh-keygen -t ed25519 -f /home/username/.ssh/id_rsa_lumi` 或 `ssh-keygen -t rsa -b 4096 -f /home/username/.ssh/id_rsa_lumi`
+  - 官方建议不要将口令短语（passphrase）留空。
+  - 生成密钥对后，在 [MyAccessID 用户资料](https://mms.myaccessid.org/fed-apps/profile/)中登记公钥。
 
- 
-# Running JOREK on LUMI CPU partition (LUMI-C)
+## README／有用链接
 
-## Getting Access
-- Contact the respective PI to add you to the project
-- Set up [SSH keys](https://docs.lumi-supercomputer.eu/firststeps/SSH-keys/)
-  - `ssh-keygen -t ed25519 -f /home/username/.ssh/id_rsa_lumi` or `ssh-keygen -t rsa -b 4096 -f /home/username/.ssh/id_rsa_lumi`
-  - They suggested not to leave the passphrase empty.
-  - After generating the key pair, register the public key in your [MyAccessID user profile](https://mms.myaccessid.org/fed-apps/profile/).
+- [LUMI 入门](https://docs.lumi-supercomputer.eu/firststeps/)
+- [LUMI-C 硬件概览](https://docs.lumi-supercomputer.eu/hardware/lumic/)
+- 帮助台电子邮箱：[LUMI 用户支持](https://lumi-supercomputer.eu/user-support/need-help/general/)
 
-## README/Useful links
-
-- [LUMI First steps](https://docs.lumi-supercomputer.eu/firststeps/)
-- [LUMI-C hardware overview](https://docs.lumi-supercomputer.eu/hardware/lumic/)
-- E-Mail Address of Helpdesk: [LUMI User Support](https://lumi-supercomputer.eu/user-support/need-help/general/)
-
-## Login
+## 登录
 
 ```bashrc
 ssh -i <path-to-private-key> <username>@lumi.csc.fi
 ```
 
-Example:
+示例：
 
 ```bashrc
 ssh -i ~/.ssh/id_rsa_lumi username@lumi.csc.fi
 ```
 
-LUMI has several login nodes, for reliability and for sharing the interactive workload. The name lumi.csc.fi points automatically to one of the login nodes - the IP address to which it resolves will belong to one of:
+LUMI 有多个登录节点，以提高可靠性并分担交互式负载。域名 lumi.csc.fi 会自动指向其中一个登录节点——其解析得到的 IP 地址属于下列之一：
 
-| Login node name | IP Address |
+| 登录节点名称 | IP 地址 |
 |----------------|------------|
 | lumi-uan01.csc.fi | 193.167.209.163 |
 | lumi-uan02.csc.fi | 193.167.209.164 |
 | lumi-uan03.csc.fi | 193.167.209.165 |
 | lumi-uan04.csc.fi | 193.167.209.166 |
 
-## Compiling JOREK by GNU (under tests)
-Only mumps solver is available now.
+## 使用 GNU 编译 JOREK（测试中）
+目前只有 MUMPS 求解器可用。
 
-.bashrc configuration:
+.bashrc 配置：
 
 ```bash
 test -s ~/.alias && . ~/.alias || true
@@ -129,7 +121,7 @@ module load EasyBuild-user
 module load MUMPS/5.6.1-cpeGNU-25.03-OpenMP
 module load gnuplot
 ```
-Makefile.inc configuration:
+Makefile.inc 配置：
 
 ```bashrc
 # Configuration file for jorek
@@ -222,23 +214,23 @@ HDF5LIB     = $(HDF5_ROOT)/lib/libhdf5hl_fortran_parallel.so \
 #LIBLAPACK   = -L$(CRAY_LIBSCI_PREFIX)/lib -lsci_gnu_mpi_mp -lsci_gnu_mp
 ```
 
-## File Systems
-Information about data storage can be found in [LUMI storage](https://docs.lumi-supercomputer.eu/storage/). The $HOME directory can contain up to 20 GB of data, the $WORK directory can hold 50 GB. There are **no backups** of any storage systems of LUMI.
+## 文件系统
+关于数据存储的信息见 [LUMI 存储](https://docs.lumi-supercomputer.eu/storage/)。$HOME 目录最多可容纳 20 GB 数据，$WORK 目录可容纳 50 GB。LUMI 的任何存储系统都**没有备份**。
 
-You can check the memory and file usage quotas of your projects with the following command:
+可用以下命令查看项目的存储与文件用量配额：
 
 ```bash
 lumi-workspaces
 ```
 
-Copying files between different UNIX-like systems can be done with the scp command. This command, which stands for Secure Copy Protocol, allows you to transfer files between a local host and a remote host or between two remote hosts. The basic syntax of the scp command is the following (example):
+在不同类 UNIX 系统之间复制文件可用 scp 命令完成。该命令名取自 Secure Copy Protocol（安全复制协议），可在本地主机与远程主机之间，或在两个远程主机之间传输文件。scp 命令的基本语法如下（示例）：
 
 ```bash
 scp -i ~/.ssh/id_rsa_lumi username@lumi.csc.fi:/projappl/project_number/user_folder/logfile.out .
 ```
 
-## Batch System
-- Basic commands:
+## 批处理系统
+- 基本命令：
 ```bash
 sbatch <jobscript>                          # Submit a job script
 sbatch -d afterok:<jobid> <jobscript>       # Submit a job script to start after <jobid> is finished
@@ -248,9 +240,9 @@ squeue -u <username>                        # List all own jobs
 
 scancel <jobid>                             # Delete a queued or running batch job
 ```
-- Information on partitions can be found [here](https://docs.lumi-supercomputer.eu/runjobs/scheduled-jobs/partitions/).
+- 分区信息见[此处](https://docs.lumi-supercomputer.eu/runjobs/scheduled-jobs/partitions/)。
 
-- Example job script
+- 作业脚本示例
 ```bash
 #!/bin/bash
 #SBATCH -J fixed
@@ -299,11 +291,11 @@ ulimit -s unlimited
 srun ./jorek_model600 < input_jorek > logfile.out
 ```
 
-## Accounting
-Avaialble partitions can be found on [this website](https://docs.lumi-supercomputer.eu/runjobs/scheduled-jobs/partitions/). 
-Information on billing is [here](https://docs.lumi-supercomputer.eu/runjobs/lumi_env/billing/).
+## 机时核算
+可用分区见[此网站](https://docs.lumi-supercomputer.eu/runjobs/scheduled-jobs/partitions/)。
+计费信息见[此处](https://docs.lumi-supercomputer.eu/runjobs/lumi_env/billing/)。
 
-It is recommended to regularly check one's allocation and usage using the following command: 
+建议定期使用以下命令检查自己的分配额度与用量：
 ```bash
 lumi-allocations
 ```

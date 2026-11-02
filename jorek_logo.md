@@ -5,32 +5,25 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# JOREK 标识
 
-原文页面：[JOREK Logo](https://iterorganization.github.io/JOREK/jorek_logo.html)　·　源文件：`jorek_logo.md`
-</div>
-
-# The JOREK logo
-
-The main logo (the logo that should in general be used) is available in three different high-resolution file formats as listed below. Please note that only the png logo does not include a background. 
+主标识（一般应当使用的标识）有三种高分辨率文件格式，列于下。请注意，只有 png 标识不带背景。
 
 ## PNG
 <img src="assets/jorek_logo/JOREK_logo.png" alt="The JOREK logo png" width="600">
 
-[JOREK logo png](assets/jorek_logo/JOREK_logo.png)
+[JOREK 标识 png](assets/jorek_logo/JOREK_logo.png)
 ## JPG
 <img src="assets/jorek_logo/JOREK_logo.jpg" alt="The JOREK logo jpg" width="600">
 
-[JOREK logo jpg](assets/jorek_logo/JOREK_logo.jpg)
+[JOREK 标识 jpg](assets/jorek_logo/JOREK_logo.jpg)
 ## PDF
 
-[JOREK logo pdf](assets/jorek_logo/JOREK_logo.pdf)
+[JOREK 标识 pdf](assets/jorek_logo/JOREK_logo.pdf)
 
-## Dark mode
+## 深色模式
 
-On dark backgrounds, the black text of the logo might not be properly visible. In this case there a number of different solutions. Some possibilities for logo's are given below. 
+在深色背景上，标识的黑色文字可能看不清。此时有若干不同方案。下面给出几种可用的标识版本。
 
 <img src="assets/jorek_logo/JOREK_dark_white.png" alt="The JOREK logo with white lettering" width="600">
 

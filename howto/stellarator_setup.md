@@ -7,35 +7,30 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 搭建一个基本的仿星器模拟
 
-原文页面：[Run Stellarator Simulations](https://iterorganization.github.io/JOREK/howto/stellarator_setup.html)　·　源文件：`howto/stellarator_setup.md`
-</div>
+本 wiki 页面介绍如何使用 JOREK 运行 W7-A 仿星器模拟，作为仿星器模型的入门。
 
-# Setting up a basic stellarator simulation
+搭建仿星器模拟的过程涉及若干步骤，但主要思路可概括如下：
 
-This wiki page outlines how to run a W7-A stellarator simulation using JOREK, as an introduction to the stellarator models.
+  - 在 VMEC 中计算平衡
+  - 在 GVEC 中细化平衡
+  - 提取 JOREK 所需的数据：
+    - 运行 GVEC 到 JOREK 的转换器，以获得 JOREK 所需的平衡数据。
+    - （若使用 Dommaschk 势，则计算真空磁场的这种表示）
+  - 使用 model 180 在 JOREK 中重建平衡
+  - 使用 model 183 进行时间演化模拟
 
-The process of setting up a stellarator simulation involves several steps, but the main idea can be summarized as follows:
+以下各节以 Wendelstein 7-A 仿星器为例，详细描述每个步骤。
 
-  - Calculate an equilibrium in VMEC
-  - Refine the equilibrium in GVEC
-  - Extract the necessary data for JOREK:
-    - Run the GVEC to JOREK convertor to get the necessary equilibrium data for JOREK.
-    - (If Dommaschk potentials are used, compute this representation of the vacuum magnetic field)
-  - Reconstruct the equilibrium in JOREK using model 180
-  - Run the simulation in time using model 183
+## 1. 在 VMEC 中计算仿星器平衡
+与托卡马克模型不同，JOREK 没有内置的仿星器平衡求解器。因此，JOREK 使用具有嵌套的理想 MHD 平衡解作为其初始条件。该解由 VMEC 和 GVEC 计算。将来应可以跳过第一步，直接进行第 (2) 步，在 GVEC 中直接生成平衡。
+{: .warning }
+译者注：原文此处为"an ideal MHD equilibrium solution with nested as its initial condition"，"nested" 后疑漏 "flux surfaces"，即"具有嵌套磁面"。
 
-The following sections describe each step in detail using the Wendelstein 7-A stellarator as an example.
+VMEC2000 与 GVEC 兼容。VMEC2000/STELLOPT VMEC 中所有参数的说明见[此处](https://princetonuniversity.github.io/STELLOPT/VMEC%20Input%20Namelist%20(v8.47))，此外还有更详细的运行代码教程。
 
-## 1. Calculating a stellarator equilibrium in VMEC
-Unlike the tokamak models, JOREK does not have a built-in equilibrium solver for stellarators. For this reason, JOREK uses an ideal MHD equilibrium solution with nested as its initial condition. This is computed using VMEC and GVEC. In the future, it should become possible to skip the first step and go directly to (2), generating the equilibrium directly in GVEC.
-
-VMEC2000 is compatible with GVEC. A description of all parameters in VMEC2000/STELLOPT VMEC is available [here](https://princetonuniversity.github.io/STELLOPT/VMEC%20Input%20Namelist%20(v8.47)), alongside more detailed tutorials on how to run the code.
-
-In order to run VMEC, one needs to specify some input parameters in a namelist file, which is then passed to VMEC. A sample namelist file for a low beta (1 Pa on axis) Wendelstein 7-A equilibrium is provided below:
+为了运行 VMEC，需要在 namelist 文件中指定一些输入参数，该文件随后被传给 VMEC。下面给出一个低比压（轴心处 1 Pa）Wendelstein 7-A 平衡的示例 namelist 文件：
 
 ```fortran
 &INDATA
@@ -74,40 +69,40 @@ rbc(3,5)=-1.74710000E-04,zbs(3,5)=1.71180000E-04,
 &end
 ```
 
-Pressure, along with one of either toroidal current or rotational transform must be specified. The parameter `NCURR` signals which profile will be provided: if `NCURR = 1` then the toroidal current is specified, and if `NCURR = 0` then the rotational transform is specified. By default, the profiles are given as polynomials:
+压力，以及环向电流或旋转变换二者之一，必须指定。参数 `NCURR` 指示将提供哪个剖面：若 `NCURR = 1` 则指定环向电流，若 `NCURR = 0` 则指定旋转变换。默认情况下，剖面以多项式给出：
 $$f(s) = \sum_n a_n s^n,$$
-where $f$ is the profile in question, $s$ is the normalized toroidal flux and the coefficients $a_n$ are provided by the array `AM` for pressure, `AC` for toroidal current and `AI` for iota (not used here). The total toroidal current is given by `CURTOR`.
+其中 $f$ 是所讨论的剖面，$s$ 是归一化环向磁通，系数 $a_n$ 由数组 `AM`（压力）、`AC`（环向电流）和 `AI`（iota，此处未使用）给出。总环向电流由 `CURTOR` 给出。
 
-The parameters `raxis` and `zaxis` specify the cosine modes of the $R$ coordinate of the magnetic axis, and the sine modes of the $z$ coordinate of the magnetic axis (both as functions of toroidal angle), respectively.
+参数 `raxis` 和 `zaxis` 分别指定磁轴 $R$ 坐标的余弦模和磁轴 $z$ 坐标的正弦模（两者均为环向角的函数）。
 
-The most important parameters used above that were not mentioned yet can be summarized as follows. The parameter `lfreeb` is set to false meaning that a fixed-boundary equilibrium will be calculated, and so no `MGRID_FILE` is necessary. The parameter `NFP` sets the number of periods, while `mpol` and `ntor` specify the number of poloidal and toroidal Fourier modes, respectively, within one period, and `ntheta` and `nzeta` set the poloidal and toroidal resolution, respectively. The radial resolution is given by the array `NS_ARRAY`. VMEC starts by calculating a low-radial-resolution equilibrium, adding more flux surfaces, minimizing energy to get a higher-resolution equilibrium, then adding more flux surfaces, etc. The number of elements in `NS_ARRAY` specifies the number of times the radial resolution is refined, with each element giving the total number of flux surfaces in the corresponding refinement step. In addition, each refinement can be calculated to a different tolerance; each element of `FTOL_ARRAY` gives the tolerance of the corresponding refinement. Finally, for a given toroidal angle $\zeta$ and poloidal angle $\theta$, the $(R,z)$ coordinates of the boundary are specified as a series of modes:
+上面用到但尚未提及的最重要参数可概括如下。参数 `lfreeb` 设为 false，表示将计算固定边界平衡，因此不需要 `MGRID_FILE`。参数 `NFP` 设定周期数，而 `mpol` 和 `ntor` 分别指定一个周期内的极向与环向 Fourier 模数，`ntheta` 和 `nzeta` 分别设定极向与环向分辨率。径向分辨率由数组 `NS_ARRAY` 给出。VMEC 先计算低径向分辨率的平衡，增加更多磁面，通过最小化能量得到更高分辨率的平衡，然后再增加更多磁面，依此类推。`NS_ARRAY` 中元素的个数指定径向分辨率被细化的次数，每个元素给出对应细化步中磁面的总数。此外，每次细化可按不同的容差计算；`FTOL_ARRAY` 的每个元素给出对应细化的容差。最后，对于给定的环向角 $\zeta$ 和极向角 $\theta$，边界的 $(R,z)$ 坐标以一系列模的形式指定：
 $$R = \sum_{m,n} a_{mn}\cos(m\theta - n\zeta),\quad z = \sum_{m,n} b_{mn}\sin(m\theta - n\zeta).$$
-The arrays `rbc(n,m)` and `zbs(n,m)` specify the coefficients $a_{mn}$ and $b_{mn}$, respectively.
+数组 `rbc(n,m)` 和 `zbs(n,m)` 分别指定系数 $a_{mn}$ 和 $b_{mn}$。
 
-Once the parameters have been set in the namelist file, VMEC can be run as follows:
+在 namelist 文件中设定好参数后，可按如下方式运行 VMEC：
 ```bash
 ./xvmec < input.l2stel_w7a_like
 ```
-where `input.l2stel_w7a_like` is the name of the namelist file above.
-## 2. Refining the equilibrium in GVEC
+其中 `input.l2stel_w7a_like` 是上述 namelist 文件的名称。
+## 2. 在 GVEC 中细化平衡
 
-### General information
-At the current state, GVEC is a fixed-boundary 3D equilibrium code, using the same strategy as VMEC to find the equilibrium. Stand-alone, it can be run with a given boundary shape and a iota and pressure profile given as polynomial expansion. The option to specify the toroidal current profile instead of iota, is not in a workable state yet.
+### 一般信息
+目前 GVEC 是一个固定边界的 3D 平衡代码，采用与 VMEC 相同的策略寻找平衡。单独运行时，可给定边界形状以及以多项式展开给出的 iota 和压力剖面。以指定环向电流剖面代替 iota 的选项尚不可用。
 
-Alternatively, it can use a given VMEC file to extract that information (iota, pressure, total toroidal flux and fourier modes of the boundary). This was done for the Wendelstein 7-A equilibria, since they were computed with a given toroidal current profile.
+另一种做法是，它可以使用给定的 VMEC 文件来提取这些信息（iota、压力、总环向磁通以及边界的 Fourier 模）。Wendelstein 7-A 的平衡就是这样做的，因为这些平衡是按给定的环向电流剖面计算的。
 
-The unknowns that are found in VMEC are the geometry of the flux surfaces with label $s$, $R(s,\theta,\zeta),Z(s,\theta,\zeta)$ and the potential $\lambda(s,\theta,\zeta)$, which results in the PEST straight-field line poloidal angle $\theta^*=\theta+\lambda$. 
+VMEC 中求解的未知量是标记为 $s$ 的磁面几何 $R(s,\theta,\zeta),Z(s,\theta,\zeta)$ 以及势 $\lambda(s,\theta,\zeta)$，由此得到 PEST 直线磁力线极向角 $\theta^*=\theta+\lambda$。
 
-In GVEC, the unknowns are $(X_1,X_2,\lambda)$. This is because the toroidal map $(R,Z,\phi)->(x,y,z)$ was generalized to arbitrary other analytical maps. In the default case of the toroidal map, the unknowns are the same as in VMEC, so $R=X_1,Z=X_2$ and $\lambda$.
+在 GVEC 中，未知量为 $(X_1,X_2,\lambda)$。这是因为环向映射 $(R,Z,\phi)->(x,y,z)$ 被推广到了任意的其他解析映射。在环向映射的默认情形下，未知量与 VMEC 中相同，因此 $R=X_1,Z=X_2$ 以及 $\lambda$。
 
-Together with the toroidal $\Phi$ and poloidal fluxes $\chi$, the magnetic field is then defined as
+结合环向磁通 $\Phi$ 与极向磁通 $\chi$，磁场定义为
 $$ B = \Phi'(s)\nabla s \times \nabla(\theta+\lambda) - \chi'(s)\nabla s \times \nabla \zeta 
      = \Phi'(s)(1+\partial_\theta(\lambda)) \nabla s \times \nabla \theta + (\chi'(s)-\Phi'(s)\partial_\zeta(\lambda)) \nabla \zeta \times \nabla s$$
-where typically, the toroidal flux is used as a radial variable (in VMEC its the normalized toroidal flux, in GVEC its the square root of the normalized toroidal flux). Then the polodial flux derivative is given by the iota profile, $\chi'(s) = \iota(s)\Phi'(s)$.
+其中通常以环向磁通作为径向变量（在 VMEC 中为归一化环向磁通，在 GVEC 中为归一化环向磁通的平方根）。于是极向磁通的导数由 iota 剖面给出，$\chi'(s) = \iota(s)\Phi'(s)$。
 
-### Input parameters
+### 输入参数
 
-A sample parameter file for the Wendelstein 7-A case is shown here:
+此处给出 Wendelstein 7-A 算例的示例参数文件：
 ```ini
 !===================================================!
 ! initial solution from existing equilibrium
@@ -157,84 +152,84 @@ A sample parameter file for the Wendelstein 7-A case is shown here:
   PrecondType = 1             ! -1: off(default), 1: on
   MinimizerType = 10          ! 0: gradient descent(default), 10:  new accelerated gradient descent
 ```
-The parameter `vmecwoutFile` gives the path to the VMEC output file from the previous step, which must be read by GVEC. The parameter `ProjectName` gives a prefix for the GVEC output file names, to which `_State_0000_<stepnumber>.dat` is appended to make the output file name. In principle, only the last state file is needed further on.
+参数 `vmecwoutFile` 给出上一步 VMEC 输出文件的路径，该文件必须由 GVEC 读取。参数 `ProjectName` 给出 GVEC 输出文件名的前缀，在其后追加 `_State_0000_<stepnumber>.dat` 即构成输出文件名。原则上后续只需最后一个状态文件。
 
-The gradient descent/accelerated gradient descent (`MinimizerType=0/10`) minimizes the total MHD energy under the given constraints. The gradient descent is still the more robust (but slower) option. The preconditioner (`PrecondType=1`) greatly helps convergence, and allows a step length of the order of 1 (`start_dt`). The abort criterion using the tolerance `minimize_tol` takes the norm of the gradient vector used in the gradient descent. But this does not exactly correspond to the strong force balance, since it depends on the resolution. Since it is not clear what value is 'small enough', here it is set to a very small value, such that GVEC never achieves it and simply runs for `MaxIter` iterations.
+梯度下降/加速梯度下降（`MinimizerType=0/10`）在给定约束下最小化总 MHD 能量。梯度下降仍是更稳健（但更慢）的选项。预条件器（`PrecondType=1`）极大地有助于收敛，并允许量级为 1 的步长（`start_dt`）。使用容差 `minimize_tol` 的终止判据取梯度下降中所用梯度向量的范数。但这并不严格对应于强力平衡，因为它依赖于分辨率。由于不清楚什么值算"足够小"，此处将其设为非常小的值，使 GVEC 永远无法达到，而只是一直运行 `MaxIter` 次迭代。
 
-For the discretization, one can specify the number of elements in radial direction (`sgrid_nElems`), which is then used for the B-Spline of certain degree (`X1X2_deg` for the $X_1,X_2$ variables,`LA_deg` for the $\lambda$ variable). If the specifications for the Fourier basis are commented out, the information from the VMEC file is used.
+对于离散化，可以指定径向单元数（`sgrid_nElems`），它随后用于特定次数的 B 样条（$X_1,X_2$ 变量用 `X1X2_deg`，$\lambda$ 变量用 `LA_deg`）。如果 Fourier 基的设置被注释掉，则使用来自 VMEC 文件的信息。
 
-### Running GVEC
-To run the example, save the parameter file and pass it to the GVEC executable as:
+### 运行 GVEC
+运行该示例，保存参数文件并将其传给 GVEC 可执行文件：
 
 ```bash
   gvec_path/build/bin/gvec parameter.ini
 ```
   
-It will generate for each `outputIter` a state file, the last one can then be used for the `convert_gvec_to_jorek` tool (also part of the GVEC repository).
+程序将按每个 `outputIter` 生成一个状态文件，最后一个可用于 `convert_gvec_to_jorek` 工具（该工具也属于 GVEC 仓库）。
 
-## 3. Preparing for the JOREK simulation
+## 3. 为 JOREK 模拟做准备
 
-### Running the GVEC to JOREK convertor
+### 运行 GVEC 到 JOREK 的转换器
 
-Before the initial conditions can be calculated, the GVEC output should be converted to a format that JOREK can read. This is done by using the `convert_gvec_to_jorek` utility:
+在计算初始条件之前，应将 GVEC 的输出转换为 JOREK 能读取的格式。这通过 `convert_gvec_to_jorek` 工具完成：
 
 ```bash
 gvec_path/build/bin/convert_gvec_to_jorek -r 41 -p 48 GVEC_W7A_UNSTABLE_1PA_mpol12_ntor10_r41_vmecBC_accGD_State_0000_00100000.dat gvec2jorek.dat
 ```
 
-This utility constructs a non-axisymmetric flux-aligned grid with radial resolution given by the `-r` parameter and poloidal resolution given by the `-p` parameter, and then calculates finite element representations of the magnetic field and pressure from the GVEC equilibrium on this grid. The output file must always be named `gvec2jorek.dat`, as that is the file name which JOREK will try to open when looking for input from GVEC.
+该工具构建一个非轴对称的磁面对齐网格，径向分辨率由 `-r` 参数给出，极向分辨率由 `-p` 参数给出，然后在该网格上计算来自 GVEC 平衡的磁场与压力的有限元表示。输出文件必须始终命名为 `gvec2jorek.dat`，因为这是 JOREK 在查找来自 GVEC 的输入时会尝试打开的文件名。
 
-The `gvec2jorek.dat` file contains all the necessary information to reconstruct the equilibrium in JOREK except for the representation of the coil vacuum magnetic field, $\nabla \chi$. The vacuum field can be computed in one of two ways:
-  - external to JOREK using a Dommaschk potential calculator.
-  - internal to JOREK using the finite element basis and a Poisson solve. 
+`gvec2jorek.dat` 文件包含在 JOREK 中重建平衡所需的全部信息，唯独缺少线圈真空磁场的表示 $\nabla \chi$。真空场可用以下两种方式之一计算：
+  - 在 JOREK 外部，使用 Dommaschk 势计算器。
+  - 在 JOREK 内部，使用有限元基和 Poisson 求解。
 
-The next sections describe how to compute the Dommaschk potentials. If you do not intend to use these, you can skip to (4).
+接下来的各节描述如何计算 Dommaschk 势。若无意使用它们，可跳至第 (4) 步。
 
-### Extracting the coil field with EXTENDER_P
+### 用 EXTENDER_P 提取线圈场
 
-The magnetic field representation used in the JOREK models requires that the part of the magnetic field that is generated by the coils be separated from the rest of the field, which is generated by plasma currents. Since a fixed-boundary equilibrium calculation provides only the total magnetic field, an intermediate step to extract the coil field is necessary. The [EXTENDER_P](https://dx.doi.org/10.1088/0029-5515/45/7/022) code will be used for this purpose.
+JOREK 模型中所用的磁场表示要求把由线圈产生的那部分磁场与其余由等离子体电流产生的磁场分开。由于固定边界平衡计算只给出总磁场，因此需要一个中间步骤来提取线圈场。此目的将使用 [EXTENDER_P](https://dx.doi.org/10.1088/0029-5515/45/7/022) 代码。
 
-The first step is to convert the output of GVEC to NetCDF format, which can then be read by EXTENDER_P. The `convert_gvec_to_vmec` utility, which is provided with the GVEC code can be used for this:
+第一步是把 GVEC 的输出转换为 NetCDF 格式，以便 EXTENDER_P 读取。可使用随 GVEC 代码提供的 `convert_gvec_to_vmec` 工具：
 ```bash
 gvec_path/build/bin/convert_gvec_to_vmec -r 101 GVEC_W7A_UNSTABLE_1PA_mpol12_ntor10_r41_vmecBC_accGD_State_0000_00100000.dat wout_gvec_w7a_unst_1Pa.nc
 ```
-where the `-r` parameter specifies the number of flux surfaces to include in the NetCDF file, the first parameter after that is the name of the GVEC output state file, and the last parameter is the desired name for the NetCDF file that will be created.
+其中 `-r` 参数指定 NetCDF 文件中要包含的磁面数，其后的第一个参数是 GVEC 输出状态文件的名称，最后一个参数是要创建的 NetCDF 文件的期望名称。
 
-EXTENDER_P will output the $R$, $z$ and $\phi$ components of the coil field on an evenly spaced $(R,z,\phi)$ grid in MGRID format. Before running the code, one should create a text file called `suin` with the following contents:
+EXTENDER_P 将在均匀间隔的 $(R,z,\phi)$ 网格上以 MGRID 格式输出线圈场的 $R$、$z$ 和 $\phi$ 分量。运行该代码之前，应创建一个名为 `suin` 的文本文件，内容如下：
 ```
 nr 101
 nz 101
 nphi 91
 ```
-This file specifies the resolution of the output grid. EXTENDER_P can then be run as follows:
+该文件指定输出网格的分辨率。之后可按如下方式运行 EXTENDER_P：
 ```bash
 EXTENDER_P -vmec_nyquist wout_gvec_w7a_unst_1Pa.nc -i suin -NU 150 -NV 150 -NI 7 -vacuumfield -write-mgrid -s gvec_w7a_unst_1Pa
 ```
-Here, the `-vmec_nyquist` option specifies the name of the NetCDF file from the previous step, `-NU` and `-NV` give the resolution of the boundary surface on which the mirror currents are to be calculated, and `-NI` is the number of Newton-Cotes integration intervals. Finally, `-vacuumfield` specifies that the magnetic field due to the coils (the vacuum field, i.e. the field that would exist if the plasma was replaced by a vacuum) is to be calculated, `-write-mgrid` states that the output is to be written in MGRID format, and `-s` gives the suffix for the output file (in this case, the output file will be called `extended_field.gvec_w7a_unst_1Pa.nc`).
+这里，`-vmec_nyquist` 选项指定上一步得到的 NetCDF 文件名，`-NU` 和 `-NV` 给出要计算镜像电流的边界面的分辨率，`-NI` 是 Newton-Cotes 积分区间数。最后，`-vacuumfield` 指定要计算由线圈产生的磁场（真空场，即若把等离子体替换为真空时存在的场），`-write-mgrid` 表示输出以 MGRID 格式写出，`-s` 给出输出文件的后缀（在此情形下，输出文件将名为 `extended_field.gvec_w7a_unst_1Pa.nc`）。
 
-Note that EXTENDER_P is a pure MPI code, so there will be no benefit to assigning more than one core to each MPI task.
+注意 EXTENDER_P 是纯 MPI 代码，因此给每个 MPI 任务分配多于一个核不会有任何好处。
 
-### Calculating the Dommaschk potential coefficients
+### 计算 Dommaschk 势系数
 
-Once EXTENDER_P finishes, the actual Dommaschk potential coefficients can be calculated using the `compute_dcoef_lsq.py` script, which is included the JOREK repository. The script can be run as follows:
+EXTENDER_P 运行结束后，可用 JOREK 仓库中附带的 `compute_dcoef_lsq.py` 脚本计算实际的 Dommaschk 势系数。该脚本可按如下方式运行：
 ```bash
 jorek_path/util/compute_dcoef_lsq.py -R 1.99 -m 10 -l 9 -p 5 -o coef_1Pa_R1p99_l9.npy extended_field.gvec_w7a_unst_1Pa.nc
 ```
-The script will do a least squares fit of the vacuum magnetic field from EXTENDER_P to the Dommaschk basis. One should specify the value of $R_0$ in the Dommaschk potential, which is the toroidally averaged $R$-coordinate of the vacuum field magnetic axis. However, instead of finding the vacuum magnetic axis, it is usually easier to use the $n=0$ Fourier mode of the total field axis (first number in `raxis`) as an initial guess, and then try to minimize the error from there. The `-m` parameter gives the number of toroidal modes, and, due to how the Dommaschk potentials are implemented in JOREK, must match the parameter `ntor` in the VMEC input namelist. The `-l` parameter gives the number of poloidal modes, and should be close to `mpol`, but does not need to match it exactly. The `-p` parameter is the periodicity of the device, and must match the `NFP` parameter in VMEC. The `-o` parameter specifies the name of the file to which the Dommaschk potential coefficients will be saved, and the last argument is the output file of EXTENDER_P in the previous step. More details about this calculation are available [here](assets/stellarator_setup/dommaschk_computation.pdf).
+该脚本将对来自 EXTENDER_P 的真空磁场与 Dommaschk 基做最小二乘拟合。应指定 Dommaschk 势中 $R_0$ 的值，即真空场磁轴的环向平均 $R$ 坐标。不过，与其寻找真空磁轴，通常更简单的做法是用总场轴的 $n=0$ Fourier 模（`raxis` 中的第一个数）作为初猜，然后从该处开始尽量减小误差。`-m` 参数给出环向模数，并且由于 Dommaschk 势在 JOREK 中的实现方式，它必须与 VMEC 输入 namelist 中的参数 `ntor` 一致。`-l` 参数给出极向模数，应接近 `mpol`，但不必完全一致。`-p` 参数是装置的周期性，必须与 VMEC 中的 `NFP` 参数一致。`-o` 参数指定保存 Dommaschk 势系数的文件名，最后一个参数是上一步 EXTENDER_P 的输出文件。有关该计算的更多细节见[此处](assets/stellarator_setup/dommaschk_computation.pdf)。
 
-In order to compare the magnetic field given by the Dommaschk potential to the output of EXTENDER_P, the `compfld.py` script can be used:
+为了将 Dommaschk 势给出的磁场与 EXTENDER_P 的输出进行比较，可使用 `compfld.py` 脚本：
 ```bash
 jorek_path/util/compfld.py -R 1.9905208396958163 -F 4.720778214636723 -p 5 -o compare_1Pa_r50_l9.nc coef_1Pa_r50_l9.npy extended_field.gvec_w7a_unst_1Pa.nc
 ```
-Note that this script depends on the `field.py`, `boundary.py` and `progress.py` modules from the [Zoidberg project](https://github.com/boutproject/zoidberg/tree/master/zoidberg). In `field.py`, the import statements for `boundary` and `update_progress` should be replaced with the following:
+注意该脚本依赖 [Zoidberg 项目](https://github.com/boutproject/zoidberg/tree/master/zoidberg)中的 `field.py`、`boundary.py` 和 `progress.py` 模块。在 `field.py` 中，`boundary` 和 `update_progress` 的 import 语句应替换为以下内容：
 ```python
 import boundary
 from progress import update_progress
 ```
 
-The `compfld.py` script will calculate the volume-averaged square of the absolute error, $\langle |\vec B_2 - \vec B_1|^2\rangle$, as well as the volume-averaged squares of the errors relative to the EXTENDER_P field $\vec B_1$ and the Dommaschk potential field $\vec B_2$, $\langle |\vec B_2 - \vec B_1|^2/|\vec B_{1,2}|^2\rangle$. The `-R` and `-F` parameters must match the values of $R_0$ and $F_0$, respectively, as printed out by the `compute_dcoef_lsq.py` script, while `-p` is the periodicity. Finally, using the `-o` option with the desired file name allows one to create a NetCDF file which contains both the EXTENDER_P and Dommaschk fields for visual comparison in Paraview or Visit. The last two arguments are the names of the files containing the Dommaschk potential coefficients and the EXTENDER_P output, which were created in the previous steps.
+`compfld.py` 脚本将计算绝对误差的体积平均平方 $\langle |\vec B_2 - \vec B_1|^2\rangle$，以及相对于 EXTENDER_P 场 $\vec B_1$ 和 Dommaschk 势场 $\vec B_2$ 的误差的体积平均平方 $\langle |\vec B_2 - \vec B_1|^2/|\vec B_{1,2}|^2\rangle$。`-R` 和 `-F` 参数必须分别与 `compute_dcoef_lsq.py` 脚本打印出的 $R_0$ 和 $F_0$ 值一致，而 `-p` 是周期性。最后，使用 `-o` 选项并给出所需的文件名，可以创建一个 NetCDF 文件，其中同时包含 EXTENDER_P 场和 Dommaschk 场，便于在 Paraview 或 Visit 中做可视化比较。最后两个参数是分别包含 Dommaschk 势系数和 EXTENDER_P 输出的文件名，它们都在前面的步骤中创建。
 
-The final step for the Dommaschk potential coefficients is to save them in a format that can be read by JOREK. This is done by saving the coefficients in a special namelist file, separate from the standard JOREK input file. The coefficients are held in the `dcoef` Fortran array, however the indices are ordered differently than in the NumPy array, and the Fortran array also skips unused coefficients (those whose toroidal mode number is not a multiple of the device periodicity). The following simple script can be used to write out the contents of the namelist file:
+Dommaschk 势系数的最后一步是将其保存为 JOREK 可读取的格式。做法是把系数保存在一个特殊的 namelist 文件中，与标准 JOREK 输入文件分开。系数存放在 Fortran 数组 `dcoef` 中，但其索引顺序与 NumPy 数组不同，而且 Fortran 数组还会跳过未使用的系数（即环向模数不是装置周期性整数倍的那些）。可用以下简单脚本写出该 namelist 文件的内容：
 ```python
 import numpy as np
 
@@ -248,17 +243,17 @@ for i in range(Nt+1):
       if (coef[P*i,l,j] != 0.0):
         print(" dcoef(" + str(j+1) + "," + str(l) + "," + str(i) + ") = " + str(coef[P*i,l,j]))
 ```
-The variables `Nt` and `Mp` should be set to the values passed to the `-m` and `-l` parameters, respectively, of the `compute_dcoef_lsq.py` script. The `P` variable is just the periodicity. The output of this script should then be copied to the namelist file. In addition, the namelist should include the `R_domm` variable, which should be set to the value of $R_0$, as printed out by `compute_dcoef_lsq.py`. An example of how the Dommaschk potential namelist file should look like is available here: [dc_W7A_unst_1Pa](assets/stellarator_setup/dc_W7A_unst_1Pa).
+变量 `Nt` 和 `Mp` 应分别设为传给 `compute_dcoef_lsq.py` 脚本 `-m` 和 `-l` 参数的值。`P` 变量就是周期性。该脚本的输出随后应复制到 namelist 文件中。此外，namelist 中应包含 `R_domm` 变量，其值应设为 `compute_dcoef_lsq.py` 打印出的 $R_0$ 值。Dommaschk 势 namelist 文件应为何种样式的示例见此处：[dc_W7A_unst_1Pa](assets/stellarator_setup/dc_W7A_unst_1Pa)。
 
-## 4. Reconstructing the equilibrium in JOREK using model 180
+## 4. 使用 model 180 在 JOREK 中重建平衡
 
-The next step is to compile JOREK with model 180, which is a "fake" model that does not evolve the plasma in time, but only calculates the initial conditions. The hard-coded options are to be set as follows: both `n_period` and `n_coord_period` should match `NFP` in the VMEC namelist, `n_coord_tor` should be `2*ntor + 1`, where `ntor` is the value of the corresponding parameter passed to VMEC.
+下一步是用 model 180 编译 JOREK，这是一个"假"模型，不对等离子体做时间演化，只计算初始条件。硬编码选项应按如下设置：`n_period` 和 `n_coord_period` 都应与 VMEC namelist 中的 `NFP` 一致，`n_coord_tor` 应为 `2*ntor + 1`，其中 `ntor` 是传给 VMEC 的相应参数的值。
 
-If Dommaschk coefficients are used, `l_pol_domm` should be set to the number passed to the `-l` parameter in `compute_dcoef_lsq.py` in the previous step. If the code is run without Dommaschk potentials, `USE_DOMM=0` in jorek/defaults.mk and `l_pol_domm=0` must be set. This will mean that a Poisson solve is carried out as part of model 180 to compute $\chi$. Note that while this can take some time, it will make further calculations significantly faster, as computation of Dommaschk potentials is computationally demanding.
+若使用 Dommaschk 系数，`l_pol_domm` 应设为上一步 `compute_dcoef_lsq.py` 中传给 `-l` 参数的那个数。若在不使用 Dommaschk 势的情况下运行代码，必须设置 jorek/defaults.mk 中的 `USE_DOMM=0` 以及 `l_pol_domm=0`。这意味着作为 model 180 的一部分将执行一次 Poisson 求解以计算 $\chi$。注意这虽然可能耗时，但会使后续计算显著加快，因为 Dommaschk 势的计算在计算上很昂贵。
 
-If 32-bit integers are used, an integer overflow of the matrix array indices may be reached for more complex setups due to the many DOF in the matrix solver. How switch to 64-bit integers is described here: [Compiling JOREK and solvers using long integers](../compiling/compilation_and_libraries/compiling_int64.md)
+若使用 32 位整数，对于更复杂的设置，由于矩阵求解器中自由度很多，可能会触及矩阵数组索引的整数溢出。如何切换到 64 位整数见此处：[使用长整数编译 JOREK 和求解器](../compiling/compilation_and_libraries/compiling_int64.md)
 
-For the W7-A example considered here, using Dommaschk potentials, the hard-coded parameters have the following values:
+对于此处考虑的 W7-A 示例（使用 Dommaschk 势），硬编码参数取以下值：
 
 ```
 model180
@@ -275,7 +270,7 @@ n_boundary_max = 1001
 n_pieces_max = 10001
 ```
 
-After compilation, JOREK will need to be run with an input namelist. A sample namelist for the 1Pa example is provided below:
+编译之后，JOREK 需要配合输入 namelist 运行。下面给出 1Pa 示例的示例 namelist：
 ```fortran
 &in1
  restart = .f.
@@ -317,21 +312,21 @@ After compilation, JOREK will need to be run with an input namelist. A sample na
 /
 ```
 
-Here, `nstep` must always be 1, since there is no actual time stepping, and the initial conditions only need to be calculated once, while the value of `tstep` is irrelevant and does not affect the results. The `gvec_grid_import` parameter tells JOREK to look for the `gvec2jorek.dat` file, which must be present in the working directory, and import from there, while `bc_natural_open` allows the current to be nonzero on the boundary. Moreover, `F0` should be set to the value printed out by `compute_dcoef_lsq.py`. If run without Dommaschk potentials, `F0` is given by the `rbtor` variable in the NetCDF file produced by VMEC.
+这里，`nstep` 必须始终为 1，因为没有实际的时间推进，初始条件只需计算一次，而 `tstep` 的值无关紧要，不会影响结果。`gvec_grid_import` 参数告知 JOREK 查找 `gvec2jorek.dat` 文件（该文件必须存在于工作目录中）并从其中导入，而 `bc_natural_open` 允许边界上的电流非零。此外，`F0` 应设为 `compute_dcoef_lsq.py` 打印出的值。若在不使用 Dommaschk 势的情况下运行，`F0` 由 VMEC 生成的 NetCDF 文件中的 `rbtor` 变量给出。
 
-IMPORTANT: When running without the Dommaschk potentials, a density profile must also be provided. Otherwise, the density and the temperature will return NaN values. 
+重要：在不使用 Dommaschk 势运行时，还必须提供密度剖面。否则密度和温度将返回 NaN 值。
 
-`n_flux` and `n_tht` must match the values passed to the `-r` and `-p` parameters of `convert_gvec_to_jorek`, respectively, and `domm_file` gives the path to the namelist where the Dommaschk potential coefficients from the previous step are stored. The file used in this tutorial is available here: [dc_W7A_unst_1Pa](assets/stellarator_setup/dc_W7A_unst_1Pa).
+`n_flux` 和 `n_tht` 必须分别与传给 `convert_gvec_to_jorek` 的 `-r` 和 `-p` 参数的值一致，`domm_file` 给出存放上一步 Dommaschk 势系数的 namelist 的路径。本教程所用的文件见此处：[dc_W7A_unst_1Pa](assets/stellarator_setup/dc_W7A_unst_1Pa)。
 
-JOREK can then be run as follows:
+随后可按如下方式运行 JOREK：
 ```bash
 mpirun -n 3 ./jorek_model180 < intear
 ```
-where the number passed to the `-n` parameter must be a multiple of `(n_tor+1)/2`, and `intear` is the name of the namelist file given above. This run will produce, among others, an output file called `jorek_restart.h5`, which contains the initial conditions for the reduced MHD variables. This file will be required in the next step.
+其中传给 `-n` 参数的数字必须是 `(n_tor+1)/2` 的整数倍，`intear` 是上面给出的 namelist 文件名。该次运行将产生一个名为 `jorek_restart.h5` 的输出文件（以及其它文件），其中包含约化 MHD 变量的初始条件。下一步将需要该文件。
 
-## 5. Running the simulation in JOREK in time using model 183
+## 5. 使用 model 183 在 JOREK 中进行时间演化模拟
 
-The actual time stepping is done in model 183. Keeping the same hard-coded parameters as before, JOREK should be recompiled with model 183. In the example considered here, a tearing mode will be simulated. The first part of the simulation will proceed with five-fold periodicity to allow the plasma to re-equilibrate as small residual forces are damped out. The following namelist file can be provided to JOREK:
+实际的时间推进在 model 183 中完成。保持与之前相同的硬编码参数，用 model 183 重新编译 JOREK。在此考虑的示例中，将模拟一个撕裂模。模拟的第一部分将以五重周期性进行，以便在小残余力被阻尼掉的过程中让等离子体重新达到平衡。可向 JOREK 提供以下 namelist 文件：
 ```fortran
 &in1
  restart = .t.
@@ -389,15 +384,15 @@ The actual time stepping is done in model 183. Keeping the same hard-coded param
  gmres_tol = 1.d-8
 /
 ```
-Here, `restart` is true, specifying that the simulation is to be initialized from the `jorek_restart.h5` file  produced by the previous JOREK run (initial conditions step). In addition, `init_current_prof` must be set to true, so that the current source is set to the initial condition for the current. Finally, the implicit Euler method should be used for temporal discretization (`time_evol_scheme`), as it is more dissipative than the Crank-Nicolson method, and will damp out oscillations due to residual forces relatively quickly. The Gears method can also be used.
+这里，`restart` 为 true，指定模拟要从上一次 JOREK 运行（初始条件步）产生的 `jorek_restart.h5` 文件初始化。此外，`init_current_prof` 必须设为 true，以便把电流源设为电流的初始条件。最后，时间离散应使用隐式 Euler 方法（`time_evol_scheme`），因为它比 Crank-Nicolson 方法更具耗散性，能相对较快地阻尼掉由残余力引起的振荡。也可以使用 Gears 方法。
 
-JOREK can be run as follows:
+JOREK 可按如下方式运行：
 ```bash
 mpirun -n 3 ./jorek_model183 < intear
 ```
-where, as before, the number passed to the `-n` parameter must be a multiple of `(n_tor+1)/2`, and `intear` is the name of the namelist file given above. Again, this run will produce a file called `jorek_restart.h5`, which will be used to initialize the next JOREK run.
+其中，与之前一样，传给 `-n` 参数的数字必须是 `(n_tor+1)/2` 的整数倍，`intear` 是上面给出的 namelist 文件名。同样，该次运行将产生一个名为 `jorek_restart.h5` 的文件，用于初始化下一次 JOREK 运行。
 
-The final step is to expand the simulation domain to the full torus to allow a tearing mode to develop. This requires setting the hard-coded parameters `n_tor` to 21 and `n_period` to 1, and then recompiling JOREK. After recompilation, the following namelist file can be used for this final step:
+最后一步是把模拟区域扩展到整个环面，以便撕裂模得以发展。这需要把硬编码参数 `n_tor` 设为 21、`n_period` 设为 1，然后重新编译 JOREK。重新编译后，最后一步可使用以下 namelist 文件：
 ```fortran
 &in1
  restart = .t.
@@ -454,10 +449,10 @@ The final step is to expand the simulation domain to the full torus to allow a t
  gmres_tol = 1.d-8
 /
 ```
-This file is almost the same as in the previous step, except for the step size (`tstep`) and number of steps (`nstep`), as well as `init_current_prof` being set to false (the current source will be set to the value of the current source stored in `jorek_restart.h5`, instead of the value of current) and `time_evol_scheme` not being specified (the Crank-Nicolson method is the default).
+该文件与上一步几乎相同，只是步长（`tstep`）和步数（`nstep`）不同，并且 `init_current_prof` 设为 false（电流源将设为 `jorek_restart.h5` 中存储的电流源值，而不是电流的值），且未指定 `time_evol_scheme`（默认是 Crank-Nicolson 方法）。
 
-JOREK can then be run as follows:
+随后可按如下方式运行 JOREK：
 ```bash
 mpirun -n 11 ./jorek_model183 < intear
 ```
-where, as before, `intear` is the name of the namelist file given above.
+其中，与之前一样，`intear` 是上面给出的 namelist 文件名。

@@ -6,68 +6,60 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 警告：仍在撰写中
+Giacomo 正在编写本页内容
 
-原文页面：[Spatial Discretization](https://iterorganization.github.io/JOREK/numerics/spatial-discretization.html)　·　源文件：`numerics/spatial-discretization.md`
-</div>
+# JOREK 中的空间离散
 
-# WARNING: still work in progress
-Giacomo is working on this
+JOREK 的离散方法在两篇论文中有详尽描述：[O. Czarny, G. Huysmans, J.Comput.Phys 227, 7423 (2008)](https://www.sciencedirect.com/science/article/pii/S0021999108002118) 与 [S. Pamela et al. J. Comput. Phys. 464, 111101 (2022)](https://www.sciencedirect.com/science/article/pii/S0021999122001632?via%3Dihub)。此处概述其中最重要的方面以及代码实现。
 
-# Spatial Discretization in JOREK
+如[此处](http://localhost:4000/doc_repo/docs/physics/coordinates.html)所详尽说明，JOREK 使用柱坐标 $(R,Z,\phi)$。极向平面（变量 $R$ 与 $Z$）上的离散采用二维贝塞尔有限元，将在[下一节](#2d-bezier-finite-elements-in-the-poloidal-plane)讨论；而沿环向（变量 $\phi$）的离散则由截断的实傅里叶级数完成，详见[本节](#real-fourier-series-in-toroidal-direction)。
 
-The discretization of JOREK is well described in the papers [O. Czarny, G. Huysmans, J.Comput.Phys 227, 7423 (2008)](https://www.sciencedirect.com/science/article/pii/S0021999108002118) and [S. Pamela et al. J. Comput. Phys. 464, 111101 (2022)](https://www.sciencedirect.com/science/article/pii/S0021999122001632?via%3Dihub). Here we present a summary of the most important aspects and the code implementation.
-
-As extensively explained [here](http://localhost:4000/doc_repo/docs/physics/coordinates.html), JOREK uses the cylindrical coordinates $(R,Z,\phi)$. The discretization on the poloidal plane (variables $R$ and $Z$) is discretized using 2D Bezier finite elements, discussed the [following section](#2d-bezier-finite-elements-in-the-poloidal-plane) whereas the discretization along the toroidal direction (variable $\phi$) is performed with a truncated real Fourier series, as explained in [this section](#real-fourier-series-in-toroidal-direction).
-
-The two discretizations combined read as follows:
+两种离散结合后写成：
 
 $$
 \mathbf{X}(R,Z,\phi) = \left(\sum_{l=1}^{N_{tor}} Z_l(\phi) \left (\sum_{i = 1}^{N_{vert}}\sum_{j = 1}^{\text{dof_per_vertex}} h^{ij} \vec{u}^{ij} b^*_{i,j}(R,Z)\right) \right ) \tag{1}
 $$
 
-The inner parenthesis is the poloidal discretization, which uses the basis functions $b^*_i$, while $Z_l$ are the basis functions for the toroidal discretization.
+内层括号为极向离散，使用基函数 $b^*_i$；$Z_l$ 则是环向离散的基函数。
 
 
-## 2D Bezier finite elements in the poloidal plane
+## 极向平面上的二维贝塞尔有限元 <a id="2d-bezier-finite-elements-in-the-poloidal-plane"></a>
+JOREK 在极向平面 $RZ$ 上使用等参 Gm 连续的贝塞尔有限元进行空间离散。它不把控制点当作"直接"自由度，而是采用另一种表述，称为*节点表述*（nodal formulation，见[此处](#bezier-finite-element-nodal-representation)），这大大便于在多个有限元之间施加 Gm 连续性。等参与 Gm 连续（$m\in \mathbb{N}$）的含义随后说明。
 
-JOREK uses isoparametric Gm-continuous Bezier finite elements for spatial discretization on the poloidal plane $RZ$. Instead of using control points as "direct" degrees of freedom, a different formulation, called *nodal formulation* (see [here](#bezier-finite-element-nodal-representation)), is used, which greatly facilitate imposing Gm-continuity across multiple finite elements. What isoparametric and Gm-continuous (with $m\in \mathbb{N}$) means will be explained soon.
+关于贝塞尔曲线、贝塞尔曲面的概览，以及如何由此过渡到贝塞尔有限元的概念，参见[附录 A](#appendix-a-introduction-on-bezier-curves-and-bezier-surfaces)
 
-For an overview of Bezier curves, Bezier surfaces and how to pass from these to the concept of Bezier finite elements see the [Appendix A](#appendix-a-introduction-on-bezier-curves-and-bezier-surfaces)
-
-We use the parameters $s,t\in [0,1]$ as local coordinates of a Bezier finite element, so the discretization on a single Bezier finite element of degree $n$ reads as
+我们采用参数 $s,t\in [0,1]$ 作为贝塞尔有限元的局部坐标，于是单个 $n$ 次贝塞尔有限元上的离散写成
 
 $$
 X_\text{pol}(s,t) = \sum_{i=0}^{n}\sum_{j=0}^{n} \mathbf{P}_{ij} B_i^n(s)B_j^n(t) \tag{2}
 $$
 
-with $B_i^n$ and $B_j^n$ Bernstein polynomials and $P_{ij}$ control points of the surface.
+其中 $B_i^n$ 与 $B_j^n$ 为 Bernstein 多项式，$P_{ij}$ 为曲面的控制点。
 
-As explained in the following section, Equation $(2)$ is rewritten in a more convenient way, that is:
+如下一节所述，式 $(2)$ 可改写为更便利的形式，即：
 
 $$
 X_\text{pol}(s,t) = \sum_{i=0}^{N_\text{vert}-1} \sum_{j=0}^{\text{dof_per_vertex}} h^{ij} \vec{u}^{ij} b_i(s,t)
 $$
 
-It is important to note that this formulation holds only locally to _one_ finite element.
+需要注意，该表述仅在*单个*有限元内部成立。
 
-Formally it can be extended to multiple elements, creating a mapping between $(R,Z)$ and $(s,t)$, which is needed anyway. ... (finish here)
+形式上它可以推广到多个单元，从而在 $(R,Z)$ 与 $(s,t)$ 之间建立映射，而这一映射本来就是必需的。……（此处待完成）
 
-### Bezier finite element nodal representation
-In JOREK a particular formulation of the finite elements is used. In particular, the control points are divided into $4$ groups, based on which interpolation point they are close to. When the degree $n$ is odd, each group has $(n+1)^2/4$ points. 
-To each interpolation point (each _node_), a basis of vectors (the actual degrees of freedom!) is assigned and the control points are rewritten as a combination of this vectors.
+### 贝塞尔有限元的节点表述 {#bezier-finite-element-nodal-representation}
+JOREK 对有限元采用一种特殊的表述。具体而言，控制点按其靠近哪个插值点分成 $4$ 组。当次数 $n$ 为奇数时，每组有 $(n+1)^2/4$ 个点。
+为每个插值点（每个*节点*）指定一组向量基（这才是真正的自由度！），控制点则改写为这些向量的组合。
 
-In the following of this section we provide an example with bi-cubic Bezier finite element, which is the most used finite element in JOREK. 
-Next we discuss about the **generalized nodal representation** to any order, not only bi-cubic, that is implemented in JOREK and we
-show that $G_m$ continuity is simpler to be imposed on such a representation.
-Finally we provide an insight on why this particular formulation is chosen and is meaningful.
+本节其余部分给出双三次贝塞尔有限元的示例，它是 JOREK 中使用最多的有限元。
+接着讨论 JOREK 中实现的、适用于任意次数（不限于双三次）的**广义节点表述**，并
+说明在该表述下施加 $G_m$ 连续性更为简单。
+最后简要说明为何选择这一特定表述，以及它的意义所在。
 
-#### Nodal representation of bi-cubic Bezier finite element
-With bi-cubic Bezier finite element the Bernstein polynomials' basis is a tensor product of the cubic Bernstein polynomials' basis. 
+#### 双三次贝塞尔有限元的节点表述
+对双三次贝塞尔有限元，Bernstein 多项式基是三次 Bernstein 多项式基的张量积。
 
-The control points are divided in 4 groups as shown in the following illustration.
+控制点如下图所示分成 4 组。
 
 $$
 \begin{matrix}
@@ -82,10 +74,10 @@ $$
 \end{matrix}
 $$
 
-Points $x0$, with $x\in \{0,1,2,3\}$ are the interpolation points and the points in their group are $xy$ with $y\in \{1,2,3\}$.
+点 $x0$（$x\in \{0,1,2,3\}$）为插值点，其所在组内的其余点为 $xy$，其中 $y\in \{1,2,3\}$。
 
-Then for each group $i$ the vectors $p_i, v_i, u_i$ and $w_i$ are introduced along with 
-certain pre-defined quantities $d_{u,i}$ and $d_{v,i}$
+随后对每组 $i$ 引入向量 $p_i, v_i, u_i$ 与 $w_i$，以及
+若干预先定义量 $d_{u,i}$ 和 $d_{v,i}$
 
 $$
 \begin{align}
@@ -109,12 +101,12 @@ $$
 \tag{4}
 $$
 
-This formulation is based on the following work: [O. Czarny, G. Huysmans, J.Comput.Phys 227, 7423 (2008)](https://www.sciencedirect.com/science/article/pii/S0021999108002118).
+该表述基于以下工作：[O. Czarny, G. Huysmans, J.Comput.Phys 227, 7423 (2008)](https://www.sciencedirect.com/science/article/pii/S0021999108002118)。
 
-#### Generalized nodal representation of Bezier finite element
-The work [S. Pamela et al. J. Comput. Phys. 464, 111101 (2022)](https://www.sciencedirect.com/science/article/pii/S0021999122001632?via%3Dihub) generalizes what has been shown in the previous paragraph for bi-cubic elements to any degree $n$ and usually imposing $G_m$ continuity with $m=(n-1)/2$.
-Instead of using $p_i,u_i,v_i,w_i$ vectors, the notation is $u_{ij}$ and $d_{u,i}$ with $h^{ij}$ For example, in the bi-cubic case we have $u_{i0}:=p_i, u_{i1}:=u_i, ...$. 
-Then the generalized formulation, only for group of node $\mathbf{P}_{00}$, reads as follows:
+#### 贝塞尔有限元的广义节点表述 {#generalized-nodal-representation-of-bezier-finite-element}
+文献 [S. Pamela et al. J. Comput. Phys. 464, 111101 (2022)](https://www.sciencedirect.com/science/article/pii/S0021999122001632?via%3Dihub) 把上一段针对双三次单元给出的结果推广到任意次数 $n$，且通常施加 $m=(n-1)/2$ 的 $G_m$ 连续性。
+此时不再使用 $p_i,u_i,v_i,w_i$ 向量，而采用记号 $u_{ij}$ 与 $d_{u,i}$，并配合 $h^{ij}$。例如在双三次情形下有 $u_{i0}:=p_i, u_{i1}:=u_i, ...$。
+于是广义表述（仅以节点组 $\mathbf{P}_{00}$ 为例）写成：
 
 $$
 \mathbf{P}_{ij} = h^{ij}u^{ij} + \sum_{k=0}^i\sum_{l=0}^i (-1)^{1+i+j+k+l}(1-\delta_{ki}\delta_{lj}) 
@@ -127,16 +119,16 @@ j \\ l
 \mathbf{P}_{kl}
 $$
 
-with $0\leq i,j \leq (n+1)/2$
+其中 $0\leq i,j \leq (n+1)/2$
 
-#### <u>Imposing the continuity on generalized nodal representation</u>
-In JOREK one node, i.e. $\mathbf{P}\_{00}$ is always shared by $4$ finite elements. 
-Let $\xi_{1,1}, \xi_{-1,1}, \xi_{-1,-1}, \xi_{1,-1}$ be the finite elements that share the node, listed counter clockwise. 
-Then each of these elements has a different set of vectors $u^{ij}$ (and values $h^{ij}$) as nodal representation used in tha shared node $\mathbf{P}\_{00}$. We say that $u^{ij}$ and $h^{ij}$ are the nodal representation used by element $\xi_{1,1}$, $u^{-ij}$ and $h^{-ij}$ for element $\xi_{-1,1}$, $u^{i-j}$ and $h^{i-j}$ for element $\xi_{1,-1}$ and finally $u^{-i-j}$ and $h^{-i-j}$ for element $\xi_{-1,-1}$. 
+#### <u>在广义节点表述中施加连续性</u>
+在 JOREK 中，一个节点（即 $\mathbf{P}\_{00}$）总是由 $4$ 个有限元共有。
+设 $\xi_{1,1}, \xi_{-1,1}, \xi_{-1,-1}, \xi_{1,-1}$ 为共有该节点的有限元，按逆时针排列。
+于是这些单元在公共节点 $\mathbf{P}\_{00}$ 处各自使用不同的向量集 $u^{ij}$（及取值 $h^{ij}$）作为节点表述。记 $u^{ij}$ 与 $h^{ij}$ 为单元 $\xi_{1,1}$ 所使用的节点表述，$u^{-ij}$ 与 $h^{-ij}$ 为单元 $\xi_{-1,1}$ 的，$u^{i-j}$ 与 $h^{i-j}$ 为单元 $\xi_{1,-1}$ 的，最后 $u^{-i-j}$ 与 $h^{-i-j}$ 为单元 $\xi_{-1,-1}$ 的。
 
-With the introduced notation, $G_m$ continuity on the shared nodes is obtained by imposing the following constrains.
+采用上述记号，公共节点上的 $G_m$ 连续性通过施加以下约束得到。
 
-$\forall j, \ \ h^{-ij}$ is constrained by:
+$\forall j, \ \ h^{-ij}$ 受约束于：
 
 $$
 h^{-ij} = 
@@ -146,7 +138,7 @@ h^{ij} & for i \neq 1
 \end{cases}
 $$
 
-$\forall i, \ \ h^{i-j}$ is constrained by:
+$\forall i, \ \ h^{i-j}$ 受约束于：
 
 $$
 h^{i-j} = 
@@ -156,42 +148,42 @@ h^{ij} & for j \neq 1
 \end{cases}
 $$
 
-#### <u>Brief intuition on the formulation</u>
-As demonstrated in Corollary 1 of [S. Pamela et al. J. Comput. Phys. 464, 111101 (2022)](https://www.sciencedirect.com/science/article/pii/S0021999122001632?via%3Dihub), in the particular nodal formulation used, the vectors $u^{ij}$ are **equal** in direction and sign (but not absolute value) with the **derivative** 
+#### <u>关于该表述的简要直观理解</u>
+如 [S. Pamela et al. J. Comput. Phys. 464, 111101 (2022)](https://www.sciencedirect.com/science/article/pii/S0021999122001632?via%3Dihub) 的推论 1 所证明，在所采用的特定节点表述中，向量 $u^{ij}$ 与**导数**在方向与符号上**一致**（数值大小则不然）
 
 $$
 \frac{\partial^{i+j} \mathbf{P}}{\partial^{i} s \partial^{j} t}(s=0,t=0)
 $$
 
-This is extremely helpful, for instance, when building the mesh, since derivatives of $R$ and $Z$ are used to obtain a flux aligned grid. 
+这一点极为有用，例如在生成网格时，因为构造磁面对齐网格需要用到 $R$ 与 $Z$ 的导数。
 
-### Discretization with nodal formulation
-With the nodal representation, 
+### 采用节点表述的离散
+采用节点表述时，
 
-### Implementation in the code
+### 代码中的实现
 
 
-### The following is still to be adapted
+### 以下内容仍待整理
 
-Two-dimensional third-order Bernstein polynomials $B_{i,j}^{3}(s,t)$ defined by
+由下式定义的二维三阶 Bernstein 多项式 $B_{i,j}^{3}(s,t)$
 
 $$
 B_{i,j}^{3}(s,t) = B_{i}^{3}(s)B_{j}^{3}(t)\qquad i,j = 0\ldots 3 \tag{1}
 $$
 
-with
+其中
 
 $$
 B_{i}^{3}(s) = \frac{3!}{i!(3 - i)!} s^{i}(1 - s)^{3 - i} \tag{2}
 $$
 
-are used for the discretization in the poloidal plane. The coordinates $s = 0\ldots 1$ and $t = 0\ldots 1$ form the element-local coordinate system. A quantity $X$ which may be a coordinate or a physical variable $(R,Z,\Psi,T,\ldots$; iso-parametric discretization) can be expressed by
+用于极向平面上的离散。坐标 $s = 0\ldots 1$ 与 $t = 0\ldots 1$ 构成单元局部坐标系。量 $X$（可以是坐标，也可以是物理变量 $(R,Z,\Psi,T,\ldots$；等参离散）可表示为
 
 $$
 X(s,t) = \sum_{i = 0}^{3}P_{i,j}B_{i,j}^{3}(s,t). \tag{3}
 $$
 
-As first order continuity of the finite elements is demanded, not all combinations of control points $P_{i,j}$ are valid. Effectively, four free parameters $p_k$, $u_k$, $v_k$, and $w_k$ remain per node $k$ and quantity $X$ of the element. The control points $P_{i,j}$ can be reconstructed from these free parameters as given in the following. Nodes $k = 1\ldots 4$ correspond to the positions $(i,j) = (0,0)$, $(3,0)$, $(3,3)$, and $(0,3)$.
+由于要求有限元具有一阶连续性，并非控制点 $P_{i,j}$ 的所有组合都有效。实际上，单元中每个节点 $k$ 和每个量 $X$ 只剩四个自由参数 $p_k$、$u_k$、$v_k$ 与 $w_k$。控制点 $P_{i,j}$ 可由这些自由参数按下式重构。节点 $k = 1\ldots 4$ 分别对应位置 $(i,j) = (0,0)$、$(3,0)$、$(3,3)$ 与 $(0,3)$。
 
 $$
 \begin{array}{r l}
@@ -215,7 +207,7 @@ P_{1,2} &= P_{0,2} + P_{1,3} - p_4 + w_4\, d_{u,4}\, d_{v,4}
 \tag{4}
 $$
 
-Here, the $d_{u,k}$ and $d_{v,k}$ are measures for the distances of the control points from the element nodes. These are element properties, i.e., for a node that belongs to several elements, the value of $d_{u,k}$ depends on the element considered. In JOREK, they are represented by
+此处 $d_{u,k}$ 与 $d_{v,k}$ 度量控制点到单元节点的距离。它们是单元属性，即对属于多个单元的节点，$d_{u,k}$ 的取值取决于所考虑的单元。在 JOREK 中它们表示为
 
 $$
 \begin{align}
@@ -226,21 +218,21 @@ $$
 \end{align}
 $$
 
-## Projecting on the bezier elements
+## 投影到贝塞尔单元上
 
-The distribution $X(s,t)$ of quantity $X$ within a certain element can be expressed by Equation $(3)$. Inserting Equations $(1)$-$(2)$ and Equation $(4)$ leads to the following expression
+量 $X$ 在某一单元内的分布 $X(s,t)$ 可由式 $(3)$ 表示。代入式 $(1)$–$(2)$ 与式 $(4)$ 得到如下表达式
 
 $$
 X(s,t) = \sum_{k = 1}^{4} \tilde{p}_k(s,t) \tag{5}
 $$
 
-with the contributions
+其中各贡献项为
 
 $$
 \tilde{p}_k = b_{k,1}\, p_k + b_{k,2}\, u_k\, d_{u,k} + b_{k,3}\, v_k\, d_{v,k} + b_{k,4}\, w_k\, d_{u,k}\, d_{v,k} \tag{6}
 $$
 
-associated to the four nodes. Here,
+分别对应四个节点。此处，
 
 $$
 \begin{array}{r l}
@@ -264,15 +256,15 @@ b_{4,4} &= 9 (1 - s)^{2} t^{2} s (1 - t) .
 \tag{7}
 $$
 
-In JOREK, the quantities $b_{k,j}$ are required at the position of the Gaussian points with indices $(i_G, j_G)$. They are denoted
+在 JOREK 中，需要在索引为 $(i_G, j_G)$ 的高斯点位置取值 $b_{k,j}$，它们记为
 
 $\texttt{H(k,j,i_G,j_G)} b_{k,j}$ at Gaussian point $(i_G,j_G) \tag{8}$ 
 
-and are initialized in the subroutine ''basisfunctions2''.
+并在子程序 ''basisfunctions2'' 中初始化。
 
-## Notation in the code
+## 代码中的记号
 
-The degrees of freedom of each node corresponding to the $l$-th toroidal harmonic of the $\nu$-th physical quantity are denoted in the following way in the code:
+每个节点上对应于第 $\nu$ 个物理量的第 $l$ 个环向谐波的自由度，在代码中按如下方式记：
 
 $$
 \begin{align}
@@ -283,7 +275,7 @@ $$
 \end{align}
 $$
 
-The degrees of freedom of the coordinates $R$ ($\mu = 1$) and $Z$ ($\mu = 2$) are called,
+坐标 $R$（$\mu = 1$）与 $Z$（$\mu = 2$）的自由度记为，
 
 $$
 \begin{align}
@@ -294,7 +286,7 @@ $$
 \end{align}
 $$
 
-For all $\nu = 1\ldots N_{var}$ and $i_G, j_G = 1\ldots N_{Gauss}$ and $p = 1\ldots N_{plane}$, the variable values at a given Gaussian point $(s_{i_G}, t_{j_G})$ at the toroidal position $\phi_p$ in a given finite element can be expressed by
+对所有的 $\nu = 1\ldots N_{var}$、$i_G, j_G = 1\ldots N_{Gauss}$ 与 $p = 1\ldots N_{plane}$，给定有限元内某高斯点 $(s_{i_G}, t_{j_G})$ 处、环向位置 $\phi_p$ 上的变量值可表示为
 
 $$
 \begin{aligned}
@@ -304,17 +296,16 @@ X_{\nu}(s_{i_G},t_{j_G},\phi_{p}) &= \sum_{k = 1}^{N_{vert}}\sum_{j = 1}^{N_{ord
 \tag{9}
 $$
 
-where `i=element%vertex(k)`. Here, $N_{var}$ denotes the number of physical variables, $N_{Gauss} = 4$ the number of Gaussian points used for Gauss quadrature in $s$ and $t$ directions each, $N_{plane} = 2(N_{tor} - 1)$ the number of toroidal planes located at $\phi_{p} = 2\pi (p - 1) / N_{plane}$, $N_{vert} = 4$ the number of vertices in each element, $N_{ord} = 4$ the number of degrees of freedom per vertex, and $N_{tor}$ the number of different toroidal Fourier modes. The quantity ''HZ(l,p)'' corresponds to the value of the $l$-th Fourier mode at the toroidal position $\phi_{p}$ and is denoted $Z_{l}(\phi_{p})$ in the following. The table below lists which Fourier modes correspond to the different mode indices $l$.
+其中 `i=element%vertex(k)`。这里 $N_{var}$ 表示物理变量的数目，$N_{Gauss} = 4$ 表示 $s$、$t$ 两个方向各自用于高斯求积的高斯点数，$N_{plane} = 2(N_{tor} - 1)$ 表示位于 $\phi_{p} = 2\pi (p - 1) / N_{plane}$ 的环向平面数，$N_{vert} = 4$ 表示每个单元的顶点数，$N_{ord} = 4$ 表示每个顶点的自由度数，$N_{tor}$ 表示不同环向傅里叶模的数目。量 ''HZ(l,p)'' 对应第 $l$ 个傅里叶模在环向位置 $\phi_{p}$ 处的取值，下文记为 $Z_{l}(\phi_{p})$。下表列出不同模索引 $l$ 所对应的傅里叶模。
 
 | l | 1 | 2 | 3 | 4 | 5 | ... |
 |---|---|---|---|---|---|---|
 | $Z_l(\phi_p) \equiv$ `HZ`(l,p) | 1 | $\cos \phi_p$ | $\sin \phi_p$ | $\cos 2\phi_p$ | $\sin 2\phi_p$ | ... |
 
-## Real Fourier series in toroidal direction
+## 环向的实傅里叶级数 {#real-fourier-series-in-toroidal-direction}
+* 环向采用实傅里叶级数（$\cos$、$\sin$）：
 
-* For the toroidal direction, a real Fourier series ($\cos$, $\sin$) is used:
-
-| JOREK harmonic | Toroidal mode number | Toroidal basis function |
+| JOREK 谐波 | 环向模数 | 环向基函数 |
 |--|--|--|
 | 1 | 0 | 1 |
 | 2 | n_period | cos(n_period*phi) |
@@ -325,67 +316,66 @@ where `i=element%vertex(k)`. Here, $N_{var}$ denotes the number of physical vari
 | n_tor-1 | (n_tor-1)/2*n_period | cos((n_tor-1)/2*n_period*phi) |
 | n_tor | (n_tor-1)/2*n_period | sin((n_tor-1)/2*n_period*phi) |
 
-* The **hard-coded_parameters** `n_tor` and `n_period` are used to select the harmonics included in the simulation.
-  * `n_tor`: Total number of real Fourier modes (odd integer number)
-  * `n_period`: Toroidal periodicity (positive integer number)
-* The **maximum toroidal mode number** included in a simulation is `n_max=(n_tor-1)/2*n_period`.
-* A **sufficient number of toroidal planes** is required to avoid aliasing. The minimal requirement is typically `n_plane >= 2 * n_tor`. It is always a good idea to scan `n_plane` for a simulation to ensure convergence. `n_plane` must be a power of 2, if FFTW is not used. If FFTW is used (see [here](http://localhost:4000/doc_repo/docs/compiling/cat_compiling.html) for more), `n_plane` can be an arbitrary positive integer number, but not for all values FFTW is similarly efficient.
+* 通过**硬编码参数** `n_tor` 与 `n_period` 选择模拟中包含的谐波。
+  * `n_tor`：实傅里叶模的总数（奇整数）
+  * `n_period`：环向周期数（正整数）
+* 模拟中包含的**最大环向模数**为 `n_max=(n_tor-1)/2*n_period`。
+* 需要**足够多的环向平面**以避免混叠。最低要求通常为 `n_plane >= 2 * n_tor`。对每个算例扫描 `n_plane` 以确保收敛总是可取的做法。若不使用 FFTW，`n_plane` 必须是 2 的幂。若使用 FFTW（更多说明见[此处](http://localhost:4000/doc_repo/docs/compiling/cat_compiling.html)），`n_plane` 可以是任意正整数，但并非所有取值下 FFTW 的效率都相同。
 
-## Appendix A: Introduction on Bezier curves and Bezier surfaces
+## 附录 A：贝塞尔曲线与贝塞尔曲面简介 {#appendix-a-introduction-on-bezier-curves-and-bezier-surfaces}
+先简要概述贝塞尔曲线，再由这一背景过渡到 JOREK 所使用的特定形式体系。
 
-We start with a brief overview of Bezier curves and then move from this background to the particular formalism used in JOREK.
+#### <u>贝塞尔曲线</u>
 
-#### <u>Bezier curves</u>
-
-Bezier curves are parametric curves $\mathbf{P}(t)$ which are controlled by a set of points, intuitively called *control points*.
-The parameter $t$ is in the range $[0,1]$.
-The first and the last points, namely $\mathbf{P}\_0$ and $\mathbf{P}\_{n - 1}$ on the sequence of control points are interpolation points, that is $\mathbf{P}(0) = \mathbf{P}\_0$ and $\mathbf{P}(1) = \mathbf{P}\_1$.
-The influence of the control points on the shape of the curve is determined by the a base $\{B_0(t), \dots, B_n(t)\}$, called *Bernstein polynomials*. Point `i` is associated to the polynomial $\mathbf{P}\_i$, indeed the mathematical expression of the Bezier curve is
+贝塞尔曲线是由一组点控制的参数曲线 $\mathbf{P}(t)$，这些点直观地称为*控制点*。
+参数 $t$ 的取值范围为 $[0,1]$。
+控制点序列中的首末两点，即 $\mathbf{P}\_0$ 与 $\mathbf{P}\_{n - 1}$，为插值点，即 $\mathbf{P}(0) = \mathbf{P}\_0$、$\mathbf{P}(1) = \mathbf{P}\_1$。
+控制点对曲线形状的影响由基 $\{B_0(t), \dots, B_n(t)\}$ 决定，该基称为*Bernstein 多项式*。第 `i` 个点与多项式 $\mathbf{P}\_i$ 相对应，贝塞尔曲线的数学表达式即为
 
 $$
 \mathbf{P}(t) = \sum_{i = 0}^{n}\mathbf{P}_iB_i(t)
 $$
 
-Bernstein polynomial are defined by the following formula:
+Bernstein 多项式由下式定义：
 
 $$B_{i}^{n}(s) = \frac{n!}{i!(n - i)!} s^{i}(1 - s)^{n - i}\qquad i = 0\ldots n$$
 
-Bernstein polynomials' basis is fundamental in the Bezier finite element framework. In JOREK, it is **not** the basis local to the single finite element, but the latter is derived from the Bernstein basis. More on this in the section [Bezier finite element nodal representation](#bezier-finite-element-nodal-representation).
+Bernstein 多项式基是贝塞尔有限元框架的基础。在 JOREK 中，它**并非**单个有限元的局部基，而该局部基是由 Bernstein 基导出的。详见[贝塞尔有限元的节点表述](#bezier-finite-element-nodal-representation)一节。
 
-When referring to Bezier curves of degree $n$ we mean that we have $n + 1$ points and $n + 1$ polynomials of degree $n$.
+所谓 $n$ 次贝塞尔曲线，指有 $n + 1$ 个点和 $n + 1$ 个 $n$ 次多项式。
 
-> **Intuition on Bezier curves**: Bezier curves were invented by the French engineer Pierre Bézier and the intuitive way of building them is through the [de Casteljau's algorithm](https://en.wikipedia.org/wiki/De_Casteljau%27s_algorithm). You can see Bezier curves as Linear intERPolation (in graphics vocabulary, LERP) applied recursively. First, you linearly interpolate with parameter `t` every two consecutivive control points, so you generate `n` points. Then you do the same with this new "derived" control point, again with parameter `t`, until you reach only one point. This is $\mathbf{P}(t)$ The following image depicts what just described:
+> **关于贝塞尔曲线的直观理解**：贝塞尔曲线由法国工程师 Pierre Bézier 发明，构造它们的直观方式是通过 [de Casteljau 算法](https://en.wikipedia.org/wiki/De_Casteljau%27s_algorithm)。可以把贝塞尔曲线看作递归施加的线性插值（图形学术语中称为 LERP）。首先以参数 `t` 对每两个相邻控制点做线性插值，于是得到 `n` 个点。然后对这些新的"导出"控制点以参数 `t` 重复同样操作，直至只剩一个点。这个点就是 $\mathbf{P}(t)$。下图展示了上述过程：
 > 
 > <img src="assets/spatial-discretization/bezier_curve.png" width="500">
 
-> **Important note on dimensionality**: It is important to underline that points $\mathbf{P}_i$ can belong to a space $\mathbb{R}^m$ with **any** $m$, given that $m > 1$. Bezier curves are generally though with $\mathbf{P}_i \in \mathbb{R}^2$ but it my be as well $\mathbf{P}_i \in \mathbb{R}^{100}$! Indeed in JOREK the smallest space is $\mathbb{R}^8$ since at least $6$ variables are used.
+> **关于维数的重要说明**：需要强调，点 $\mathbf{P}_i$ 可以属于**任意** $m$（只要 $m > 1$）的空间 $\mathbb{R}^m$。通常想到的贝塞尔曲线有 $\mathbf{P}_i \in \mathbb{R}^2$，但也完全可以有 $\mathbf{P}_i \in \mathbb{R}^{100}$！事实上在 JOREK 中最小的空间是 $\mathbb{R}^8$，因为至少使用 $6$ 个变量。
 
-#### <u>Bezier surfaces</u>
+#### <u>贝塞尔曲面</u>
 
-Bezier surfaces can be viewed as the tensor product of Bezier curves. The basis has now the following form:
+贝塞尔曲面可视为贝塞尔曲线的张量积。此时基具有如下形式：
 
 $$\{B_{i}(s)B_{j}(t)\}_{i = 0\ldots n,j = 0\ldots n}$$
 
-and to each polynomial there is the corrspective $\mathbf{P}_{i,j}$ element. The Bezier surface then writes:
+并且每个多项式对应一个 $\mathbf{P}_{i,j}$ 元素。贝塞尔曲面随即写成：
 
 $$\mathbf{P}(s,t) = \sum_{i = 0}^{n}\sum_{j = 0}^{n}B_{i}^{n}(s)B_{j}^{n}(t)$$
 
 <img src="assets/spatial-discretization/bezier_surface.png" width="500">
 
-### From Bezier surfaces to Bezier finite elements
+### 从贝塞尔曲面到贝塞尔有限元
 
-In JOREK Bezier surfaces are used for the discretization on the poloidal plane. The points $\mathbf{P}_i$ has as first two coordinates the domain coordinates $R$ and $Z$, whereas the remaining $6+$ coordinates correspond to the variables (functions) of interest (see [here](http://localhost:4000/doc_repo/docs/physics/base_fluid_models/base_fluid_models.html) for the list of variables used).
+在 JOREK 中，贝塞尔曲面用于极向平面上的离散。点 $\mathbf{P}_i$ 的前两个坐标是区域坐标 $R$ 与 $Z$，其余 $6+$ 个坐标对应对所关注的变量（函数）（所用变量清单见[此处](http://localhost:4000/doc_repo/docs/physics/base_fluid_models/base_fluid_models.html)）。
 
-In its most elementary version a Bezier finite element is nothing but a Bezier surface and the *degrees of freedom* are the points $\mathbf{P}_i$. To be precise, each entry of a point $\mathbf{P}_i \in \mathbb{R}^m$ is a degree of freedom, so the total number of degrees of freedom is $n \cdot m$.
+在其最基本的形式下，贝塞尔有限元就是一个贝塞尔曲面，*自由度*即点 $\mathbf{P}_i$。准确地说，点 $\mathbf{P}_i \in \mathbb{R}^m$ 的每个分量都是一个自由度，因此自由度总数为 $n \cdot m$。
 
-The formulation gets more complex when patching together multiple finite elements to create the global representation. Indeed constraints on the continuity has to be added. We will give now an example with $G_0$ continuity, for a more in depth explanation of $G_0$ and $G_1$ look at [O. Czarny, G. Huysmans, J.Comput.Phys 227, 7423 (2008)](https://www.sciencedirect.com/science/article/pii/S0021999108002118) and for $G_2$ and a generalization for every $G_m$ look at [S. Pamela et al. J. Comput. Phys. 464, 111101 (2022)](https://www.sciencedirect.com/science/article/pii/S0021999122001632?via%3Dihub). 
+当把多个有限元拼接起来构造整体表述时，形式会变得更为复杂。事实上，必须加入连续性约束。下面给出 $G_0$ 连续性的一个例子；关于 $G_0$ 与 $G_1$ 更深入的说明见 [O. Czarny, G. Huysmans, J.Comput.Phys 227, 7423 (2008)](https://www.sciencedirect.com/science/article/pii/S0021999108002118)，关于 $G_2$ 以及任意 $G_m$ 的推广见 [S. Pamela et al. J. Comput. Phys. 464, 111101 (2022)](https://www.sciencedirect.com/science/article/pii/S0021999122001632?via%3Dihub)。
 
-#### Imposing $G_0$ continuity
-In JOREK all the finite elements have $4$ interpolation points and they have $4$ neighbouring finite elements (except on the boundary or on particular points such as the center of the grid). Imposing $G_0$ continuity between two neighbouring finite elements means that all the control points on the "interfacing" edge, that is the 2 shared interpolation points plus the control points along the edge that connects those two interpolation points, must be **equal**. 
+#### 施加 $G_0$ 连续性
+在 JOREK 中所有有限元都有 $4$ 个插值点，并且都有 $4$ 个相邻有限元（边界处或网格中心等特殊点除外）。在两个相邻有限元之间施加 $G_0$ 连续性，意味着"交界"边上的所有控制点——即 2 个共有的插值点，加上沿连接这两个插值点的边分布的控制点——必须**相等**。
 
-For example, with bi-cubic Bezier finite elements, $4$ control points (2 interpolation points and 2 non interpolation points) reside on the edge and has to be imposed equal to the $4$ points of the other finite element.
+例如对双三次贝塞尔有限元，边上有 $4$ 个控制点（2 个插值点与 2 个非插值点），须令其与相邻有限元的 $4$ 个点相等。
 
-#### From imposing continuity to the nodal representation
-Imposing high continuity involves a great number of control points and so there is not a clear vision of what are the degrees of freedom and what is instead fixed.
+#### 从施加连续性到节点表述
+施加高阶连续性会牵涉大量控制点，因而难以清楚分辨哪些量是自由度、哪些量是被固定的。
 
-The nodal representation, discussed in [this section](#bezier-finite-element-nodal-representation), is meant to greatly simplify this, bringing clarity on what are the degrees of freedom. See the aforementioned section for more details on this.
+[本节](#bezier-finite-element-nodal-representation)讨论的节点表述正是为了大幅简化这一点，使自由度一目了然。更多细节参见上述章节。

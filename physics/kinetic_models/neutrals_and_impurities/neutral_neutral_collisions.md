@@ -6,19 +6,12 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+## 中性粒子间碰撞
 
-原文页面：[Neutral neutral collisions](https://iterorganization.github.io/JOREK/physics/kinetic_models/neutrals_and_impurities/neutral_neutral_collisions.html)　·　源文件：`physics/kinetic_models/neutrals_and_impurities/neutral_neutral_collisions.md`
-</div>
+如果你在带粒子的情况下运行 JOREK，并且使用动理学中性粒子，那么你可能需要考虑使用中性粒子间碰撞。在那些中性粒子间碰撞的时间尺度与中性粒子–等离子体相互作用（例如电荷交换）相同或更快的参数区间，这对物理是重要的。通常只有在场中较冷的区域才会如此，例如注入气体的位置、私有通量区，以及处于脱靶状态的偏滤器中。如果你不确定这对你的算例是否重要，可以在一个测试算例中打开它，观察碰撞在什么时间尺度上发生，并将其与影响中性粒子的其他过程相比较。
 
-## Neutral neutral collisions
-
-If you are running JOREK with particles, and you are using kinetic neutrals, then you might want to consider using neutral neutral collisions. This is important for the physics in regimes where the neutral neutral collisions happen on the same timescales or faster than neutral plasma interactions (e.g. charge exchange). This is usually only the case in colder areas of the domain such as where gas is puffed, in the private flux region, and in the divertor under detached conditions. If you doubt whether it is important for you, you could switch it on in a test case, see at what timescales collisions take place, and compare that to the other processes affecting the neutrals.
-
-### Namelist input
-To switch on neutral self collisions within a species, you need to set the flag %use_kin_neutral_coll = .true. for the neutral group you want to do collisions for, and specify the collisional parameters %neutral_coll_dTw (explained below). When neutral collisions are important, you probably want to do them more often than once every fluid timestep. This can be set through %ncoll_each_nstep_part (see also [kinetic timestepping](../timestepping.md)). For instance, when your neutrals are a Deuterium species, you set something like:
+### namelist 输入
+要在同一组分内开启中性粒子自碰撞，需要为要做碰撞的中性粒子组设置标志 %use_kin_neutral_coll = .true.，并指定碰撞参数 %neutral_coll_dTw（下文解释）。当中性粒子碰撞重要时，你很可能希望其发生频率高于每个流体时间步一次。这可以通过 %ncoll_each_nstep_part 设置（另见 [动理学时间推进](../timestepping.md)）。例如，当中性粒子为氘种类时，可设置如下：
 ```fortran
 part_group_configs(1)%id              = "D01"
 part_group_configs(1)%Z               = -2
@@ -31,19 +24,19 @@ part_group_configs(1)%use_kin_neutral_coll  = .true.
 part_group_configs(1)%neutral_coll_dTw      = 2.d-10, 273, 0.68
 part_group_configs(1)%ncoll_each_nstep_part = 10
 ```
-#### The collisional parameters %neutral\_coll\_dTw
-The collisions are modeled with binary collisions between super particles, where the collisional cross section and its temperature dependence are determined from the variable hard sphere (VHS) model, which requires reference diameter d\_ref (m), reference temperatrue T\_ref (K) and viscosity index ω (-). These three values are the d, T and w of the %neutral\_coll\_dTw input parameter required from the user. They represent the physical collisional properties of the gas, and must be given to the code from outside sources.
+#### 碰撞参数 %neutral\_coll\_dTw
+碰撞按超粒子之间的二元碰撞建模，其碰撞截面及其温度依赖关系由变硬球（VHS）模型确定，该模型需要参考直径 d\_ref（m）、参考温度 T\_ref（K）和黏性指数 ω（-）。这三个值就是用户需要提供的 %neutral\_coll\_dTw 输入参数中的 d、T 和 w。它们代表气体的物理碰撞性质，必须由外部资料给出。
 
-In [G. A. Bird, Gas Dynamics and the Direct Simulation of Gas Flows, Appendix A](https://doi.org/10.1093/oso/9780198561958.005.0001) in tables A1 (for ω) and A2 (for diameter d<sub>ref</sub>) we can find the collisional parameters for H<sub>2</sub>, He, Ne, Ar, N<sub>2</sub> etc (both tables are for T<sub>ref</sub>=0°C=273K). However, there are no known values for specific isotopes or for radicals, so we have to approximate values for H/D/D<sub>2</sub>/T/T<sub>2</sub>. (If you know of better values, please discuss and share that knowledge.)
+在 [G. A. Bird, Gas Dynamics and the Direct Simulation of Gas Flows, Appendix A](https://doi.org/10.1093/oso/9780198561958.005.0001) 的表 A1（用于 ω）和表 A2（用于直径 d<sub>ref</sub>）中可以找到 H<sub>2</sub>、He、Ne、Ar、N<sub>2</sub> 等的碰撞参数（两张表均对应 T<sub>ref</sub>=0°C=273K）。然而，对于特定同位素或自由基没有已知数值，因此我们必须为 H/D/D<sub>2</sub>/T/T<sub>2</sub> 估算数值。（如果你知道更好的数值，请讨论并分享这些知识。）
 
-Since elastic collisions are dependent on the size of inter particle interactions, which are based on electromagnetic repulsion forces between the electrons and ions of both particles, we can assume that the number of neutrons does not influence the chance that a particle collides, and thus the VHS parameters are the same for isotopes. (Note that in the collisional mechanics particle weights play a role, so there the neutrons are important, and are also taken into account.) This leaves us with H<sub>2</sub>/D<sub>2</sub>/T<sub>2</sub> , for which we can use the H<sub>2</sub> parameters, and H/D/T  for which we need to approximate the parameters.
+由于弹性碰撞取决于粒子间相互作用的大小，而后者基于两个粒子的电子与离子之间的电磁排斥力，因此可以假定中子数不影响粒子发生碰撞的几率，于是同位素的 VHS 参数相同。（注意，在碰撞力学中粒子权重起作用，因此那里中子数是重要的，也已被考虑在内。）这样剩下的就是 H<sub>2</sub>/D<sub>2</sub>/T<sub>2</sub>——对其可使用 H<sub>2</sub> 的参数——以及 H/D/T——对其需要估算参数。
 
-We can take the viscosity index ω<sub>H</sub>≈ ω<sub>He</sub>= ω<sub>Ne</sub>=0.66 given that these low Z mono-atomic gases have the same value it is reasonable that radical hydrogen will be in that range too. This choice also corresponds reasonably well with the value for ω<sub>D</sub>=0.68 chosen in  [S. Varoutis et al. Fus. Engin. Design 121 (2017) 13–21](https://doi.org/10.1016/j.fusengdes.2017.05.108), however it is not so clear to me how they arrived at this value from the source they cite as in their source neither radicals nor isotopes are mentioned (and the value they chose for ω<sub>D<sub>2</sub></sub>=0.73 is quite different from ω<sub>H<sub>2</sub></sub>=0.67 in the table of Bird).
+考虑到这些低 Z 单原子气体具有相同的值，我们可以取黏性指数 ω<sub>H</sub>≈ ω<sub>He</sub>= ω<sub>Ne</sub>=0.66，那么自由基氢处于同一范围内也是合理的。这一选择也与 [S. Varoutis et al. Fus. Engin. Design 121 (2017) 13–21](https://doi.org/10.1016/j.fusengdes.2017.05.108) 中所取的 ω<sub>D</sub>=0.68 相当吻合，不过我不太清楚他们是如何从其引用的文献得出该值的，因为其文献中既未提及自由基也未提及同位素（而且他们为 ω<sub>D<sub>2</sub></sub>=0.73 取的值与 Bird 表中 ω<sub>H<sub>2</sub></sub>=0.67 相差很大）。
 
-The reference diameter can be approximated with the van der Waals radius r<sub>w</sub> (the length scale of a different particle particle interaction) times a correction factor based on the difference between van der Waals radius and d<sub>ref</sub> in He: d<sub>ref,H</sub> ≈ r<sub>w,H</sub>  (d<sub>ref,He</sub>/ r<sub>w,He</sub>) = 1.2 ・10<sup>-10</sup>・2.33・10<sup>-10</sup>/(1.4・10<sup>-10</sup>) ≈ 2.0・10<sup>-10</sup>m.
+参考直径可用 van der Waals 半径 r<sub>w</sub>（另一种粒子间相互作用的长度尺度）乘以一个基于 He 中 van der Waals 半径与 d<sub>ref</sub> 之差的修正因子来近似：d<sub>ref,H</sub> ≈ r<sub>w,H</sub>  (d<sub>ref,He</sub>/ r<sub>w,He</sub>) = 1.2 ・10<sup>-10</sup>・2.33・10<sup>-10</sup>/(1.4・10<sup>-10</sup>) ≈ 2.0・10<sup>-10</sup>m。
 
-_Table with example parameters for dTw (H/D/T comes from the calculation above, the others come from the table from Bird). Note that impurity species have their own collisional operators which depend on their charge, so you likely won’t need the values for He, Ne, N<sub>2</sub> and Ar unless you want to simulate unionized neutral gas._
-| Species | d<sub>ref</sub> (m) | T<sub>ref</sub> (K) | ω (-) |
+_含 dTw 示例参数的表（H/D/T 来自上述计算，其余来自 Bird 的表）。注意杂质种类有其自己的、依赖于电荷的碰撞算子，因此除非你想模拟未电离的中性气体，否则很可能不需要 He、Ne、N<sub>2</sub> 和 Ar 的值。_
+| 种类 | d<sub>ref</sub> (m) | T<sub>ref</sub> (K) | ω (-) |
 |---------|---------------------|---------------------|-------|
 | H/D/T | 2.0・10<sup>-10</sup> | 273 | 0.66 | 
 | H<sub>2</sub>/D<sub>2</sub>/T<sub>2</sub> | 2.92・10<sup>-10</sup> | 273 | 0.67 |
@@ -52,35 +45,35 @@ _Table with example parameters for dTw (H/D/T comes from the calculation above, 
 | N<sub>2</sub> | 4.17・10<sup>-10</sup> | 273 | 0.74 |
 | Ar | 4.17・10<sup>-10</sup> | 273 | 0.81 |
 
-#### How to choose %ncoll\_each\_nstep\_part
-Generally you want to choose %ncoll\_each\_nstep\_part such that the real collision chance (see P\_real below) is smaller than 10% so that the missed double collisions (=P\_real^2) between two collision actions is negligible. A good initial guess is %ncoll\_each\_nstep\_part=10, but keep an eye on how P_\real develops through your simulation to check whether you should make it smaller.
+#### 如何选取 %ncoll\_each\_nstep\_part
+一般来说，你希望选取的 %ncoll\_each\_nstep\_part 使真实碰撞几率（见下文 P\_real）小于 10%，从而使两次碰撞动作之间被漏掉的双重碰撞（=P\_real^2）可以忽略。一个较好的初始猜测是 %ncoll\_each\_nstep\_part=10，但要持续关注 P_\real 在整个仿真过程中的变化，以判断是否需要将其调小。
 
-### How the code works
-Detailed information on why this neutral neutral collision (NNC) algorithm was chosen, how it is exactly implemented (including all equations), and how it was verified can be found at git: [NNC implementation pdf](https://git.iter.org/rest/api/1.0/projects/STAB/repos/jorek/attachments/1327). What follows is a brief summary of the main components.
+### 代码如何工作
+关于为何选择这种中性粒子间碰撞（NNC）算法、其确切实现方式（包括所有方程）以及如何对其进行校核的详细信息，见 git：[NNC 实现文档 pdf](https://git.iter.org/rest/api/1.0/projects/STAB/repos/jorek/attachments/1327)。下面是对主要组成部分的简要总结。
 
-**Overview of the collisional algorithm:**
-  * The collisions are run separately per neutral species.
-  * _For each neutral species:_ particles are sorted per element.
-  * _For each element:_ particles are sorted into collisional bins.  
-  * _For each bin:_ the number of pairs to be tried for collision is determined (see NTC below). 
-  * _For each pair:_ two random particles in the bin are drawn to form the pair. The real collisional chance of the pair is determined from P\_real=n sigma v\_r dt, where n is the sampled background density, sigma is the collisional cross section (determined from the variable hard sphere model), v\_r is the relative velocity and dt the timestep. The chance that is rolled against (P\_try) is rescaled to get the correct collisional frequency (see NTC below).
-  * _For colliding pairs:_ the final velocity is determined from collisional mechanics (given two random impact parameters). Because we use variable weights, in theory the heavier superparticle (i.e. representing more atoms) would need to be split up into a colliding and a non-colliding part, but for now the code doesn't do that but instead gives the heavier particle the final velocity direction as if it had the same weight as the lighter particle, but scale its magnitude in order to keep energy balance. This breaks momentum balance (although momentum is still conserved in a statistical sense), but ensures the correct diffusive behaviour.
+**碰撞算法概览：**
+  * 碰撞按中性粒子种类分别运行。
+  * _对每种中性粒子种类：_ 粒子按单元排序。
+  * _对每个单元：_ 粒子被分入碰撞分箱（bin）。
+  * _对每个分箱：_ 确定要尝试碰撞的粒子对数（见下文 NTC）。
+  * _对每一对：_ 从分箱中随机抽取两个粒子组成一对。该对的真实碰撞几率由 P\_real=n sigma v\_r dt 确定，其中 n 是采样的背景密度，sigma 是碰撞截面（由变硬球模型确定），v\_r 是相对速度，dt 是时间步。用于掷判的几率（P\_try）经过重新标定，以获得正确的碰撞频率（见下文 NTC）。
+  * _对发生碰撞的对：_ 最终速度由碰撞力学确定（给定两个随机碰撞参数）。由于我们使用可变权重，理论上较重的超粒子（即代表更多原子）需要拆分为参与碰撞和不参与碰撞的两部分，但目前的代码并未这样做，而是把最终速度方向赋给较重的粒子，仿佛其权重与较轻粒子相同，但按比例缩放其大小以保持能量平衡。这破坏了动量平衡（尽管动量在统计意义上仍然守恒），但保证了正确的扩散行为。
 
-**NTC algorithm:**
-NTC stands for no time counter and it is a widely used method to speed up direct simulation monte carlo collisions. Instead of trying for N/2 pairs with chance P\_real, we try for N\_try = N/2 * P\_max pairs with chance P\_try = P\_real/P\_max, as for convergence it is required that P\_max << 1 (to avoid the chance of having multiple collisions in one timestep), so this saves computational time while keeping the correct collisional frequency.
+**NTC 算法：**
+NTC 代表 no time counter（无时间计数器），是一种广泛使用的加速直接模拟蒙特卡罗碰撞的方法。我们不再以几率 P\_real 尝试 N/2 对，而是以几率 P\_try = P\_real/P\_max 尝试 N\_try = N/2 * P\_max 对；由于收敛性要求 P\_max << 1（以避免在一个时间步内发生多次碰撞的可能），这在保持正确碰撞频率的同时节省了计算时间。
 
-**On correctness:** 
-It was verified that the correct diffusion coefficient of a gas chamber can be reproduced to within a few % relative error (with some ifs and buts, which are explained in the attached document, but the short of it is that the algorithm does what it should, the gas chamber scenario has been committed as particles/examples /test\_neutral\_neutral\_collision.f90, with example input in particles/examples/namelist/test\_neutral\_neutral\_collision\_input\_example).
+**关于正确性：**
+已经校核确认，气室（gas chamber）的正确扩散系数可以被重现，相对误差在几个 % 以内（其中还有些保留条件，详见所附文档，但简而言之，算法做了它该做的事，气室场景已作为 particles/examples /test\_neutral\_neutral\_collision.f90 提交，示例输入位于 particles/examples/namelist/test\_neutral\_neutral\_collision\_input\_example）。
 
-**Limitations:** 
-  * Currently only self-collisions within a species are implemented. When molecular interactions will be added, this framework needs to be expanded to also simulate the cross-collisions between molecular and radical hydrogen isotopes.
-  * In kinetic\_main, the timestep for the neutral collisions calls is the fluid timestep, which might be a bit large for the neutral collisions depending on your application. In the worst case, you would need to lower the fluid timestep to resolve the neutral collisions well. In the future it is the idea to make the timing of different particle processes more flexible so that also multiple collision events can happen between each fluid timestep.
+**限制：**
+  * 目前只实现了同一组分内的自碰撞。当加入分子相互作用时，此框架需要扩展，以同时模拟分子氢同位素与自由基氢同位素之间的交叉碰撞。
+  * 在 kinetic\_main 中，中性粒子碰撞调用的时间步是流体时间步，视应用而定，这对中性粒子碰撞可能偏大。在最坏的情况下，你需要降低流体时间步以充分解析中性粒子碰撞。未来的设想是让不同粒子过程的时间安排更灵活，从而在每个流体时间步之间也能发生多次碰撞事件。
 
 
-### Running the code
-Running the NNC algorithm for a single species is about 5x faster than a single particle timestep for that species, and that ratio holds up to 10^7 particles (and probably above too, although this hasn’t been checked), so including the collisions should not slow you down too much, if your timestep was small enough to capture the collisions.
+### 运行代码
+对单一组分运行 NNC 算法大约比该组分的一次粒子时间步快 5 倍，且这一比例可维持到 10^7 个粒子（大概还能更高，尽管尚未验证），因此，如果你的时间步足够小、能捕捉到碰撞，那么引入碰撞不会使你慢太多。
 
-While the code runs, there will be some output generated for the self collisions of each species. This will look something like the following:
+代码运行时会为每个组分的自碰撞产生一些输出。其形式大致如下：
 ```
 ====================================================================================================
 Neutral self collision
@@ -93,16 +86,15 @@ diagnostics (P_real av/tau av/sigma av/pairs tried/pairs coll/weight coll/#P_try
 Neutral self collision complete in (min/mean/max)    0.0653   0.0665   0.0677 s
 ```
 
-#### What output to keep an eye on:
-For the algorithm to work well, we need both P\_try<1 (as otherwise our NTC algorithm rescaling is missing collisions that should have happened) and P\_real<<1 (as otherwise our assumption that particle collides at most once during a timestep is inaccurate meaning we are missing collisions). If either P\_try>1 or P\_max>1 (which means that P\_real>1 last timestep, and next timestep some particles will be tried more than once) you will get a warning message. In the above example there was a warning for P\_try>1, which often happens at the first few timesteps of simulations as the rescaling value P\_max still needs to be determined accurately.
+#### 需要留意的输出：
+为使算法良好运行，我们需要同时满足 P\_try<1（否则我们的 NTC 算法重标定会漏掉本应发生的碰撞）和 P\_real<<1（否则我们关于粒子在一个时间步内至多碰撞一次的假设不准确，意味着我们漏掉了碰撞）。若出现 P\_try>1 或 P\_max>1（后者意味着上一个时间步 P\_real>1，下个时间步某些粒子会被尝试多次），就会得到一条警告信息。在上例中出现了 P\_try>1 的警告，这在仿真最初几个时间步中经常发生，因为重标定值 P\_max 仍需被准确地确定。
 
 
-The main diagnostics to keep an eye on are the **P\_max\_elm (max)** (second line) (as a rule of thumb, maybe don’t let it go above 50%) and the average **P\_real** (diagnostic line) (as a rule of thumb, don’t let it go above 20%) as when either of them is big, this means that the timestep is a bit large for the collisions. If you need to lower your fluid timestep, you can use the **min tau** (first line) and **av tau** (diagnostics) to guide you in the new choice for the timestep.
+主要需要关注的诊断量是 **P\_max\_elm (max)**（第二行）（经验上，最好不要让它超过 50%）和平均 **P\_real**（诊断行）（经验上，最好不要让它超过 20%），因为当其中任一者较大时，意味着时间步对碰撞而言偏大。如果你需要降低流体时间步，可以用 **min tau**（第一行）和 **av tau**（诊断量）来指导你选择新的时间步。
 
 
-#### Details of logfile output:
-In the diagnostic output, the first two line tells as about the extremes of last timestep, we have: the maximum number of particles in an element **pa in elm**, the maximum number of particles in a collisional bin **pa in bin**, the maximum **P\_real**, the minimum collision time tau (=timestep/P\_real) **min tau**. On the second line we have the **min**imum and **max**imum P\_max in the domain (P\_max is tracked per grid element rather than globally).
+#### 日志文件输出细节：
+在诊断输出中，前两行告诉我们上一个时间步的极值，分别是：一个单元中的最大粒子数 **pa in elm**，一个碰撞分箱中的最大粒子数 **pa in bin**，最大 **P\_real**，最小碰撞时间 tau（=时间步/P\_real）**min tau**。第二行给出域内 P\_max 的**最小**与**最大**值（P\_max 是逐网格单元而非全局跟踪的）。
 
-The diagnostic line tells us about domain averages/values, so first we have the **av**erage **P\_real**, then the **av**erage **tau**, then the **av**erage collisional cross-section **sigma**, then the number of **pairs** that were **tried** for collision, the number of **pairs** that **coll**ided, the **weight** (# real particles) that **coll**ided, the number (**#**) of pairs with **P\_try>1** (this should be negligible and preferably 0), the number (**#**) of pairs with **P\_try<0** (should also be small and preferably 0, but due to negative projected densities this might be nonzero, but in any case in regions with negative projected densities, the real neutral density would be small and thus collisions are negligible), a sanity check on the **sum** of the collisional cell volumes **V\_c** (this is equal to the domain volume only if there are neutrals in every grid element, which for normal fusion simulations is not true in the core), the average distance between two super particles **d av** (which ideally should be smaller than the distance travelled between two collisions i.e. v*tau, as otherwise momentum and energy transport is overestimated, but given that the neutrals are not big channels anyway, in practice this overestimation happens a lot and can be ignored), and lastly the average scattering angle fraction (average of scattering angle/90° of all collided pair) **av angle frac** which tells us something about the whether the collisions are large angle collisions (~1) or small angle collisions (<<1) (since the collisions are elastic neutral collisions, we are expecting large angle collisions, so if this fraction is smaller than 0.7 or so, there might be something strange going on in the simulation, such as that most particles that collide have aligned velocities, maybe due to some neutral gas flow effect).
-
+诊断行告诉我们域平均量/值，依次是：**平**均 **P\_real**，然后**平**均 **tau**，然后**平**均碰撞截面 **sigma**，然后被**尝试**碰撞的**对**数，发生**碰撞**的**对**数，发生**碰撞**的**权重**（真实粒子数），**P\_try>1** 的对数（**#**）（这应当可以忽略，最好为 0），**P\_try<0** 的对数（**#**）（也应当很小，最好为 0，但由于投影密度可能为负，该值可能非零；不过在任何情况下，在投影密度为负的区域，真实中性粒子密度都很小，因此碰撞可以忽略），对碰撞单元体积 **V\_c** 之**和**的合理性检查（仅当每个网格单元中都有中性粒子时它才等于域体积，而对正常的聚变仿真来说芯部并非如此），两个超粒子之间的平均距离 **d av**（理想情况下应小于两次碰撞之间走过的距离，即 v*tau，否则动量与能量输运会被高估；但考虑到中性粒子本来也不是大通道，实践中这种高估经常发生且可以忽略），最后是平均散射角分数（所有碰撞对的散射角/90° 的平均值）**av angle frac**，它告诉我们碰撞是大角度碰撞（~1）还是小角度碰撞（<<1）（由于这些碰撞是弹性中性粒子碰撞，我们预期是大角度碰撞，因此若该分数小于约 0.7，仿真中可能出现了某种异常，例如大多数发生碰撞的粒子速度方向一致，或许是某种中性气体流动效应所致）。
 

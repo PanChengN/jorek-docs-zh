@@ -7,33 +7,26 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 压缩响应矩阵
 
-原文页面：[Compress the Response Matrices](https://iterorganization.github.io/JOREK/physics/model_extensions/freebound/compress_response_matrices.html)　·　源文件：`physics/model_extensions/freebound/compress_response_matrices.md`
-</div>
-
-# Compress the Response Matrices
-
-> **WARNING — THIS FEATURE HAS NOT BEEN MERGED.**
+> **警告——此功能尚未合并。**
 >
-> Response-matrix compression is not available on the standard `develop` branch. The instructions on this page apply to the unmerged `feature/IMAS-4734-response-matrix-compression` branch and may differ from the final implementation. Do not expect these commands, files, or response-matrix formats to work in a normal JOREK checkout.
+> 响应矩阵压缩在标准 `develop` 分支上不可用。本页的说明适用于未合并的 `feature/IMAS-4734-response-matrix-compression` 分支，可能与最终实现存在差异。不要指望这些命令、文件或响应矩阵格式能在常规 JOREK 检出中正常工作。
 
-## Quick Overview
+## 快速概览
 
-The implementation was developed on `feature/IMAS-4734-response-matrix-compression` and consists of two parts:
+该实现于 `feature/IMAS-4734-response-matrix-compression` 分支上开发，由两部分组成：
 
-- The `compress_response` program, located in `jorek/vacuum/compression/`. Its compilation and use are described below.
-- An adaptation of the `vacuum` module, located in `jorek/vacuum/`, which can automatically handle the compressed format.
+- `compress_response` 程序，位于 `jorek/vacuum/compression/`。其编译与用法见下文。
+- `vacuum` 模块的改写版本，位于 `jorek/vacuum/`，可自动处理压缩格式。
 
-An extended description of the method, objectives, and tests is available in the [response-matrix compression manuscript](https://arxiv.org/abs/2404.16546).
+关于该方法、目标与测试的详细描述见[响应矩阵压缩文稿](https://arxiv.org/abs/2404.16546)。
 
-## Compiling and Running `compress_response`
+## 编译与运行 `compress_response`
 
-The program currently has no dedicated input-file namelist. Its parameters must be edited directly in `jorek/vacuum/compression/mod_compression.f90`, as described in the next section.
+该程序目前没有专用的输入文件 namelist。其参数必须在 `jorek/vacuum/compression/mod_compression.f90` 中直接修改，具体见下一节。
 
-`compress_response` uses ScaLAPACK. The `SCALAPACKLIB` and `SCALAPACKINCLUDE` variables must therefore be set in `Makefile.inc` before compilation. For example, the following configuration was used on MarconiFusion:
+`compress_response` 使用 ScaLAPACK，因此编译前必须在 `Makefile.inc` 中设置 `SCALAPACKLIB` 与 `SCALAPACKINCLUDE` 变量。例如，在 MarconiFusion 上使用了如下配置：
 
 ```makefile
 ##################
@@ -44,67 +37,67 @@ endif
 ##################
 ```
 
-Run the following command inside the `jorek` directory:
+在 `jorek` 目录内运行以下命令：
 
 ```bash
 make -j8 compress_response
 ```
 
-If compilation succeeds, it creates an executable named `compress_response`.
+若编译成功，会生成名为 `compress_response` 的可执行文件。
 
-Run it from a submission script using:
+在提交脚本中用以下命令运行它：
 
 ```bash
 mpirun -np ${NTASKS} ./compress_response
 ```
 
-A `starwall-response.dat` file must be present in the run directory. With the SLURM scheduler, `NTASKS` can be replaced by `SLURM_NTASKS`. If the $n=0$ part of any matrix must remain uncompressed, a `boundary.txt` file must also be provided.
+算例目录中必须存在 `starwall-response.dat` 文件。使用 SLURM 调度器时，`NTASKS` 可替换为 `SLURM_NTASKS`。若任一矩阵的 $n=0$ 部分必须保持不压缩，则还须提供 `boundary.txt` 文件。
 
-The program writes `starwall-response-compr.dat` with `file_version` set to:
+程序写出 `starwall-response-compr.dat`，其 `file_version` 设置为：
 
-- `7` if any matrix is factorized.
-- `6` if all matrices use an aggregated format, including matrices re-aggregated after compression.
+- 若任一矩阵被因子化，则为 `7`。
+- 若所有矩阵均采用聚合格式（包括压缩后重新聚合的矩阵），则为 `6`。
 
-To use the result with JOREK, rename `starwall-response-compr.dat` to `starwall-response.dat`.
+要在 JOREK 中使用结果，将 `starwall-response-compr.dat` 重命名为 `starwall-response.dat`。
 
-## Parameters in `mod_compression.f90`
+## `mod_compression.f90` 中的参数
 
-Edit these parameters in `jorek/vacuum/compression/mod_compression.f90`. Default values are shown in bold.
+在 `jorek/vacuum/compression/mod_compression.f90` 中修改这些参数。默认值以粗体显示。
 
-| Parameter | Type | Possible values | Description |
+| 参数 | 类型 | 可选值 | 说明 |
 |:---|:---|:---|:---|
-| `compr_a_ye` | `logical` | `.true.` or **`.false.`** | Compress the `a_ye` response matrix. |
-| `compr_a_ye_n0` | `logical` | `.true.` or **`.false.`** | Compress the $n=0$ part of `a_ye`. |
-| `compr_a_ye_n0_sep` | `logical` | `.true.` or **`.false.`** | Compress each $n=0$ part of `a_ye` separately. |
-| `compr_a_ey` | `logical` | `.true.` or **`.false.`** | Compress the `a_ey` response matrix. |
-| `compr_a_ey_n0` | `logical` | `.true.` or **`.false.`** | Compress the $n=0$ part of `a_ey`. |
-| `compr_a_ey_n0_sep` | `logical` | `.true.` or **`.false.`** | Compress each $n=0$ part of `a_ey` separately. |
-| `compr_a_ee` | `logical` | `.true.` or **`.false.`** | Compress the `a_ee` response matrix. |
-| `compr_s_ww` | `logical` | `.true.` or **`.false.`** | Compress the `s_ww` response matrix. |
-| `compr_s_ww_inv` | `logical` | `.true.` or **`.false.`** | Compress the `s_ww_inv` response matrix. |
-| `retained` | `real*8` | Used in `[0.d0, 1.d0]`; default **`-1.d0`** | Fraction of singular values retained after compression. |
-| `retained_a_ye` | `real*8` | Used in `[0.d0, 1.d0]`; default **`-1.d0`** | Fraction of singular values retained for `a_ye`. |
-| `retained_a_ey` | `real*8` | Used in `[0.d0, 1.d0]`; default **`-1.d0`** | Fraction of singular values retained for `a_ey`. |
-| `retained_a_ee` | `real*8` | Used in `[0.d0, 1.d0]`; default **`-1.d0`** | Fraction of singular values retained for `a_ee`. |
-| `retained_s_ww` | `real*8` | Used in `[0.d0, 1.d0]`; default **`-1.d0`** | Fraction of singular values retained for `s_ww`. |
-| `retained_s_ww_inv` | `real*8` | Used in `[0.d0, 1.d0]`; default **`-1.d0`** | Fraction of singular values retained for `s_ww_inv`. |
-| `debug` | `logical` | **`.true.`** or `.false.` | Print debug messages during compression. |
-| `printsv` | `logical` | `.true.` or **`.false.`** | Write the singular values to a file. |
-| `writeout` | `logical` | **`.true.`** or `.false.` | Write the output file. |
-| `filevers` | `integer` | **`6`** or `7` | Select the output file version. |
-| `CARIDDI` | `logical` | `.true.` or **`.false.`** | Read the input in `CARIDDI_mode`. |
-| `reaggregate` | `logical` | **`.true.`** or `.false.` | Re-aggregate the factorized singular-value decomposition. |
-| `verify_split` | `logical` | `.true.` or **`.false.`** | Check that the $n=0$ matrix splitting was performed correctly. |
+| `compr_a_ye` | `logical` | `.true.` 或 **`.false.`** | 压缩 `a_ye` 响应矩阵。 |
+| `compr_a_ye_n0` | `logical` | `.true.` 或 **`.false.`** | 压缩 `a_ye` 的 $n=0$ 部分。 |
+| `compr_a_ye_n0_sep` | `logical` | `.true.` 或 **`.false.`** | 分别压缩 `a_ye` 的各个 $n=0$ 部分。 |
+| `compr_a_ey` | `logical` | `.true.` 或 **`.false.`** | 压缩 `a_ey` 响应矩阵。 |
+| `compr_a_ey_n0` | `logical` | `.true.` 或 **`.false.`** | 压缩 `a_ey` 的 $n=0$ 部分。 |
+| `compr_a_ey_n0_sep` | `logical` | `.true.` 或 **`.false.`** | 分别压缩 `a_ey` 的各个 $n=0$ 部分。 |
+| `compr_a_ee` | `logical` | `.true.` 或 **`.false.`** | 压缩 `a_ee` 响应矩阵。 |
+| `compr_s_ww` | `logical` | `.true.` 或 **`.false.`** | 压缩 `s_ww` 响应矩阵。 |
+| `compr_s_ww_inv` | `logical` | `.true.` 或 **`.false.`** | 压缩 `s_ww_inv` 响应矩阵。 |
+| `retained` | `real*8` | 在 `[0.d0, 1.d0]` 内取值；默认 **`-1.d0`** | 压缩后保留的奇异值比例。 |
+| `retained_a_ye` | `real*8` | 在 `[0.d0, 1.d0]` 内取值；默认 **`-1.d0`** | `a_ye` 保留的奇异值比例。 |
+| `retained_a_ey` | `real*8` | 在 `[0.d0, 1.d0]` 内取值；默认 **`-1.d0`** | `a_ey` 保留的奇异值比例。 |
+| `retained_a_ee` | `real*8` | 在 `[0.d0, 1.d0]` 内取值；默认 **`-1.d0`** | `a_ee` 保留的奇异值比例。 |
+| `retained_s_ww` | `real*8` | 在 `[0.d0, 1.d0]` 内取值；默认 **`-1.d0`** | `s_ww` 保留的奇异值比例。 |
+| `retained_s_ww_inv` | `real*8` | 在 `[0.d0, 1.d0]` 内取值；默认 **`-1.d0`** | `s_ww_inv` 保留的奇异值比例。 |
+| `debug` | `logical` | **`.true.`** 或 `.false.` | 压缩过程中输出调试信息。 |
+| `printsv` | `logical` | `.true.` 或 **`.false.`** | 将奇异值写入文件。 |
+| `writeout` | `logical` | **`.true.`** 或 `.false.` | 写出输出文件。 |
+| `filevers` | `integer` | **`6`** 或 `7` | 选择输出文件版本。 |
+| `CARIDDI` | `logical` | `.true.` 或 **`.false.`** | 以 `CARIDDI_mode` 读取输入。 |
+| `reaggregate` | `logical` | **`.true.`** 或 `.false.` | 重新聚合经因子化的奇异值分解。 |
+| `verify_split` | `logical` | `.true.` 或 **`.false.`** | 检查 $n=0$ 矩阵拆分是否正确执行。 |
 
-## Vacuum-Module Notes and Limitations
+## 真空模块说明与限制
 
-### Notes
+### 说明
 
-- The adapted vacuum module should automatically handle `starwall-response.dat` files with `file_version` equal to `6` or `7`.
-- To run JOREK with compressed response matrices, rename `starwall-response-compr.dat` to `starwall-response.dat` and run JOREK normally.
-- Several new variables are initialized in the `t_response_mat` data type defined in `jorek/vacuum/vacuum.f90`. See the comments in that file for details.
+- 改写后的真空模块应能自动处理 `file_version` 为 `6` 或 `7` 的 `starwall-response.dat` 文件。
+- 要用压缩后的响应矩阵运行 JOREK，将 `starwall-response-compr.dat` 重命名为 `starwall-response.dat`，然后照常运行 JOREK。
+- `jorek/vacuum/vacuum.f90` 中定义的 `t_response_mat` 数据类型初始化了几个新变量。详情见该文件中的注释。
 
-### Limitations
+### 限制
 
-- The current implementation can handle compressed versions of `a_ye` and `a_ey` only.
-- The formats of `a_ye` and `a_ey` must be identical: one matrix cannot be factorized while the other is aggregated.
+- 当前实现只能处理 `a_ye` 与 `a_ey` 的压缩版本。
+- `a_ye` 与 `a_ey` 的格式必须一致：不能其中一个因子化而另一个聚合。

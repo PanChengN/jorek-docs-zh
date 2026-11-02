@@ -6,52 +6,45 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
 
-原文页面：[Poloidal discretization](https://iterorganization.github.io/JOREK/numerics/spatial-discretization/poloidal-discretization.html)　·　源文件：`numerics/spatial-discretization/poloidal-discretization.md`
-</div>
+# 极向离散
 
-# Polodial discretization
+JOREK 在极向平面 $RZ$ 上采用等参 $G_m$ 连续贝塞尔有限元进行空间离散。它不把控制点当作“直接”自由度，而是采用另一种称为*节点表述*的表述（见[此处](#bezier-finite-element-nodal-representation)），这大大便于在多个有限元之间施加 $G_m$ 连续性。等参与 $G_m$ 连续（$m\in \mathbb{N}$）的含义稍后说明。
 
-JOREK uses isoparametric $G_m$-continuous Bezier finite elements for spatial discretization on the poloidal plane $RZ$. Instead of using control points as "direct" degrees of freedom, a different formulation, called *nodal formulation* (see [here](#bezier-finite-element-nodal-representation)), is used, which greatly facilitate imposing $G_m$-continuity across multiple finite elements. What isoparametric and $G_m$-continuous (with $m\in \mathbb{N}$) mean will be explained soon.
+关于贝塞尔曲线、贝塞尔曲面的概览，以及如何由它们过渡到贝塞尔有限元的概念，见[贝塞尔曲面引言](introduction-to-bezier.md)
 
-For an overview of Bezier curves, Bezier surfaces and how to pass from these to the concept of Bezier finite elements see the [Introduction to bezier surfaces](introduction-to-bezier.md)
-
-We use the parameters $s,t\in [0,1]$ as local coordinates of a Bezier finite element, so the discretization on a single Bezier finite element of degree $n$ reads as
+以参数 $s,t\in [0,1]$ 作为贝塞尔有限元的局部坐标，则单个 $n$ 阶贝塞尔有限元上的离散写成
 
 $$
 X_\text{pol}^{(K)}(s,t) = \sum_{i=0}^{n}\sum_{j=0}^{n} \mathbf{P}_{ij} B_i^n(s)B_j^n(t) \tag{3}
 $$
 
-with $B_i^n$ and $B_j^n$ Bernstein polynomials and $P_{ij}$ control points of the surface.
+其中 $B_i^n$ 与 $B_j^n$ 为伯恩斯坦多项式，$P_{ij}$ 为曲面的控制点。
 
-As explained in the following section, Equation $(3)$ is rewritten in a more convenient way, that is:
+如下一节所述，方程 $(3)$ 被改写为更方便的形式，即：
 
 $$
 X_\text{pol}^{(K)}(s,t) = \sum_{i=0}^{N_\text{vert}-1} \sum_{j=0}^{\text{dof_per_vertex}} h^{ij} \vec{u}^{ij} b_i(s,t)
 $$
 
-### Bezier finite element nodal representation
-In JOREK a particular formulation of the Bezier finite elements is used, called nodal representation.  
-A node is an interpolation point. On a Bezier surface, independently of the polynomial order chosen, the interpolation points are always $4$.  
-With nodal representation we mean that the degrees of freedom (the control points) are associated to a node, an interpolation point, instead to an element. Furthermore, control points are divided into groups, based on which node they are auxiliary to (basically, which node they are close to, see illustration in next paragraph), and then are rewritten as the node they are associated to plus some vectors (which are the new degrees of freedom): $\mathbf{P}\_{ij} = \mathbf{P}\_{00} + \sum_l c_l \vec{u}^l$.
+### 贝塞尔有限元的节点表述 {#bezier-finite-element-nodal-representation}
+JOREK 采用贝塞尔有限元的一种特殊表述，称为节点表述。  
+节点即插值点。在贝塞尔曲面上，无论选取何种多项式阶数，插值点恒为 $4$ 个。  
+所谓节点表述，指自由度（即控制点）归属于节点（插值点）而非单元。此外，控制点按其所辅助的节点分组（大体上按与其相近的节点，见下一段的图示），再改写为该节点加上若干向量（这些向量才是新的自由度）：$\mathbf{P}\_{ij} = \mathbf{P}\_{00} + \sum_l c_l \vec{u}^l$。
 
-When the degree $n$ is odd, each group has $(n+1)^2/4$ points. The nodal representation is not defined in JOREK for $n$ even.  
-The vectors used to construct all auxiliary control points of a node $\mathbf{P}\_{00}$ form a vectorial basis local to the node.
+当阶数 $n$ 为奇数时，每组有 $(n+1)^2/4$ 个点。JOREK 未对偶数 $n$ 定义节点表述。  
+用于构造节点 $\mathbf{P}\_{00}$ 全部辅助控制点的向量构成该节点的局部向量基。
 
-In the following of this section we provide an example with bi-cubic Bezier finite element, which is the most used finite element in JOREK. 
-Next we discuss about the **generalized nodal representation** to any polynomial order, not only bi-cubic, that is implemented in JOREK and we
-show that $G_m$ continuity is simpler to be imposed on such a representation.
-Finally we provide an insight on why this particular formulation is chosen and is meaningful.
+本节随后以双三次贝塞尔有限元为例说明，它是 JOREK 中用得最多的有限元。
+接着讨论 JOREK 中实现的、推广到任意多项式阶数（不限于双三次）的**广义节点表述**，并说明在该表述上施加 $G_m$ 连续性更为简单。
+最后简要说明为何选取这一特殊表述以及它的意义。
 
-#### Nodal representation of bi-cubic Bezier finite element
-This formulation is based on the following work: [O. Czarny, G. Huysmans, J.Comput.Phys 227, 7423 (2008)](https://www.sciencedirect.com/science/article/pii/S0021999108002118).
+#### 双三次贝塞尔有限元的节点表述
+该表述基于以下工作：[O. Czarny, G. Huysmans, J.Comput.Phys 227, 7423 (2008)](https://www.sciencedirect.com/science/article/pii/S0021999108002118)。
 
-With bi-cubic Bezier finite element the Bernstein polynomials' basis is a cartesian product of the cubic Bernstein polynomials' basis. 
+对双三次贝塞尔有限元，伯恩斯坦多项式基是三次伯恩斯坦多项式基的笛卡尔积。 
 
-The control points are divided in 4 groups as shown in the following illustration with 4 different colors:
+如下图所示，控制点被分为 4 组，用 4 种不同颜色区分：
 
 $$
 \begin{matrix}
@@ -66,10 +59,10 @@ $$
 \end{matrix}
 $$
 
-Where the $\times$ indicate a node (an interpolation point) and $\bullet$ non-interpolating control points
+其中 $\times$ 表示节点（插值点），$\bullet$ 表示非插值控制点
 
-Then for each group $i$ the vectors $p_i, v_i, u_i$ and $w_i$ are introduced along with 
-certain pre-defined quantities $h_{u,i}$ and $h_{v,i}$
+然后对每组 $i$ 引入向量 $p_i, v_i, u_i$ 与 $w_i$，以及
+某些预定义量 $h_{u,i}$ 与 $h_{v,i}$
 
 $$
 \begin{align}
@@ -93,8 +86,8 @@ $$
 \tag{4}
 $$
 
-In particular, when patching together multiple Bezier finite elements, except for special points (grid axis and x point) or the boundary, each node will be shared by $4$ elements. 
-Instead of viewing the _amount of DoF per element_ we look at the _amount of DoF per node_. So instead of the previous illustration, which is useful only to introduce the division of DoF in groups, the following one, centered on one node $\mathbf{P}\_{00}$ where 4 finite elements are glued together, reflects better the formalism used:
+特别地，拼接多个贝塞尔有限元时，除特殊点（网格轴与 X 点）或边界外，每个节点都由 $4$ 个单元共享。 
+这里不考察_每个单元的自由度数量_，而考察_每个节点的自由度数量_。因此改用下图而非前图：前图仅用于引入自由度的分组，下图以一个由 4 个有限元拼合而成的节点 $\mathbf{P}\_{00}$ 为中心，更贴合实际所用的形式：
 
 $$
 \begin{matrix}
@@ -107,16 +100,16 @@ $$
 \end{matrix}
 $$
 
-In the above illustration, $G_0$ continuity is assumed, indeed the 4 "glued" finite elements share the same control points on the edges (and hence the same edges).
+上图中已假定 $G_0$ 连续，因为 4 个“拼合”的有限元在边上共享相同的控制点（因而也共享相同的边）。
 
-We call $\xi_{11}$ the finite element on the top right of $P_{00}$, $\xi_{-11}$ the one on the top left, $\xi_{-1-1}$ the one on the bottom left and $\xi_{1-1}$ the one on the bottom right.
+将位于 $P_{00}$ 右上方的有限元记为 $\xi_{11}$，左上方的记为 $\xi_{-11}$，左下方的记为 $\xi_{-1-1}$，右下方的记为 $\xi_{1-1}$。
 
 
 
-#### Generalized nodal representation of Bezier finite element
-The work [S. Pamela et al. J. Comput. Phys. 464, 111101 (2022)](https://www.sciencedirect.com/science/article/pii/S0021999122001632?via%3Dihub) generalizes what has been shown in the previous paragraph for bi-cubic elements to any degree $n$ and always imposing $G_m$ continuity with $m=(n-1)/2$.
-Instead of using $p_i,u_i,v_i,w_i$ vectors, the notation is $u_{ij}$ and $h_{u,i}$ are replaced with $h^{ij}$ For example, in the bi-cubic case we have $u_{i0}:=p_i, u_{i1}:=u_i, ...$. 
-Then the generalized formulation, only for group of node $\mathbf{P}_{00}$, reads as follows:
+#### 贝塞尔有限元的广义节点表述 {#generalized-nodal-representation-of-bezier-finite-element}
+文献 [S. Pamela et al. J. Comput. Phys. 464, 111101 (2022)](https://www.sciencedirect.com/science/article/pii/S0021999122001632?via%3Dihub) 把上一段针对双三次单元的结果推广到任意阶 $n$，并始终施加 $m=(n-1)/2$ 的 $G_m$ 连续性。
+不再使用 $p_i,u_i,v_i,w_i$ 向量，而记作 $u_{ij}$，并把 $h_{u,i}$ 换成 $h^{ij}$。例如在双三次情形下有 $u_{i0}:=p_i, u_{i1}:=u_i, ...$。 
+于是，仅针对节点 $\mathbf{P}_{00}$ 所属组的广义表述如下：
 
 $$
 \mathbf{P}_{ij} = h^{ij}\vec{u}^{ij} + \sum_{k=0}^i\sum_{l=0}^j (-1)^{1+i+j+k+l}(1-\delta_{ki}\delta_{lj}) 
@@ -129,16 +122,16 @@ j \\ l
 \mathbf{P}_{kl} \tag{5}
 $$
 
-with $0\leq i,j \leq (n+1)/2$
+其中 $0\leq i,j \leq (n+1)/2$
 
-Technically this formulation is only for the element of 1 of the 4 glued patches sharing $\mathbf{P}\_{00}$, that is for element $\xi_{11}$.
-See [Appendix A](#appendix-a-full-generic-nodal-formulation) to see the formulation also for $\xi_{-1-1}$, $\xi_{-11}$, $\xi_{1-1}$.
+严格来说，该表述只针对共享 $\mathbf{P}\_{00}$ 的 4 个拼合片中第 1 个单元，即单元 $\xi_{11}$。
+$\xi_{-1-1}$、$\xi_{-11}$、$\xi_{1-1}$ 的表述见[附录 A](#appendix-a-full-generic-nodal-formulation)。
 
 
-#### <u>Imposing the continuity on generalized nodal representation</u>
-$G_m$ continuity on the shared nodes is obtained by imposing the following constrains.
+#### <u>在广义节点表述上施加连续性</u>
+共享节点上的 $G_m$ 连续性通过施加下述约束获得。
 
-$\forall j, \ \ h^{-ij}$ is constrained by:
+对 $\forall j, \ \ h^{-ij}$ 的约束为：
 $$
 h^{-ij} = 
 \begin{cases}
@@ -147,7 +140,7 @@ h^{ij} & for i \neq 1
 \end{cases} \tag{6a}
 $$
 
-$\forall i, \ \ h^{i-j}$ is constrained by:
+对 $\forall i, \ \ h^{i-j}$ 的约束为：
 
 $$
 h^{i-j} = 
@@ -157,32 +150,32 @@ h^{ij} & for j \neq 1
 \end{cases} \tag{6b}
 $$
 
-where negative indexes are used to indicate sizes of elements $\xi_{-11}$ or $\xi_{1-1}$ or $\xi_{-1-1}$. For example $h^{-21}$ would belong to $\xi_{-11}$ ("first negative, second positive").
+其中负下标用于表示单元 $\xi_{-11}$、$\xi_{1-1}$ 或 $\xi_{-1-1}$ 的尺寸。例如 $h^{-21}$ 属于 $\xi_{-11}$（“第一下标为负、第二下标为正”）。
 
-See [S. Pamela et al. J. Comput. Phys. 464, 111101 (2022)](https://www.sciencedirect.com/science/article/pii/S0021999122001632?via%3Dihub) for the derivation.
+推导见 [S. Pamela et al. J. Comput. Phys. 464, 111101 (2022)](https://www.sciencedirect.com/science/article/pii/S0021999122001632?via%3Dihub)。
 
-#### <u>Brief intuition on the formulation</u>
-As demonstrated in Corollary 1 of [S. Pamela et al. J. Comput. Phys. 464, 111101 (2022)](https://www.sciencedirect.com/science/article/pii/S0021999122001632?via%3Dihub), in the particular nodal formulation used, the vectors $u^{ij}$ are **equal** in direction and sign (but not absolute value) with the **derivative** 
+#### <u>关于该表述的直观理解</u>
+如 [S. Pamela et al. J. Comput. Phys. 464, 111101 (2022)](https://www.sciencedirect.com/science/article/pii/S0021999122001632?via%3Dihub) 的推论 1 所证明，在所采用的这一特殊节点表述中，向量 $u^{ij}$ 的方向与符号（而非绝对值）与**导数**相同
 
 $$
 \frac{\partial^{i+j} \mathbf{P}}{\partial^{i} s \partial^{j} t}(s=0,t=0)
 $$
 
-This is extremely helpful, for instance, when building the mesh, since derivatives of $R$ and $Z$ are used to obtain a flux aligned grid.
+这一点非常有用，例如在构造网格时，因为正是用 $R$ 与 $Z$ 的导数来获得磁面对齐的网格。
 
-### Finite element basis with nodal formulation
-Nodal formulation, as shown in the previous paragraph, refers to associating the degrees of freedom (the control points) to a node instead of an element.
-Furthermore, control points are rewritten as the node they are associated to plus some vectors (which are the new degrees of freedom). 
-This change in the representation of degrees of freedom (from control point to vectors local to one node) implies that formulation $(3)$ has to change and in particular the basis $\{B_i^n(s)B_j^n(t) \}_{i,n=0\dots n}$, associated to the control points, needs to be substituted by a basis associated to vectors $\vec{u}^{ij}$. 
-This is obtained by rewriting $(5)$ such that on the right-hand side no $\mathbb{P}\_{xy}$ appears, so that each $\mathbb{P}\_{ij}$ depends uniquely on $h^{xy}$ and $\vec{u}^{xy}$, then substituting this result in $(3)$ and grouping on $\vec{u}^{ij}$. 
+### 采用节点表述的有限元基
+如上一段所示，节点表述指把自由度（控制点）归属于节点而非单元。
+此外，控制点被改写为其所属节点加上若干向量（这些向量才是新的自由度）。 
+自由度表示的这一改变（由控制点变为某节点上的局部向量）意味着表述 $(3)$ 必须改动，尤其要把与控制点对应的基 $\{B_i^n(s)B_j^n(t) \}_{i,n=0\dots n}$ 换成与向量 $\vec{u}^{ij}$ 对应的基。 
+做法是改写 $(5)$，使其右端不出现 $\mathbb{P}\_{xy}$，从而每个 $\mathbb{P}\_{ij}$ 只依赖 $h^{xy}$ 与 $\vec{u}^{xy}$；再把结果代入 $(3)$ 并按 $\vec{u}^{ij}$ 归并。 
 
-The new formulation for an element $K$ reads:
+单元 $K$ 上的新表述为：
 
 $$
 X_{\text{pol}}^{(K)} = \sum_{i=0}^{\text{n_vertices}} \sum_{j=0}^{\text{n_degrees}} h^{ij}\vec{u}^{ij} b_{ij}^n(s,t) \tag{7}
 $$
 
-In the cubic case the following basis is obtained:
+在三次情形下得到如下基：
 $$
 \begin{array}{r l}
 b_{1,1} &= (1 - s)^{2} (1 - t)^{2} (1 + 2 s) (1 + 2 t) \\
@@ -207,25 +200,25 @@ $$
 
 
 
-### True degrees of freedom, sizes and separation of geometrical coordinates from physical variables
-When using Bezier surfaces of degree $n$ and with $\mathbf{P} \in \mathbb{R}^{d}$, each vertex has a basis of $\left(\frac{n+1}{2}\right)^2$ vectors (ex: with $n=3$, 4 vectors). 
-Theoretically every entry of $\vec{u}^{ij}$ is a degree of freedom , so the total number of theoretical degrees of freedom is $d$ times the number of vectors.
+### 真实自由度、尺寸以及几何坐标与物理变量的分离
+当采用 $n$ 阶贝塞尔曲面且 $\mathbf{P} \in \mathbb{R}^{d}$ 时，每个顶点有一个由 $\left(\frac{n+1}{2}\right)^2$ 个向量构成的基（例如 $n=3$ 时为 4 个向量）。 
+理论上 $\vec{u}^{ij}$ 的每个分量都是自由度，因此理论上的自由度总数为向量数的 $d$ 倍。
 
-However spatial coordinates $R$ and $Z$, corrisponding to the first two entries of $\vec{u}^{ij}$, are **fixed** when **building the mesh**. 
-So the true number of degrees of freedom is
+然而，与 $\vec{u}^{ij}$ 前两个分量对应的空间坐标 $R$ 与 $Z$，在**构造网格**时即被**固定**。 
+因此真实的自由度数为
 $$
 N_{\text{dof}} = (d-2)\left(\frac{n+1}{2}\right)^2
 $$
 
-When building the mesh also the values of the sizes $h^{ij}$ are determined. 
+构造网格时，尺寸 $h^{ij}$ 的取值也随之确定。 
 
-This difference between the use of Bezier curves for geometrical coordinates and for physical coordinates implies that it makes sense to have two separate formulations:
+贝塞尔曲线在几何坐标与物理坐标上的用法不同，因此分成两套独立表述是合理的：
 
 $$
 X_\text{pol}^{(K)}(s,t) = \sum_{i=0}^{N_\text{vert}-1} \sum_{j=0}^{\text{dof_per_vertex}} h^{ij} \vec{u}^{ij} b_{ij}(s,t)
 $$
 
-and
+以及
 
 $$
 \begin{pmatrix} R \\ Z
@@ -233,13 +226,13 @@ $$
 _\text{pol}^{(K)}(s,t) = \sum_{i=0}^{N_\text{vert}-1} \sum_{j=0}^{\text{dof_per_vertex}} h^{ij} \vec{v}^{ij} b_{ij}(s,t)
 $$
 
-Note that $h^{ij}$ and $b_{ij}$ are the same for both formulations! A formulation that has the same basis $\{b_{ij}}$ for both geometical and physical variables is called **isoparametric**.
+注意两套表述中的 $h^{ij}$ 与 $b_{ij}$ 完全相同！几何变量与物理变量共用同一基 $\{b_{ij}\}$ 的表述称为**等参**表述。
 
 
-## Appendix A: full generic nodal formulation
-The generic nodal formulation introduced in a [previous paragraph](#generalized-nodal-representation-of-bezier-finite-element) expresses only the control points of element $\xi_{11}$. To represent control points of elements $\xi_{-1-1}$, $\xi_{-11}$, $\xi_{1-1}$, the formulation is basically the same but negative index must be handled. It is fundamental to note that sizes ($h^{ij}$) will vary (they are element-dependent) but the basis vectors $\vec{u}^ij$ will be the same across all 4 elements. 
+## 附录 A：完整的通用节点表述 {#appendix-a-full-generic-nodal-formulation}
+[前一段](#generalized-nodal-representation-of-bezier-finite-element)引入的通用节点表述只给出单元 $\xi_{11}$ 的控制点。要表示单元 $\xi_{-1-1}$、$\xi_{-11}$、$\xi_{1-1}$ 的控制点，表述基本相同，但须处理负下标。关键在于：尺寸（$h^{ij}$）随单元而变（依赖具体单元），而基向量 $\vec{u}^ij$ 在全部 4 个单元中相同。 
 
-Formulation for $\xi_{11}$ (same as [previous paragraph](#generalized-nodal-representation-of-bezier-finite-element)):
+$\xi_{11}$ 的表述（与[前一段](#generalized-nodal-representation-of-bezier-finite-element)相同）：
 $$
 \mathbf{P}_{ij} = h^{ij}\vec{u}^{ij} + \sum_{k=0}^i\sum_{l=0}^j (-1)^{1+i+j+k+l}(1-\delta_{ki}\delta_{lj}) 
 \begin{pmatrix}
@@ -250,9 +243,9 @@ j \\ l
 \end{pmatrix}
 \mathbf{P}_{kl}
 $$ 
-with $0\leq i,j \leq (n+1)/2$
+其中 $0\leq i,j \leq (n+1)/2$
 
-Formulation for $\xi_{-11}$:
+$\xi_{-11}$ 的表述：
 $$
 \mathbf{P}_{-ij} = h^{-ij}\vec{u}^{ij} + \sum_{k=0}^i\sum_{l=0}^j (-1)^{1+i+j+k+l}(1-\delta_{ki}\delta_{lj}) 
 \begin{pmatrix}
@@ -263,9 +256,9 @@ j \\ l
 \end{pmatrix}
 \mathbf{P}_{-kl}
 $$ 
-with $0\leq i,j \leq (n+1)/2$
+其中 $0\leq i,j \leq (n+1)/2$
 
-Formulation for $\xi_{-1-1}$:
+$\xi_{-1-1}$ 的表述：
 $$
 \mathbf{P}_{-i-j} = h^{-i-j}\vec{u}^{ij} + \sum_{k=0}^i\sum_{l=0}^j (-1)^{1+i+j+k+l}(1-\delta_{ki}\delta_{lj}) 
 \begin{pmatrix}
@@ -276,9 +269,9 @@ j \\ l
 \end{pmatrix}
 \mathbf{P}_{-k-l}
 $$ 
-with $0\leq i,j \leq (n+1)/2$
+其中 $0\leq i,j \leq (n+1)/2$
 
-Formulation for $\xi_{1-1}$:
+$\xi_{1-1}$ 的表述：
 $$
 \mathbf{P}_{i-j} = h^{i-j}\vec{u}^{ij} + \sum_{k=0}^i\sum_{l=0}^j (-1)^{1+i+j+k+l}(1-\delta_{ki}\delta_{lj}) 
 \begin{pmatrix}
@@ -289,4 +282,4 @@ j \\ l
 \end{pmatrix}
 \mathbf{P}_{k-l}
 $$ 
-with $0\leq i,j \leq (n+1)/2$
+其中 $0\leq i,j \leq (n+1)/2$

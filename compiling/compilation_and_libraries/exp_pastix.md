@@ -7,14 +7,7 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
-
-原文页面：[Example PaStiX Configuration](https://iterorganization.github.io/JOREK/compiling/compilation_and_libraries/exp_pastix.html)　·　源文件：`compiling/compilation_and_libraries/exp_pastix.md`
-</div>
-
-# Example configuration file for PaStiX release 4492
+# PaStiX 版本 4492 的配置示例文件
 
 ```make
 HOSTARCH    = i686_pc_linux

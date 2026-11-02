@@ -6,61 +6,54 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# JOREK 中的随机数发生器
 
-原文页面：[Random-Number Generators](https://iterorganization.github.io/JOREK/numerics/rngs.html)　·　源文件：`numerics/rngs.md`
-</div>
-
-# Random number generators in JOREK
-
-For the JOREK-particles extension many random numbers are required, for example in the particle initialization routines.
-To meet the combined demands of speed, statistical quality, and parallel correctness, JOREK uses the [PCG](http://www.pcg-random.org/) family of pseudo-random number generators alongside an optional Sobol' quasi-random sequence generator.
+JOREK-particles 扩展需要大量随机数，例如在粒子初始化程序中。
+为同时满足速度、统计质量和并行正确性三方面的要求，JOREK 使用 [PCG](http://www.pcg-random.org/) 系列伪随机数发生器，并可选配 Sobol' 准随机序列发生器。
 
 
-## Why not use the Fortran built-in RNG?
+## 为什么不使用 Fortran 内置 RNG？
 
-The Fortran intrinsic `random_number` has several limitations that make it unsuitable for JOREK's use case. 
-The builtin random-number generators in Fortran are compiler-dependent and often of low quality. Furthermore they are not thread-safe and cannot be used in OpenMP parallel regions without external locking.
-Additionally they do not offer strided sampling and jump-ahead to specific values.
-Those attributes are very useful when generating related sets of random numbers on different MPI tasks.
+Fortran 内在函数 `random_number` 存在若干局限，使其不适合 JOREK 的使用场景。
+Fortran 内置的随机数发生器依赖编译器，且往往质量不高。此外它们不是线程安全的，若不加外部加锁，无法在 OpenMP 并行区中使用。
+它们还没有提供跨步抽样（strided sampling）与跳进到特定值（jump-ahead）的功能。
+而在不同 MPI 任务上生成相互关联的随机数集合时，这些特性非常有用。
 
-## Implementation
+## 实现
 
-A common abstract interface for all generators is defined in `tools/mod_rng.f90`, making it straightforward to swap generators without changing calling code. The interface is currently implemented by:
+所有发生器共用一个抽象接口，定义在 `tools/mod_rng.f90` 中，因此在更换发生器时无需修改调用代码。该接口目前由以下实现提供：
 
 
-- pcg32 (`tools/mod_pcg32_rng.f90` using `tools/mod_pcg32.f90` and `tools/pcg_basic.c`)
-- Sobol sequence (`tools/mod_sobseq_rng.f90` using `tools/mod_sobseq.f90`)
+- pcg32（`tools/mod_pcg32_rng.f90`，使用 `tools/mod_pcg32.f90` 与 `tools/pcg_basic.c`）
+- Sobol 序列（`tools/mod_sobseq_rng.f90`，使用 `tools/mod_sobseq.f90`）
 
-### Interface
+### 接口
 
-An implementation of the RNG interface must provide the following routines:
+RNG 接口的实现必须提供以下例程：
 
 - `initialize(rng, n_dims, seed, n_streams, i_stream, ierr)`
 - `next(rng, out)`
 - `jump_ahead(rng, delta)`
 
-whose names should be self-explanatory.
+其名称应是不言自明的。
 
 
 
-## Usage
+## 用法
 
-### Parameters for `rng%initialize`:
+### `rng%initialize` 的参数：
 
-| Parameter | Description |
+| 参数 | 说明 |
 |---|---|
-| `n_dims` | Number of random values produced per call to `next`. |
-| `seed` | Integer seed for the generator. |
-| `n_streams` | Total number of independent streams being initialised (across all threads and ranks). |
-| `i_stream` | Index of the stream assigned to this instance, in the range `[1, n_streams]`. |
-| `ierr` | Returns 0 on success, non-zero on failure.  |
+| `n_dims` | 每次调用 `next` 所产生的随机数个数。 |
+| `seed` | 发生器的整数种子。 |
+| `n_streams` | 正在初始化的独立流的总数（跨所有线程与进程）。 |
+| `i_stream` | 分配给本实例的流的索引，取值范围 `[1, n_streams]`。 |
+| `ierr` | 成功时返回 0，失败时返回非零值。  |
 
-### Serial context
+### 串行场景
 
-Please consider the following example in a serial context (only one OpenMP thread):
+请参考以下串行场景（仅一个 OpenMP 线程）中的示例：
 
 ```fortran
   use mod_pcg32_rng
@@ -75,10 +68,10 @@ Please consider the following example in a serial context (only one OpenMP threa
 
 
 
-### OpenMP parallel context
+### OpenMP 并行场景
 
-In the parallel context, a number of streams of random numbers are defined, where each thread selects one stream.
-The following OpenMP example is adapted from `particles/examples/W_sputtering_rad_coll.f90`:
+在并行场景中，会定义若干条随机数流，每个线程选择其中一条。
+下面的 OpenMP 示例改编自 `particles/examples/W_sputtering_rad_coll.f90`：
 
 ```fortran
   type(pcg32_rng), dimension(:), allocatable :: rng
@@ -105,10 +98,10 @@ The following OpenMP example is adapted from `particles/examples/W_sputtering_ra
   !$omp end parallel
 ```
 
-### Hybrid MPI + OpenMP context
+### MPI + OpenMP 混合场景
 
-To use this with a hybrid MPI-OpenMP architecture we need to calculate the stream number and index across the processors.
-This can be done easily with a few MPI calls combined with the above example.
+要在 MPI-OpenMP 混合架构下使用，需要跨处理器计算流的编号与索引。
+结合上面的示例，用几个 MPI 调用即可轻松做到。
 
 ```fortran
   call MPI_COMM_RANK(MPI_COMM_WORLD, my_id, ierr)
@@ -130,28 +123,28 @@ This can be done easily with a few MPI calls combined with the above example.
   end do
 ``` 
 
-### Seeding
+### 播种
 
-A module to create seed numbers for the generator is provided from `/dev/urandom` or by xor-ing the time and current process pid in `tools/mod_random_seed.f90`.
-If reproducibility across runs is required (e.g. for debugging), replace `random_seed()` with a fixed integer. 
+`tools/mod_random_seed.f90` 中提供了一个为发生器生成种子的模块，种子来自 `/dev/urandom`，或将时间与当前进程 pid 做异或得到。
+若需要跨多次运行可复现（例如调试），请把 `random_seed()` 替换为固定的整数。
 
-## Sobol' sequence QRNG
+## Sobol' 序列 QRNG
 
-The `sobseq` generator has some properties which need to be treated with care.
+`sobseq` 发生器有一些特性需要谨慎处理。
 
-### Output stream correlation
+### 输出流的相关性
 
-The strength of the Sobol' sequence is the correlation in the output stream, but this causes some problems too.
-For instance in the first stream of the sobseq generator every even number is > 0.5.
-This has consequences for rejection sampling in parallel, where we use the strided generator to provide multiple streams. It is very important to try an equal number of samples on every thread, instead of looking for an equal number of accepted proposals.
+Sobol' 序列的优势在于输出流中的相关性，但这也会引起一些问题。
+例如在 sobseq 发生器的第一条流中，每个偶数都 > 0.5。
+这对并行中的拒绝采样有影响——在那里我们使用跨步发生器来提供多条流。非常重要的一点是：让每个线程尝试相同数量的样本，而不是追求相同数量的被接受提议。
 
-### Strided generation
+### 跨步生成
 
-Due to the strided implementation of the `sobseq` generator it can only accept a number of streams which is a power of 2.
+由于 `sobseq` 发生器采用跨步实现，它只能接受 2 的幂次条数的流。
 
-### Seeding
+### 播种
 
-The Sobol' series has no possibility of seeding with any number. The `seed` parameter is ignored in calls to `rng%initialize`.
+Sobol' 序列无法用任意数值播种。调用 `rng%initialize` 时 `seed` 参数被忽略。
 
 
 

@@ -6,26 +6,19 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
-
-原文页面：[Known issues](https://iterorganization.github.io/JOREK/physics/kinetic_models/issues.html)　·　源文件：`physics/kinetic_models/issues.md`
-</div>
-
-# Known issues regarding simulations with kinetic particles
-  * Segmentation fault/memory error: private arrays in OpenMP parallel regions are stored on the stack, we can easily run into memory issues if we use many particles, have a fine grid and/or use large ntor. Try increasing the stack size by adding the following to your jobscript:
+# 使用动理学粒子模拟时的已知问题
+  * 段错误/内存错误：OpenMP 并行区中的私有数组存放在栈上，如果粒子数很多、网格很细和/或 ntor 很大，就很容易遇到内存问题。尝试通过在作业脚本中加入以下内容来增大栈大小：
     ```
     ulimit -s unlimited
     export OMP_STACKSIZE="500M"
     ```
-    The exact stack size changes from case to case, here we set it to 500 Mb, try out a few values.
+    确切的栈大小因算例而异，这里设为 500 Mb，可以多试几个值。
 
-    If this doesn't help and you still get segmentation faults, try removing feedback_rhs from the reduction clause in the particle evolution OMP do loop, declare it shared and perform atomic updates anytime feedback_rhs is updated, such as:
+    如果这没有帮助且仍然出现段错误，尝试把 feedback_rhs 从粒子演化 OMP do 循环的 reduction 子句中移除，将其声明为 shared，并在每次更新 feedback_rhs 时执行原子更新，例如：
     ```
     !$omp atomic update
     feedback_rhs() = ...
     ```
-  * `particles` in `!$omp shared()` lists can cause issues with certain compilers. To fix, `sim` should be in the shared list and particles should not. 
-  * Memory leak. If your simulation stops after multiple hours without apparent reason, without a helpful error message in the error file, this might be caused by a memory leak. (On ITER SDCC with intel compilers the message for instance only says `srun: error: 98dci4-clu-3098: task 6: Killed`. This usually happens when something is done with the FE matrix like a projection or factorisation, because that is the moment a lot of data is used). Please discuss this so that we can try to find the origin and solve it for everyone. 
-  * Computational speed: it seems that unused particles can still eat up significant computational time when n_particles << particles in use (especially when the greatest common divisor is small (e.g. gcd=1), see [kinetic timestepping](./timestepping.md)), so try to avoid unnecessarily large part_group_configs(i)%n_particles
+  * `particles` 出现在 `!$omp shared()` 列表中时，可能在某些编译器上引发问题。修复方法：`sim` 应放在 shared 列表中，而 particles 不应放进去。 
+  * 内存泄漏。如果你的模拟在运行数小时后无缘无故停止，且错误文件中没有有用的错误信息，这可能是由内存泄漏引起的。（在 ITER SDCC 上使用 intel 编译器时，该信息例如只显示 `srun: error: 98dci4-clu-3098: task 6: Killed`。这通常发生在对 FE 矩阵做投影或分解之类操作的时候，因为那正是使用大量数据的时刻）。请就此展开讨论，以便我们尝试找到根源并为所有人解决。 
+  * 计算速度：当 n_particles << 实际使用的粒子数时，未使用的粒子似乎仍会占用可观的机时（尤其当最大公约数很小（例如 gcd=1）时，见[动理学时间推进](./timestepping.md)），因此尽量避免把 part_group_configs(i)%n_particles 设得没必要地大

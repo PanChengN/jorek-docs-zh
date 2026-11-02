@@ -5,19 +5,12 @@ render_with_liquid: false
 parent: "Running JOREK"
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
-
-原文页面：[Scan JOREK logfile for a specific variable value](https://iterorganization.github.io/JOREK/diagnostics/read_jorek_logfile.py.html)　·　源文件：`diagnostics/read_jorek_logfile.py.md`
-</div>
-
-#### Scan JOREK logfile for a specific variable value
-Usage:
+#### 在 JOREK 日志文件中扫描特定变量的值
+用法：
 ```
 read_jorek_logfile.py -fname <logfile_name> -text <variable_name>
 ```
-Optional arguments:
+可选参数：
 ```
   -h, --help    show this help message and exit
   -fname FNAME  input file name

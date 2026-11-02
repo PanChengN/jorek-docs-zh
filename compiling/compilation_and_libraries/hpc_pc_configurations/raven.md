@@ -7,59 +7,52 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# MPCDF 的 Raven 系统
 
-原文页面：[Raven](https://iterorganization.github.io/JOREK/compiling/compilation_and_libraries/hpc_pc_configurations/raven.html)　·　源文件：`compiling/compilation_and_libraries/hpc_pc_configurations/raven.md`
-</div>
+## 基本信息
 
-# Raven system at MPCDF
+文档：
 
-## Basic information
+- **[Raven 用户指南](https://docs.mpcdf.mpg.de/doc/computing/raven-user-guide.html)**
+- [MPCDF 的 Raven](https://www.mpcdf.mpg.de/services/supercomputing/raven)
 
-Documentation:
+**计算节点：**
 
-- **[Raven user guide](https://docs.mpcdf.mpg.de/doc/computing/raven-user-guide.html)**
-- [Raven at MPCDF](https://www.mpcdf.mpg.de/services/supercomputing/raven)
+- 目前为 360 个节点
+- 每节点 2×36 核
+- 每节点内存：240 GB
 
-**Compute nodes:**
+### 访问集群
 
-- currently 360 nodes
-- 2×36 cores per node
-- memory per node: 240 GB
-
-### Accessing the cluster
-
-First log into the gate machine:
+首先登录网关机：
 
 ```bash
 ssh gate.mpcdf.mpg.de
 ```
 
-From the gate machine:
+然后从网关机执行：
 
 ```bash
 ssh raven[01-02]i
 ```
 
-### File systems
+### 文件系统
 
-AFS is accessible from the login nodes.
+登录节点上可以访问 AFS。
 
-Both `/u` and `/ptmp` file systems are accessible from the login and compute nodes.
+`/u` 与 `/ptmp` 两个文件系统在登录节点和计算节点上均可访问。
 
-- Your data can be stored under `/u/<user>`; a quota of 2.5 TB applies  
-  (check via `'/usr/lpp/mmfs/bin/mmlsquota raven_u'`)
-- `/ptmp/<user>` should be used as temporary storage
+- 数据可以存放在 `/u/<user>` 下；适用 2.5 TB 的配额  
+  （通过 `'/usr/lpp/mmfs/bin/mmlsquota raven_u'` 检查）
+- `/ptmp/<user>` 应用作临时存储
 
-**No automatic backup** is done for either file system.
+两个文件系统均**不做自动备份**。
 
-Note that files on `/ptmp/` are **automatically deleted** if they have not been touched for 12 weeks.
+注意，`/ptmp/` 上的文件若 12 周未被访问，将被**自动删除**。
 
-## Compiling JOREK
+## 编译 JOREK
 
-- Add the following lines to your `.bashrc` file:
+- 将下列各行加入 `.bashrc` 文件：
 
 ```bash
 module purge
@@ -75,10 +68,10 @@ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${HDF5_ROOT}/lib
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${FFTW_HOME}/lib
 ```
 
-- In order to use pre-compiled external solver libraries, please send a request to `ihor.holod@ipp.mpg.de` indicating your Raven user name.
+- 如需使用预编译的外部求解器库，请向 `ihor.holod@ipp.mpg.de` 发送申请，并说明你的 Raven 用户名。
 
-- Example `Makefile.inc`  
-  (note that PaStiX and STRUMPACK should not be chosen simultaneously):
+- `Makefile.inc` 示例  
+  （注意 PaStiX 与 STRUMPACK 不应同时选用）：
 
 ```makefile
 MODEL             = model303
@@ -164,9 +157,9 @@ HDF5INCLUDE = $(HDF5_HOME)/include
 HDF5LIB     = -L$(HDF5_HOME)/lib -lhdf5hl_fortran -lhdf5_hl -lhdf5_fortran -lhdf5 -lz
 ```
 
-## Submitting jobs
+## 提交作业
 
-Below is an example SLURM job script:
+下面是一个 SLURM 作业脚本示例：
 
 ```bash
 #!/bin/bash -l
@@ -186,37 +179,37 @@ export OMP_PLACES=cores
 srun ./jorek_model303 < intear > logout.out
 ```
 
-## Running interactively
+## 交互式运行
 
-For running interactively on Raven, go to the interactive nodes by:
+要在 Raven 上交互运行，请通过以下方式进入交互节点：
 
 ```bash
 ssh raven-i
 ```
 
-or
+或
 
 ```bash
 ssh raven[03-06]
 ```
 
-There are limits on:
+存在以下限制：
 
-- cores (`<= 8`)
-- memory (`<= 256000M`)
-- time (`<= 2 hours`)
+- 核数（`<= 8`）
+- 内存（`<= 256000M`）
+- 时间（`<= 2 hours`）
 
-(My jobs also started with more than the recommended number of cores, but the user guide warns against it.)
+（我的作业在核数超过推荐值时也能启动，但用户指南警告不要这样做。）
 
 ```bash
 srun -n N_TASKS -p interactive --time=TIME_LESS_THAN_2HOURS --mem=MEMORY_LESS_THAN_32G ./EXECUTABLE
 ```
 
-Example:
+示例：
 
 ```bash
 export OMP_NUM_THREAD=4
 nice srun -n 2 -p interactive --time=00:30:00 --mem=16GB ./jorek_model600 < input_jorek | tee logfile
 ```
 
-It can take a short time to allocate the resources.
+分配资源可能需要一点时间。

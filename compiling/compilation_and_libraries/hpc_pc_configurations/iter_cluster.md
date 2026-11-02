@@ -7,25 +7,17 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# ITER 集群概述
 
-原文页面：[ITER Cluster](https://iterorganization.github.io/JOREK/compiling/compilation_and_libraries/hpc_pc_configurations/iter_cluster.html)　·　源文件：`compiling/compilation_and_libraries/hpc_pc_configurations/iter_cluster.md`
-</div>
+参见：
 
-# ITER cluster Generalities
+- <https://confluence.iter.org/pages/viewpage.action?pageId=267026649> 获取访问权限
+- <https://confluence.iter.org/display/IMP/ITER+Computing+Cluster> 获取更详细的信息
 
-See:
+# 编译 {#compiling}
+需要加载合适的模块并导出若干环境变量，以准备一个专用环境。
 
-- <https://confluence.iter.org/pages/viewpage.action?pageId=267026649> for access
-- <https://confluence.iter.org/display/IMP/ITER+Computing+Cluster> for more detailed information
-
-# Compiling
-
-You need to prepare a specific environment by loading appropriate modules and exporting some environment variables.
-
-You can prepare a dedicated `.sh` file, such as the one below:
+可以准备一个专用的 `.sh` 文件，如下所示：
 
 ```bash
 #!/bin/bash
@@ -57,13 +49,13 @@ export BATCHCOMMAND="qsub"
 export CXXFLAGS=-O0 # problem with stdio library on ITER http://gcc.1065356.n8.nabble.com/g-4-8-fails-with-Ox-option-td953876.html
 ```
 
-You can either load it before compilation via:
+既可以在编译前载入该文件：
 
 ```bash
 source env2024.sh
 ```
 
-or load it directly at each startup by updating your `.bashrc` file, for example if your `env2024.sh` is located in `~/public`:
+也可以在每次启动时通过更新 `.bashrc` 文件直接载入，例如当 `env2024.sh` 位于 `~/public` 时：
 
 ```bash
 # .bashrc
@@ -119,20 +111,20 @@ export PATH="~/.local/bin:$PATH"
 ulimit -s unlimited
 ```
 
-If you already started your session, the best thing to do may be to re-run the directives in both files. From your shell in the `$HOME` directory, run:
+如果已经启动了会话，最好的做法可能是重新执行这两个文件中的指令。在 `$HOME` 目录下的 shell 中运行：
 
 ```bash
 source .bashrc
 source ./public/env2024.sh
 ```
 
-Then go to the JOREK code directory:
+然后进入 JOREK 代码目录：
 
 ```bash
 cd <jorek_directory>
 ```
 
-and start the compilation from scratch:
+并从头开始编译：
 
 ```bash
 make clean
@@ -140,13 +132,13 @@ make cleanall
 make
 ```
 
-# Running
+# 运行
 
-It is recommended to run via the SLURM scheduler.
+建议通过 SLURM 调度器运行。
 
-You have to choose the partition where to run your program, which may be `gen10` or `gen11` for production runs. For debug runs, you may use the dedicated partitions `gen10_debug` or `gen11_debug`.
+必须选择运行程序所在的分区，生产运行可以使用 `gen10` 或 `gen11`。调试运行可以使用专用分区 `gen10_debug` 或 `gen11_debug`。
 
-A typical batch script could look like this:
+典型的批处理脚本如下所示：
 
 ```bash
 #!/bin/bash -l
@@ -166,15 +158,15 @@ export I_MPI_THREAD_LEVEL_DEFAULT=multiple
 srun ./jorek_model600 < input > output
 ```
 
-Here, `input` is your configuration file and `output` is the text file where you want to save the runtime log information.
+其中，`input` 是配置文件，`output` 是用于保存运行时日志信息的文本文件。
 
-For proper resource allocation, see the ITER-SDCC guide.
+关于资源的合理分配，请参阅 ITER-SDCC 指南。
 
-Remember to include any required extra files in your working directory, for example equilibrium profiles or the wall response file, usually named `starwall-response.dat`.
+请记得将所需的额外文件放入工作目录，例如平衡剖面或壁响应文件，后者通常命名为 `starwall-response.dat`。
 
-# Compiling CARIDDI
+# 编译 CARIDDI
 
-If CARIDDI does not compile with the environment above, do the following:
+如果 CARIDDI 在上述环境下无法编译，请执行以下操作：
 
 ```bash
 module purge

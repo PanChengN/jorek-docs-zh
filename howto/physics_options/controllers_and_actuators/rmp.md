@@ -7,11 +7,4 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
-
-原文页面：[Run with RMPs](https://iterorganization.github.io/JOREK/howto/physics_options/controllers_and_actuators/rmp.html)　·　源文件：`howto/physics_options/controllers_and_actuators/rmp.md`
-</div>
-
-*This page is a stub — content to be added.*
+*本页为占位页——内容待补充。*

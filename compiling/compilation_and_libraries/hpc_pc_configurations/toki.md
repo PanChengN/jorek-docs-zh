@@ -7,18 +7,11 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 在 IPP Garching 的 TOK-I 集群上运行 JOREK
 
-原文页面：[TOK-I Cluster](https://iterorganization.github.io/JOREK/compiling/compilation_and_libraries/hpc_pc_configurations/toki.html)　·　源文件：`compiling/compilation_and_libraries/hpc_pc_configurations/toki.md`
-</div>
+> **本页在集群升级到 SLES15 之后刚刚更新。如发现新系统上有任何不正确之处，请予以更正。**
 
-# Run JOREK on the TOK-I Cluster at IPP Garching
-
-> **This page was recently updated after the update of the cluster to SLES15. If you find anything that is incorrect with the new system, please correct it.**
-
-- [Information about the cluster in the TOK Wiki](https://tok.ipp.mpg.de/wiki/TOK/index.php/Computing-TOKI)
+- [TOK Wiki 中关于该集群的信息](https://tok.ipp.mpg.de/wiki/TOK/index.php/Computing-TOKI)
 
 ```bash
 ssh toki01.bc.rzg.mpg.de
@@ -26,32 +19,32 @@ ssh toki01.bc.rzg.mpg.de
 ssh toki08.bc.rzg.mpg.de
 ```
 
-## Modules required
+## 所需模块
 
 ```bash
 module load git intel/2023.1.0.x impi/2021.9 mkl fftw-mpi gnuplot hdf5-mpi
 ```
 
-Add to your `~/.bashrc` or `~/.alias` file.
+请加入你的 `~/.bashrc` 或 `~/.alias` 文件。
 
 ```bash
 module load impi-interactive
 ```
 
-It is recommended **not** to add `impi-interactive` to your `.bashrc`, as this may stop simulations on the TOK cluster from working.
+建议**不要**将 `impi-interactive` 加入 `.bashrc`，因为这会使命在 TOK 集群上的仿真无法运行。
 
-## Compiling JOREK and Libraries
+## 编译 JOREK 与依赖库
 
-- [Installation/compilation of libraries and JOREK](../compiling.md) works in the normal way
-- You can simply use the libraries available via:
+- [依赖库与 JOREK 的安装／编译](../compiling.md)按常规方式进行
+- 也可以直接使用通过下列方式加载的依赖库：
 
 ```bash
 module load pastix
 ```
 
-> **Warning:** There seems to be an issue when JOREK is run on clusters at IPP (TOK-I, TOK, DRACO, and COBRA) with more than one MPI task per harmonic. The run hangs at the first PASTIX call during the very first time-step. In such a situation, the combination of `Pastix_5.2.3` and `Scotch_5.1.12b` has been seen to fix this issue.
+> **警告：** 在 IPP 的集群（TOK-I、TOK、DRACO 与 COBRA）上，当每个谐波使用多于一个 MPI 任务运行 JOREK 时似乎存在问题。运行会在第一个时间步中的首次 PASTIX 调用处挂起。在这种情况下，`Pastix_5.2.3` 与 `Scotch_5.1.12b` 的组合已被证实可以解决该问题。
 
-The following `Makefile.inc` file should allow you to compile JOREK:
+以下 `Makefile.inc` 文件应可让你编译 JOREK：
 
 ```makefile
 # JOREK configuration file for compilation on the TOK cluster at IPP Garching
@@ -143,54 +136,54 @@ HDF5INCLUDE = $(HDF5_HOME)/include
 HDF5LIB     = $(HDF5_HOME)/lib/libhdf5hl_fortran.a  $(HDF5_HOME)/lib/libhdf5_hl.a  $(HDF5_HOME)/lib/libhdf5_fortran.a $(HDF5_HOME)/lib/libhdf5.a -L$(HDF5_HOME)/lib  -lz
 ```
 
-## File systems
+## 文件系统
 
-- Best is to use `/tokp/work/<user>/` for your runs
-- Also possible:
-  - `/tokp/scratch/<user>/` — not backed up
+- 最好将运行目录放在 `/tokp/work/<user>/`
+- 也可以使用：
+  - `/tokp/scratch/<user>/` ——不做备份
   - `/ptmp1/work/<user>/`
-  - `/ptmp1/scratch/<user>/` — not backed up
+  - `/ptmp1/scratch/<user>/` ——不做备份
 
-## Batch submission
+## 批处理提交
 
-_Not available._
+_不可用。_
 
-## Interactive Runs
+## 交互式运行
 
-- Check with `top` beforehand that the machine is not already heavily used by others
-- Do not run very long simulations
-- Since each node has 24 cores, a rule of thumb is that OpenMP threads × MPI tasks should not exceed 20
+- 事先用 `top` 检查机器是否已被他人大量占用
+- 不要运行很长的仿真
+- 由于每个节点有 24 核，一条经验法则是 OpenMP 线程数 × MPI 任务数不应超过 20
 
 ```bash
 export OMP_NUM_THREADS=<number-of-OpenMP-threads>
 nice mpirun -n <mpi-tasks> ./jorek_model199 < ./input | tee logfile
 ```
 
-When running on TOK-I, if you get the error below, specify the location of the JOREK binary:
+在 TOK-I 上运行时，如果出现下面的错误，请指定 JOREK 二进制的路径：
 
 ```bash
 env: ‘jorek_model199’: No such file or directory
 ```
 
-### Without MPI
+### 不使用 MPI
 
-To run axisymmetric simulations, use only one MPI task:
+要运行轴对称仿真，请只使用一个 MPI 任务：
 
 ```bash
 mpirun -n 1 ./jorek_model199 < ./input | tee logfile
 ```
 
-Since MPI is always included in JOREK, this is the closest one can get to running without MPI.
+由于 JOREK 始终包含 MPI，这已经是尽可能接近"不使用 MPI"的运行方式。
 
-### Interactive regression tests
+### 交互式回归测试
 
-To run regression tests interactively, set:
+要以交互方式运行回归测试，请设置：
 
 ```bash
 export MPIRUN="mpirun -n 1"
 ```
 
-and then perform them in the usual way using:
+然后按常规方式执行：
 
 ```bash
 ./non_regression_tests/run_test.sh

@@ -6,27 +6,20 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# JOREK 中的空间离散引言
 
-原文页面：[Introduction to spatial discretization](https://iterorganization.github.io/JOREK/numerics/spatial-discretization/introduction.html)　·　源文件：`numerics/spatial-discretization/introduction.md`
-</div>
+JOREK 的离散方案在文献 [O. Czarny, G. Huysmans, J.Comput.Phys 227, 7423 (2008)](https://www.sciencedirect.com/science/article/pii/S0021999108002118) 与 [S. Pamela et al. J. Comput. Phys. 464, 111101 (2022)](https://www.sciencedirect.com/science/article/pii/S0021999122001632?via%3Dihub) 中有详尽描述。这里概述其中最重要的几个方面以及代码实现。
 
-# Introduction to spatial Discretization in JOREK
+如[此处](/docs/physics/coordinates.html)所详述，JOREK 采用柱坐标 $(R,Z,\phi)$。极向平面（变量 $R$ 与 $Z$）上的离散采用二维贝塞尔有限元，见[下一节](#2d-bezier-finite-elements-in-the-poloidal-plane)；而沿环向（变量 $\phi$）的离散则采用截断的实傅里叶级数，见[本节](#toroidal-discretization-with-real-fourier-series)。
 
-The discretization of JOREK is well described in the papers [O. Czarny, G. Huysmans, J.Comput.Phys 227, 7423 (2008)](https://www.sciencedirect.com/science/article/pii/S0021999108002118) and [S. Pamela et al. J. Comput. Phys. 464, 111101 (2022)](https://www.sciencedirect.com/science/article/pii/S0021999122001632?via%3Dihub). Here we present a summary of the most important aspects and the code implementation.
-
-As extensively explained [here](/docs/physics/coordinates.html), JOREK uses the cylindrical coordinates $(R,Z,\phi)$. The discretization on the poloidal plane (variables $R$ and $Z$) is discretized using 2D Bezier finite elements, discussed in the [following section](#2d-bezier-finite-elements-in-the-poloidal-plane) whereas the discretization along the toroidal direction (variable $\phi$) is performed with a truncated real Fourier series, as explained in [this section](#toroidal-discretization-with-real-fourier-series).
-
-On a finite element $K$, using a local coordinate system $s,t$ (see [Introduction to Bezier surfaces](introduction-to-bezier.md)), the two discretizations combined read as follows:
+在有限元 $K$ 上，采用局部坐标系 $s,t$（见[贝塞尔曲面引言](introduction-to-bezier.md)），两种离散合并后写成：
 
 $$
 \mathbf{X}^{(K)}(s,t,\phi) = \left(\sum_{l=1}^{N_\text{tor}} Z_l(\phi) \left (\sum_{i = 1}^{N_\text{vert}}\sum_{j = 1}^{\text{dof}} h^{ij} \vec{u}^{ijl} b_{i,j}(s,t)\right) \right ) \tag{1}
 $$
 
-with $\mathbf{X}$ the vector of variables (i.e. $\rho$, $T$, $u$, ...).
-For the geometrical poloidal variables $R,Z$, there is a similar relation:
+其中 $\mathbf{X}$ 为变量构成的向量（即 $\rho$、$T$、$u$ 等）。
+对于极向几何变量 $R,Z$，有类似的关系：
 
 $$
 \begin{pmatrix}
@@ -37,32 +30,32 @@ Z
 = \left(\sum_{l=1}^{N_{\text{coord_tor}}} Z_l(\phi) \left (\sum_{i = 1}^{N_{vert}}\sum_{j = 1}^{\text{dof}} h^{ij} \vec{v}^{ijl} b_{i,j}(s,t)\right) \right ) \tag{2}
 $$
 
-The inner parenthesis is the poloidal discretization, which uses the basis functions $b_{i,j}$, while $Z_l$ are the basis functions for the toroidal discretization.
+内层括号为极向离散，使用基函数 $b_{i,j}$；$Z_l$ 则是环向离散的基函数。
 
-Note that when building the mesh, all the degrees of freedom $\vec{v}^{ijl}$ in $(2)$ are fixed as well as $h^{ij}$ (for both $(2)$ and $(1)$).
+注意，在构造网格时，$(2)$ 中的全部自由度 $\vec{v}^{ijl}$ 以及 $h^{ij}$（对 $(2)$ 和 $(1)$ 均是）都已固定。
 
-### Parameters of the formulation
-- $N_\text{tor}$, in the code `n_tor` and $N_\text{coord_tor}$, in the code `n_coord_tor`, are two parameters to be specified at compile time (see [this section](#toroidal-discretization-with-real-fourier-series))
-- $N_\text{vert}$ is fixed to $4$ 
-- $\text{dof}$ (`n_degrees`), that is the number of degrees of freedom for each vertex for each problem variable (ex: $T$), is determined by the polynomial degree `n_order` (user can choose it) with the following relation: `n_degrees = ((n_order+1)/2)^2`.
+### 表述中的参数
+- $N_\text{tor}$（代码中为 `n_tor`）与 $N_\text{coord_tor}$（代码中为 `n_coord_tor`）是两个须在编译期指定的参数（见[本节](#toroidal-discretization-with-real-fourier-series)）
+- $N_\text{vert}$ 固定为 $4$ 
+- $\text{dof}$（`n_degrees`），即每个变量（如 $T$）在每个顶点处的自由度数，由多项式阶数 `n_order`（用户可选择）按下式确定：`n_degrees = ((n_order+1)/2)^2`。
 
-## 2D Bezier finite elements in the poloidal plane
-$G_m$ continuous Bezier finite elements of order $n$ are used to discretize the poloidal plane RZ.  
-Each Bezier finite element is a Bezier surface with $n^2$ control points, of which $4$ interpolation points.
+## 极向平面上的二维贝塞尔有限元 <a id="2d-bezier-finite-elements-in-the-poloidal-plane"></a>
+采用 $n$ 阶 $G_m$ 连续贝塞尔有限元对极向平面 RZ 进行离散。  
+每个贝塞尔有限元是一个含 $n^2$ 个控制点的贝塞尔曲面，其中 $4$ 个为插值点。
 
-A Bezier surface is defined as
+贝塞尔曲面定义为
 
 $$
 \mathbf{X}(s,t) = \sum_{i=0}^{n} \sum_{j=0}^{n} \mathbf{P}_{ij}B_i^n(s) B_j^n(s)  \tag{3}
 $$
 
-where $\mathbf{P}_{ij}$ are the control points and $B_i^n$ and $B_j^n$ are the Bernstein polynomials, defined as:
+其中 $\mathbf{P}_{ij}$ 为控制点，$B_i^n$ 与 $B_j^n$ 为伯恩斯坦（Bernstein）多项式，定义为：
 
 $$
 B_i^n(s) = \frac{n!}{i!(n-i)!} s^i (1-s)^n-1
 $$
 
-It is important to note that in $(3)$, the vector $\mathbf{X}$ includes both geometrical variables ($R$ and $Z$) and physical variables (ex. $\Psi$, $\rho$, $T$, ...). So it writes:
+需要注意，$(3)$ 中的向量 $\mathbf{X}$ 同时包含几何变量（$R$ 与 $Z$）与物理变量（如 $\Psi$、$\rho$、$T$ 等），因此写成：
 
 $$
 \mathbf{X} = 
@@ -76,16 +69,16 @@ T \\
 \end{pmatrix}
 $$
 
-However, in practice, geometrical variables and physical variables are _decoupled_ in two separate formulations. More on this at [this paragraph](#decoupling-geometrical-variables-and-physical-variables).
+不过在实际实现中，几何变量与物理变量被_解耦_为两套独立的表述。详见[这一段](#decoupling-geometrical-variables-and-physical-variables)。
 
-A more in depth explanation on Bezier surfaces can be found in [Introduction to bezier surfaces](introduction-to-bezier.md).
+关于贝塞尔曲面的更深入说明见[贝塞尔曲面引言](introduction-to-bezier.md)。
 
-### Nodal formulation
-Tipically degrees of freedom (here the control points) are grouped for each face (here Bezier patch). In JOREK instead they are grouped by nodes. Each Bezier surfaces have $4$ interpolation points, which are called nodes. So this means that all other control points are assigned to one interpolation point.  
-Indeed, as shown in [Introduction to bezier surfaces](introduction-to-bezier.md), each control point is connected with the deriative on one node. 
+### 节点表述
+通常自由度（此处即控制点）按面（此处即贝塞尔片）分组。JOREK 则按节点分组。每个贝塞尔曲面有 $4$ 个插值点，称为节点。这意味着其余所有控制点都被归属到某一个插值点上。  
+确实，如[贝塞尔曲面引言](introduction-to-bezier.md)所示，每个控制点都与某个节点上的导数相关联。
 
-In JOREK for each node a local vectorial basis is defined and the control points associated to the node are expressed in function of this basis. 
-For example, with bi-cubic Bezier surfaces, control points of node $\mathbf{P}\_{00}$ would be expressed as follows:
+在 JOREK 中，每个节点都定义一个局部向量基，归属于该节点的控制点用该基表示。 
+例如对双三次贝塞尔曲面，节点 $\mathbf{P}\_{00}$ 的控制点可表示为：
 
 $$
 \begin{align}
@@ -96,31 +89,31 @@ $$
 \end{align} \tag{4}
 $$
 
-where $h^{ij}$ are called _element sizes_ and are set during the mesh construction phase.
+其中 $h^{ij}$ 称为_单元尺寸_，在网格构造阶段设定。
 
-This formulation has the main advantage of making easier how $G_m$ continuity is imposed. When $4$ patches share a node $\mathbf{P}_{00}$, $G_m$ continuity is imposed by:
-1. Sharing the local basis $\{\vec{u}^{ij}\}_{ij}$ among all $4$ patches.
-2. Setting certain simple constraints on $h_{ij}$ (see [Poloidal discretization](poloidal-discretization.md))
+该表述的主要优点是使 $G_m$ 连续性的施加更为简便。当 $4$ 个片共享节点 $\mathbf{P}_{00}$ 时，$G_m$ 连续性通过以下方式施加：
+1. 在全部 $4$ 个片之间共享局部基 $\{\vec{u}^{ij}\}_{ij}$。
+2. 对 $h_{ij}$ 施加某些简单约束（见[极向离散](poloidal-discretization.md)）
 
-Using $(4)$, which can be generalized to a Bezier curve of any order $n$ (see [Poloidal discretization](poloidal-discretization.md)), then $(3)$ can be rewritten as
+利用 $(4)$（可推广到任意阶 $n$ 的贝塞尔曲线，见[极向离散](poloidal-discretization.md)），$(3)$ 可改写为
 
 $$
 \mathbf{X}_{\text{pol}}^{(K)} = \sum_{i=0}^{\text{n_vertices}} \sum_{j=0}^{\text{n_degrees}} h^{ij}\vec{u}^{ij} b_{ij}^n(s,t) \tag{5}
 $$
 
-where $b_{ij}$ are the new basis functions, obtained by gathering together all the terms with $\vec{u}^{ij}$.
+其中 $b_{ij}$ 为新的基函数，由归并所有含 $\vec{u}^{ij}$ 的项得到。
 
 
-### Decoupling geometrical variables and physical variables
-Until now, vector $\mathbf{X}$ had both the geometrical variables and phyisical variables. However, in practice the two formulations are decoupled in two analogous but separate formulations. Why this? Because they have different _toroidal_ discretization.
+### 几何变量与物理变量的解耦 {#decoupling-geometrical-variables-and-physical-variables}
+至此，向量 $\mathbf{X}$ 同时包含几何变量与物理变量。但在实际实现中，两套表述被解耦为两个类似但独立的表述。原因何在？因为二者具有不同的_环向_离散。
 
-The two formulations read as
+两套表述分别为
 
 $$
 \mathbf{X}_\text{pol}^{(K)}(s,t) = \sum_{i=0}^{N_\text{vert}-1} \sum_{j=0}^{\text{dof_per_vertex}} h^{ij} \vec{u}^{ij} b_{ij}(s,t)
 $$
 
-and
+以及
 
 $$
 \begin{pmatrix} R \\ Z
@@ -128,17 +121,16 @@ $$
 _\text{pol}^{(K)}(s,t) = \sum_{i=0}^{N_\text{vert}-1} \sum_{j=0}^{\text{dof_per_vertex}} h^{ij} \vec{v}^{ij} b_{ij}(s,t)
 $$
 
-where now $\mathbf{X}$ refers only to the physical variables.
+其中 $\mathbf{X}$ 现在只指物理变量。
 
-Note that $h^{ij}$ are the **same**
+注意 $h^{ij}$ 是**相同的**
 
-## Toroidal discretization with real Fourier series
+## 采用实傅里叶级数的环向离散 {#toroidal-discretization-with-real-fourier-series}
+环向离散同时施加于物理变量与坐标变量。两者采用相同的方法，即截断的实傅里叶级数，但使用不同的参数（所含谐波数与谐波的周期性，见表后）。
 
-Toroidal discretization is applied both to the physical variables both to the coordinate variables. They are both discretized with the same approach, that is truncated real Fourier series, but using different parameters (number of harmonics included and periodicity of the harmonics, see after the table).
+采用实傅里叶级数（$\cos$、$\sin$），如下表所示：
 
-A real Fourier series ($\cos$, $\sin$) is used, as shown in the following table:
-
-| JOREK harmonic | Toroidal mode number | Toroidal basis function |
+| JOREK 谐波 | 环向模数 | 环向基函数 |
 |--|--|--|
 | 1 | 0 | 1 |
 | 2 | $n_\text{period}$ | $\cos(n_\text{period}\phi)$ |
@@ -149,35 +141,35 @@ A real Fourier series ($\cos$, $\sin$) is used, as shown in the following table:
 | n_$\text{tor}-1$ | $\frac{n_\text{tor}-1}{2} n_\text{period}$ | $\cos(\frac{n_\text{tor}-1}{2}n_\text{period}\phi)$ |
 | n_$\text{tor}$ | $\frac{n_\text{tor}-1}{2} n_\text{period}$ | $\sin(\frac{n_\text{tor}-1}{2}n_\text{period}\phi)$ |
 
-For the physical discretization, **hard-coded parameters** `n_tor` and `n_period` are used to select the harmonics included in the simulation:
-  * `n_tor`: Total number of real Fourier modes (odd integer number)
-  * `n_period`: Toroidal periodicity (positive integer number)
+对物理离散，使用**硬编码参数** `n_tor` 与 `n_period` 选择参与模拟的谐波：
+  * `n_tor`：实傅里叶模的总数（奇数）
+  * `n_period`：环向周期性（正整数）
 
-For the coordinate/geometrical discretization, `n_coord_tor` and `n_coord_period` are used in the same manner.
+对坐标／几何离散，以相同方式使用 `n_coord_tor` 与 `n_coord_period`。
 
-The **maximum toroidal mode number** included in a simulation is `n_max=(n_tor-1)/2*n_period`.  
-A **sufficient number of toroidal planes** is required to avoid aliasing. The minimal requirement is typically `n_plane >= 2 * n_tor`. It is always a good idea to scan `n_plane` for a simulation to ensure convergence. `n_plane` must be a power of 2, if FFTW is not used. If FFTW is used (see [here](/docs/compiling/cat_compiling.md) for more), `n_plane` can be an arbitrary positive integer number, but not for all values FFTW is similarly efficient.
+模拟中包含的**最大环向模数**为 `n_max=(n_tor-1)/2*n_period`。  
+需有**足够数量的环向平面**以避免混叠。通常的最低要求为 `n_plane >= 2 * n_tor`。对具体算例扫描 `n_plane` 以确保收敛始终是好做法。若不使用 FFTW，`n_plane` 必须为 2 的幂。若使用 FFTW（更多说明见[此处](/docs/compiling/cat_compiling.md)），`n_plane` 可为任意正整数，但并非所有取值下 FFTW 的效率都相同。
 
-## Putting all together: toroidal and poloidal discretization
-When the two discretizations are combined, the poloidal degrees of freedom are now replicated for each poloidal mode $l$. That is, the total number of degrees of freedom is
+## 汇总：环向与极向离散
+将两种离散结合后，极向自由度对每个极向模 $l$ 各复制一份。即自由度总数为
 
 $$
 N_{\text{dof}} = \text{n_tor} (d-2) \left( \frac{n+1}{2}\right)^2
 $$
 
-So the formulations $(1)$ and $(2)$ are obtained.
+由此得到表述 $(1)$ 与 $(2)$。
 
 
-## Implementation in the code
-There are 2 fundamental types: `type_node` and `type_element` (see `data_structure.f90`).
+## 代码实现
+代码中有两个基本类型：`type_node` 与 `type_element`（见 `data_structure.f90`）。
 
-`type_node` contains the degrees of freedom $\vec{u}^{ij}$ (for physical variables) in `node%values` array and $\vec{v}^{ij}$ (for coordinates) in `node%x` array.
+`type_node` 在 `node%values` 数组中存放自由度 $\vec{u}^{ij}$（物理变量），在 `node%x` 数组中存放 $\vec{v}^{ij}$（坐标）。
 
-`type_element` contains the sizes $h^{ij}$ for each vertex.
+`type_element` 存放每个顶点的尺寸 $h^{ij}$。
 
-Here are some examples showing how DoF and sizes are stored. 
+下面举例说明自由度与尺寸的存储方式。 
 
-Fixed a toroidal number $l \in [0, \text{n_tor}]$, physical degrees of freedom can be accessed as follows:
+固定环向模数 $l \in [0, \text{n_tor}]$ 后，物理自由度可按如下方式访问：
 
 $$
 \begin{align}
@@ -188,7 +180,7 @@ $$
 \end{align}
 $$
 
-the first index is the toroidal mode, the second index the degree of freedom and the third index the variable 
+第一个下标为环向模，第二个下标为自由度，第三个下标为变量 
 
 $$
 \begin{align}
@@ -208,7 +200,7 @@ $$
 \end{align}
 $$
 
-For all $\nu = 1\ldots N_{var}$ and $i_G, j_G = 1\ldots N_{Gauss}$ and $p = 1\ldots N_{plane}$, the variable values at a given Gaussian point $(s_{i_G}, t_{j_G})$ at the toroidal position $\phi_p$ in a given finite element can be expressed by
+对全部 $\nu = 1\ldots N_{var}$、$i_G, j_G = 1\ldots N_{Gauss}$ 及 $p = 1\ldots N_{plane}$，给定有限元内变量在给定高斯点 $(s_{i_G}, t_{j_G})$、环向位置 $\phi_p$ 处的值可表示为
 
 $$
 \begin{align}
@@ -218,27 +210,27 @@ X_{\nu}(s_{i_G},t_{j_G},\phi_{p}) &= \sum_{k = 1}^{N_{vert}}\sum_{j = 1}^{N_{ord
 \tag{9}
 $$
 
-Above notation is slightly different from $(1)$ and $(2)$. Indeed we have $H(k,j,i_g,j_g):=b_{kj}(s_{i_g}, t_{j_g})$ . Furthermore $HZ(l,p):=Z_l(\phi_p)$.
+上述记号与 $(1)$、$(2)$ 略有不同。事实上 $H(k,j,i_g,j_g):=b_{kj}(s_{i_g}, t_{j_g})$ 。此外 $HZ(l,p):=Z_l(\phi_p)$。
 
-### Gaussian points
-For the heavy part, that is the integration, precomputed values of basis functions $b_{ij}$ at gaussian points are used. 
-These values are computed by the `initialize_basis()` function in `basis_at_gaussian.f90`, called at the start up fo the code.
+### 高斯点
+对计算量大的部分，即积分，使用预先算好的基函数 $b_{ij}$ 在高斯点上的取值。 
+这些值由 `basis_at_gaussian.f90` 中的 `initialize_basis()` 函数计算，该函数在代码启动时调用。
 
-### Using high order finite elements
-When using high order finite elements ($n\geq 7$), basis functions files and their evaluation at gaussian points has to be calculated before compiling the code. To do this, `tools/util/generate_codes_for_norder_gt_7.py` must be invoked. At the beginning of the file there are some parameters to be set, such as `n_order`.
+### 使用高阶有限元
+使用高阶有限元（$n\geq 7$）时，必须在编译代码之前生成基函数文件及其在高斯点上的取值。为此须调用 `tools/util/generate_codes_for_norder_gt_7.py`。该文件开头有一些须设定的参数，例如 `n_order`。
 
-### Other routines
-Other routines involving Bezier finite elements are the ones doing the mapping $(K, s,t) \rightarrow (R,Z)$ (`interp_RZP.f90`) and its reverse mapping (`find_RZ.f90`). $K$ is a finite element.
+### 其他例程
+其他涉及贝塞尔有限元的例程包括完成映射 $(K, s,t) \rightarrow (R,Z)$ 的例程（`interp_RZP.f90`）及其逆映射（`find_RZ.f90`）。$K$ 为一个有限元。
 
 #### interp_RZP.f90
-Simply uses expression $(2)$. Some overloads also provide up to second derivatives (also crossed) $\partial_s^i \partial_t^j R$ and $\partial_s^i \partial_t^j Z$. 
+直接使用表达式 $(2)$。某些重载版本还提供直至二阶的导数（含交叉导数）$\partial_s^i \partial_t^j R$ 与 $\partial_s^i \partial_t^j Z$。 
 
 #### find_RZ.f90 
-There is no general mapping $(R,Z) \rightarrow (s,t)$, because $(s,t)$ are coordinates local to each element $K$. In general there is no direct way to detect which is the element that contains $(R_\text{find},Z_\text{find})$, so a tree is built.  
-Instead of iterating through all the elements to see which contains $(R_\text{find},Z_\text{find})$, elements are ordered into a quadtree (`mod_quadtree.f90`). See, for example the [quadtree wikipedia page](https://en.wikipedia.org/wiki/Quadtree) for an explanation of this data structure.  
-This does not provide a single element as container of $(R_\text{find},Z_\text{find})$ but a few elements as _potential containers_.  
+不存在通用的映射 $(R,Z) \rightarrow (s,t)$，因为 $(s,t)$ 是各单元 $K$ 的局部坐标。一般而言没有直接方法判断哪个单元包含 $(R_\text{find},Z_\text{find})$，因此构建一棵树。  
+不再遍历所有单元来判断哪个包含 $(R_\text{find},Z_\text{find})$，而是将单元组织为四叉树（`mod_quadtree.f90`）。关于该数据结构，可参见[四叉树的维基百科页面](https://en.wikipedia.org/wiki/Quadtree)。  
+四叉树给出的不是唯一一个包含 $(R_\text{find},Z_\text{find})$ 的单元，而是若干_潜在容器_单元。  
 
-After having used the quadtree, for each of the remaining elements Newton method is used to solve the following system:
+使用四叉树之后，对每个剩余单元用 Newton 法求解下述方程组：
 $$
 \begin{cases}
 R(s,t) = R_\text{find} \\
@@ -246,7 +238,7 @@ Z(s,t) = Z_\text{find}
 \end{cases}
 $$
 
-For each of these elements Newton method is executed for 20 iterations, after which, if the point has not been found, another starting point is tried.  
-Starting points used are hard coded in `find_RZ.f90` file.  
-The first element in which convergence is reached (that is, the error is under a certain threshold), is returned, along with the found solutions `s` and `t`.
+对每个这样的单元执行 20 次 Newton 迭代；若仍未找到该点，则换用另一个起点重试。  
+所用起点硬编码于 `find_RZ.f90` 文件中。  
+第一个达到收敛（即误差低于某阈值）的单元连同求得的解 `s` 与 `t` 一起返回。
 

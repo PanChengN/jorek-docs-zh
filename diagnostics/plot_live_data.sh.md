@@ -5,20 +5,13 @@ render_with_liquid: false
 parent: "Running JOREK"
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+- 在算例目录中运行该脚本，即可绘制例如模拟期间或模拟之后的**能量时间曲线**。
+- 例如（点击可放大）：![](energies.png?400)
+- 该脚本需要较新版本的 gnuplot（在许多机器上可直接使用，或通过 'module' 命令加载）
+- 还可以绘制**增长率**（`plot_live_data.sh -q g`）、与**时间步**对应的模拟时间（`plot_live_data.sh -q t`）以及**输入剖面**（`plot_live_data.sh -q i`），今后也很容易继续扩展
+- **用 `plot_live_data.sh -l` 列出所有可绘制的量**
 
-原文页面：[plot_live_data.sh script](https://iterorganization.github.io/JOREK/diagnostics/plot_live_data.sh.html)　·　源文件：`diagnostics/plot_live_data.sh.md`
-</div>
-
-- Run the script from your simulation folder to plot for instance the **energy time traces** during or after a simulation.
-- For example (click to enlarge): ![](energies.png?400)
-- The script requires a recent gnuplot version (on many machines available directly or via the 'module' command)
-- It is also possible to plot **growth rates** (`plot_live_data.sh -q g`), simulation times associated with the **time steps** (`plot_live_data.sh -q t`), and **input profiles** (`plot_live_data.sh -q i`) and can easily be extended in the future
-- **List all available quantities with `plot_live_data.sh -l`**
-
-## Usage Information (plot_live_data.sh -h)
+## 用法说明（plot_live_data.sh -h）
 
   ```
   Usage: plot_live_data.sh [-h -f <file> -l -q <qtty> -ps -(no)log]
@@ -35,32 +28,31 @@ parent: "Running JOREK"
       'plot_live_data.sh -q gr' will plot growth_rates.
 
   ```
-## Check energy conservation
+## 检查能量守恒 {#check-energy-conservation}
+### 总能量守恒
 
-### Total energy conservation
-
-Live data allows you to check how JOREK conserves energy (or not) in real time. **The energy conservation diagnostic must be adapted to each model** since the addition of new physical terms can lead to new energy channels. Considering a basic visco-resistive MHD model, the evolution of the total energy density is
+实时数据可以让你实时检查 JOREK 如何守恒能量（或不守恒）。**能量守恒诊断必须针对每个模型单独适配**，因为新增物理项会带来新的能量通道。考虑一个基本的黏性—电阻 MHD 模型，总能量密度的演化方程为
 
 \begin{equation}
 \label{eq:energy_density}
 \partial_t w + \nabla\cdot\mathbf{\Gamma}=\tau_{nc} 
 \end{equation}
 
-where the energy density and the energy flux (omitting $\mu_0$ factors) are respectively
+其中能量密度与能量通量（略去 $\mu_0$ 因子）分别为
 
 \begin{align}
 w &\equiv \frac{\rho}{2}|\mathbf{v}|^2 + \frac{p}{\gamma-1}+\frac{|\mathbf{B}|^2}{2}   
  \mathbf{\Gamma} &\equiv \left[ \frac{\rho}{2}|\mathbf{v}|^2  + \frac{\gamma}{\gamma-1}p \right]\mathbf{v} + \frac{\mathbf{q}}{\gamma-1} + \mathbf{E}\times\mathbf{B} 
 \end{align}
 
-the RHS of Eq. \eqref{eq:energy_density} ($\tau_{nc}$) represents non-conservative terms such as sources (such as heating sources) and sinks (such as radiation). Dissipative terms such as resistive and viscous terms should in principle not appear inside ($\tau_{nc}$). However if for example, $\eta \neq \eta_{ohmic}$, some of the loss magnetic energy will not be converted into thermal energy through the Ohmic heating term, leading to a non-conservative term. The derivation of \eqref{eq:energy_density} is sketched in the following ![slides ](artola_energy_conservation_diagnostics.pdf). The energy conservation diagnostic is based on the volume integral of Eq. \eqref{eq:energy_density} over the JOREK domain, which is
+式 \eqref{eq:energy_density} 的右端项（$\tau_{nc}$）表示非守恒项，例如源项（如加热源）与汇项（如辐射）。耗散项（如电阻项与黏性项）原则上不应出现在（$\tau_{nc}$）中。不过，例如当 $\eta \neq \eta_{ohmic}$ 时，一部分损失的磁能不会通过欧姆加热项转化为热能，从而产生一个非守恒项。式 \eqref{eq:energy_density} 的推导概述见下面的 ![slides ](artola_energy_conservation_diagnostics.pdf)。能量守恒诊断基于式 \eqref{eq:energy_density} 在 JOREK 计算域上的体积分，即
 
 \begin{equation}
 \label{eq:total_energy_ev}
 \partial_t E_{tot} = \textrm{Boundary fluxes} + \textrm{Non-conservative/source terms}  
 \end{equation}
 
-and
+以及
 
 \begin{align}
 E_{tot} &\equiv \int_V w dV   
@@ -68,22 +60,22 @@ E_{tot} &\equiv \int_V w dV
 \textrm{Non-conservative/source terms} &\equiv \int_V \tau_{nc} dV
 \end{align}
 
-You can check that Eq. \eqref{eq:total_energy_ev} is satisfied by checking the LFS and RHS terms with the command
+用下面的命令检查 LFS（原文如此，应为 LHS）与 RHS 两项，即可确认式 \eqref{eq:total_energy_ev} 是否得到满足
 
   jorek_folder/util/plot_live_data.sh -q energy_conservation
 
-In case of good energy conservation, both lines should overlap as seen in the example below.
+若能量守恒良好，两条曲线应当重合，如下例所示。
 
 ![](example_energy_conservation1.png?nolink)
 
-You can also plot the different energy types and their time derivatives with the commands
+也可以用下面的命令绘制各类能量及其时间导数
 
   ```
   jorek_folder/util/plot_live_data.sh -q integrated_energies
   jorek_folder/util/plot_live_data.sh -q dEdt
 
   ```
-which are named with the following labels
+它们的标签命名如下
 
 \begin{align}
 \textrm{Total energy} &\equiv E_{tot}   
@@ -92,13 +84,13 @@ which are named with the following labels
 \textrm{Kinetic parallel} &\equiv \int_V\frac{\rho}{2}|\mathbf{v}_\parallel|^2 dV   
 \textrm{Kinetic perpendicular} &\equiv \int_V\frac{\rho}{2}|\mathbf{v}_u|^2 dV 
 \end{align}
-where $\mathbf{v}_u=-R^2\nabla u\times \nabla\phi$.
+其中 $\mathbf{v}_u=-R^2\nabla u\times \nabla\phi$。
 
-You can also plot different boundary fluxes with the command
+也可以用下面的命令绘制不同的边界通量
 
   jorek_folder/util/plot_live_data.sh -q bnd_fluxes
 
-which are labelled as
+它们的标签为
 
 \begin{align}
 \textrm{"p vn"} &\equiv \int_S \frac{\gamma}{\gamma-1}p \mathbf{v}\cdot\mathbf{n}dS   
@@ -107,27 +99,27 @@ which are labelled as
 \textrm{"qn-perp"} &\equiv  \int_S  \frac{\mathbf{q}_{\perp}\cdot\mathbf{n}}{\gamma-1}dS   
 \end{align}
 
-Note that if you set sheath boundary conditions in all the boundary of the domain (**not just the divertor**), the sum of the 4 previous fluxes corresponds to the energy flowing through the sheath and the formula provided by Stangeby (see [Running with sheath boundary conditions for the heat-flux](../howto/physics_options/boundary_conditions/sheath_heatflux_bc.md)).
+注意，如果在计算域的整个边界上（**不只是偏滤器**）都设置鞘层边界条件，那么上面 4 项通量之和就对应于穿过鞘层流走的能量，以及 Stangeby 给出的公式（见[带鞘层边界条件运行热流计算](../howto/physics_options/boundary_conditions/sheath_heatflux_bc.md)）。
 
-The Poynting flux is typically 0 in fixed boundary simulations (see next section on magnetic energy conservation how to plot it.)
+在固定边界模拟中，坡印廷通量通常为 0（如何绘制见下一节关于磁能守恒的内容。）
 
-In the current JOREK version (adapted for RMHD) the following terms are considered in the diagnostic as non-conservative terms
+在当前 JOREK 版本（已适配 RMHD）中，诊断把下列各项视为非守恒项
 
 \begin{equation}
 \textrm{Non-conservative/source terms} = \int_V \left( \frac{S_T}{\gamma-1} + S_{mag} + (\eta_{ohmic}-\eta) |\mathbf{J}|^2  -\boldsymbol{\nu}_\parallel\cdot\mathbf{v}_\parallel  \right) dV
 \end{equation}
 
-where $S_T = S_{T_i}+S_{T_e}$ is the heating source for ions and electrons together (used in the temperature equations), $S_{mag}$ is the magnetic energy source provided by the current source term (see next section) and the last term is the energy dissipated through parallel viscosity. These terms can be plotted with
+其中 $S_T = S_{T_i}+S_{T_e}$ 是离子与电子合起来的加热源（用于温度方程），$S_{mag}$ 是由电流源项提供的磁能源（见下一节），最后一项是通过平行黏性耗散掉的能量。这些项可以用下面的命令绘制
 
   jorek_folder/util/plot_live_data.sh -q dissipative_terms
 
-Note that all of these quantities can be **recovered via post-processing** with [jorek2_postproc](jorek2_postproc.md) with the command "expressions_int". See usage with "help expressions_int" and list all the available quantities (about 67) by typing "expressions_int" in jorek2_postproc.
+注意，以上所有量都可以用 [jorek2_postproc](jorek2_postproc.md) 的 "expressions_int" 命令**通过后处理重新获得**。用法见 "help expressions_int"，在 jorek2_postproc 中输入 "expressions_int" 即可列出所有可用量（约 67 个）。
 
 
 
-### Magnetic energy conservation
+### 磁能守恒
 
-Similar to the total energy equation, the different plots of the magnetic energy equation can be plotted with the command
+与总能量方程类似，磁能方程的各个图可以用下面的命令绘制
 
   ```
   jorek_folder/util/plot_live_data.sh -q mag_energy_balance
@@ -135,4 +127,4 @@ Similar to the total energy equation, the different plots of the magnetic energy
   ```
 ![](screenshot_from_2020-04-19_13-20-17.png?800)
 
-The equation for the magnetic energy and the plotted terms can be found in the document ![](mag_energy_evolution.pdf)  (also you can see the corresponding ![ pull request](https://git.iter.org/projects/STAB/repos/jorek/pull-requests/376/overview) )
+磁能方程及所绘制的各项可在文档 ![](mag_energy_evolution.pdf) 中找到（也可以查看对应的 ![ pull request](https://git.iter.org/projects/STAB/repos/jorek/pull-requests/376/overview) ）

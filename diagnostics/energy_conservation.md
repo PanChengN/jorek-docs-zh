@@ -1,34 +1,27 @@
 ---
-title: "检查能量守恒"
+title: "Check Energy Conservation"
 nav_order: 2
 parent: "诊断与后处理"
 layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 检查能量守恒
 
-原文页面：[Check Energy Conservation](https://iterorganization.github.io/JOREK/diagnostics/energy_conservation.html)　·　源文件：`diagnostics/energy_conservation.md`
-</div>
+实时数据（live-data）诊断可用于监测仿真过程中 JOREK 能量守恒的程度。
 
-# Checking Energy Conservation
+> **重要：** 能量守恒诊断必须针对每个模型进行适配。增加物理项可能引入新的能量通道、边界通量、源或汇。为某一模型实现的能量平衡，不可假定对另一模型同样完备。
 
-Live-data diagnostics can be used to monitor how well JOREK conserves energy during a simulation.
+## 总能量守恒
 
-> **Important:** The energy-conservation diagnostic must be adapted to each model. Adding physical terms can introduce new energy channels, boundary fluxes, sources, or sinks. A balance implemented for one model must not be assumed complete for another.
-
-## Total Energy Conservation
-
-For a basic visco-resistive MHD model, the local total-energy balance can be written as
+对于基本的黏性—电阻 MHD 模型，局域总能量平衡可写为
 
 $$
 \partial_t w+\nabla\cdot\boldsymbol{\Gamma}=\tau_{\mathrm{nc}},
 \tag{1}
 $$
 
-where, omitting factors of $\mu_0$, the energy density and energy flux are
+其中，略去 $\mu_0$ 因子后，能量密度与能量通量为
 
 $$
 \begin{aligned}
@@ -49,13 +42,13 @@ w
 \tag{2}
 $$
 
-The right-hand side of Eq. (1), $\tau_{\mathrm{nc}}$, contains non-conservative terms such as heating sources and radiation sinks. Dissipative resistive and viscous terms should not appear in $\tau_{\mathrm{nc}}$ when the dissipated magnetic or kinetic energy is converted consistently into thermal energy.
+式 (1) 的右端项 $\tau_{\mathrm{nc}}$ 包含非守恒项，例如加热源与辐射汇。当耗散的磁能或动能被一致地转换为热能时，耗散性的电阻项与黏性项不应出现在 $\tau_{\mathrm{nc}}$ 中。
 
-For example, if $\eta\neq\eta_{\mathrm{ohmic}}$, part of the magnetic-energy loss is not restored as thermal energy by Ohmic heating. The mismatch therefore contributes to the non-conservative balance.
+例如，若 $\eta\neq\eta_{\mathrm{ohmic}}$，则一部分磁能损失不会通过欧姆加热还原为热能。这一不匹配因而计入非守恒平衡。
 
-> **Reference for the derivation:** The standard total-energy equation follows by combining the MHD mass, momentum, internal-energy, and induction equations. A general derivation and discussion of the underlying MHD conservation laws can be found in J. P. Goedbloed and S. Poedts, [*Principles of Magnetohydrodynamics: With Applications to Laboratory and Astrophysical Plasmas*](https://www.cambridge.org/core/books/principles-of-magnetohydrodynamics/847AF12C94451B41D8F71C1F11EB308A), Cambridge University Press (2004). This page focuses on the JOREK diagnostic and its model-dependent energy accounting rather than repeating the general derivation.
+> **推导参考：** 标准总能量方程可由 MHD 的质量、动量、内能与感应方程组合得到。关于底层 MHD 守恒律的一般性推导与讨论，见 J. P. Goedbloed 与 S. Poedts，[*Principles of Magnetohydrodynamics: With Applications to Laboratory and Astrophysical Plasmas*](https://www.cambridge.org/core/books/principles-of-magnetohydrodynamics/847AF12C94451B41D8F71C1F11EB308A)，Cambridge University Press（2004）。本页侧重 JOREK 诊断及其依赖模型的能量核算，而不重复一般性推导。
 
-Integrating Eq. (1) over the JOREK domain gives
+将式 (1) 在 JOREK 计算域上积分，得
 
 $$
 \partial_t E_{\mathrm{tot}}
@@ -64,7 +57,7 @@ $$
 \tag{3}
 $$
 
-with
+其中
 
 $$
 \begin{aligned}
@@ -80,26 +73,26 @@ E_{\mathrm{tot}}
 \tag{4}
 $$
 
-### Plotting the Total-Energy Balance
+### 绘制总能量平衡
 
-Plot the left- and right-hand sides of Eq. (3) with
+用下列命令绘制式 (3) 的左端与右端：
 
 ```bash
 jorek_folder/util/plot_live_data.sh -q energy_conservation
 ```
 
-For good energy conservation, the two curves should overlap within the expected numerical accuracy. A persistent difference represents an unaccounted energy channel or a numerical conservation error.
+若能量守恒良好，两条曲线应在预期的数值精度内重合。持续存在的偏差表示存在未计入的能量通道，或存在数值守恒误差。
 
-### Integrated Energies and Time Derivatives
+### 积分能量与时间导数
 
-Plot the different energy components and their time derivatives with
+用下列命令绘制各能量分量及其时间导数：
 
 ```bash
 jorek_folder/util/plot_live_data.sh -q integrated_energies
 jorek_folder/util/plot_live_data.sh -q dEdt
 ```
 
-The plotted labels correspond to
+图中标签对应于
 
 $$
 \begin{aligned}
@@ -123,21 +116,21 @@ $$
 \tag{5}
 $$
 
-where
+其中
 
 $$
 \boldsymbol{v}_u=-R^2\nabla u\times\nabla\phi.
 $$
 
-### Boundary Fluxes
+### 边界通量
 
-Plot the individual boundary-flux contributions with
+用下列命令绘制各边界通量贡献：
 
 ```bash
 jorek_folder/util/plot_live_data.sh -q bnd_fluxes
 ```
 
-The labels correspond to
+各标签对应于
 
 $$
 \begin{aligned}
@@ -163,13 +156,13 @@ p\,\boldsymbol{v}\cdot\boldsymbol{n}\,dS, \\
 \tag{6}
 $$
 
-If sheath boundary conditions are imposed on the entire domain boundary, not only on the divertor, the sum of these four fluxes corresponds to the energy flowing through the sheath according to the Stangeby expression. See [Running with Sheath Boundary Conditions for the Heat Flux](../howto/physics_options/boundary_conditions/sheath_heatflux_bc.html).
+若在整个计算域边界（而不仅在偏滤器上）施加鞘层边界条件，则这四项通量之和对应于按 Stangeby 表达式给出的流过鞘层的能量。参见[在热流计算中使用鞘层边界条件](../howto/physics_options/boundary_conditions/sheath_heatflux_bc.html)。
 
-The Poynting flux is typically zero in fixed-boundary simulations. Its contribution can be inspected with the magnetic-energy balance described below.
+在固定边界仿真中，坡印廷通量通常为零。其贡献可通过下文所述的磁能平衡来检查。
 
-### Non-Conservative and Source Terms
+### 非守恒项与源项
 
-For the RMHD diagnostic described here, the non-conservative and source terms are
+对于此处所述的 RMHD 诊断，非守恒项与源项为
 
 $$
 \text{non-conservative/source terms}
@@ -185,37 +178,37 @@ $$
 \tag{7}
 $$
 
-Here:
+其中：
 
-- $S_T=S_{T_i}+S_{T_e}$ is the combined ion and electron heating source used in the temperature equations.
-- $S_{\mathrm{mag}}$ is the magnetic-energy source associated with the current source.
-- $(\eta_{\mathrm{ohmic}}-\eta)\lvert\boldsymbol{J}\rvert^2$ accounts for a mismatch between resistive magnetic-energy dissipation and Ohmic heating.
-- The final term represents energy dissipated through parallel viscosity.
+- $S_T=S_{T_i}+S_{T_e}$ 是温度方程中所用的离子与电子加热源之和。
+- $S_{\mathrm{mag}}$ 是与电流源相关的磁能源。
+- $(\eta_{\mathrm{ohmic}}-\eta)\lvert\boldsymbol{J}\rvert^2$ 表示电阻性磁能耗散与欧姆加热之间的不匹配。
+- 最后一项表示通过平行黏性耗散的能量。
 
-Plot these contributions with
+用下列命令绘制这些贡献：
 
 ```bash
 jorek_folder/util/plot_live_data.sh -q dissipative_terms
 ```
 
-All these quantities can also be recovered through [`jorek2_postproc`](../howto/introduction_to_jorek_diagnostics.html#jorek2_postproc) using the `expressions_int` command. Within `jorek2_postproc`:
+所有这些量也可通过 [`jorek2_postproc`](../howto/introduction_to_jorek_diagnostics.html#jorek2_postproc) 用 `expressions_int` 命令获取。在 `jorek2_postproc` 中：
 
 ```text
 help expressions_int
 expressions_int
 ```
 
-The first command displays usage information. The second lists the available integrated expressions. You can get all of them and more with the `zeroD_quantities` command.
+第一条命令显示用法信息，第二条列出可用的积分表达式。用 `zeroD_quantities` 命令可获取这些量乃至更多。
 
-## Magnetic Energy Conservation
+## 磁能守恒
 
-Let $W\equiv E_{\mathrm{mag}}$ denote the magnetic component of the total energy already defined in Eq. (5). In this section, $\mu_0=1$ is used for compactness.
+记 $W\equiv E_{\mathrm{mag}}$ 为式 (5) 已定义的总能量中的磁能分量。本节为简洁起见取 $\mu_0=1$。
 
-> **Model dependence:** The derivation below gives the reduced-MHD balance implemented by this diagnostic. Its terms must be checked against the equations and physical effects enabled in the selected model.
+> **模型依赖性：** 以下推导给出的是该诊断所实现的约化 MHD 平衡。各项须与所选模型中启用的方程及物理效应逐一对核。
 
-### General Balance
+### 一般平衡
 
-The time evolution of the magnetic energy is
+磁能的时间演化为
 
 $$
 \partial_t W
@@ -230,7 +223,7 @@ $$
 \tag{8}
 $$
 
-Using the identity below with $\boldsymbol{C}=\partial_t\boldsymbol{A}$,
+利用下述恒等式，并取 $\boldsymbol{C}=\partial_t\boldsymbol{A}$，
 
 $$
 \mathbf{B}\cdot\nabla\times\mathbf{C}
@@ -240,7 +233,7 @@ $$
 \mathbf{C}\cdot\nabla\times\mathbf{B},
 $$
 
-together with Ampère's law, we obtain
+结合安培定律，可得
 
 $$
 \partial_t W
@@ -258,7 +251,7 @@ $$
 \tag{9}
 $$
 
-Using Gauss' divergence theorem,
+应用高斯散度定理，
 
 $$
 \partial_t W
@@ -273,9 +266,9 @@ $$
 \tag{10}
 $$
 
-The surface term must be retained for the finite JOREK domain. It vanishes only when imposed boundary conditions make it zero, or when the boundary is taken sufficiently far away.
+对于有限的 JOREK 计算域，必须保留该面积分项。只有当所施加的边界条件使其为零，或边界取得足够远时，它才消失。
 
-Writing the latter form in terms of the electric field,
+将后一形式用电场表示，
 
 $$
 \mathbf{E}
@@ -285,7 +278,7 @@ $$
 \nabla\Phi,
 $$
 
-gives
+得到
 
 $$
 \partial_t W
@@ -309,7 +302,7 @@ $$
 \tag{11}
 $$
 
-The last two terms cancel. This follows by integrating the volume term by parts and using
+最后两项相互抵消。这可通过对体积分项作分部积分并利用下式得到：
 
 $$
 \nabla\Phi\cdot\nabla\times\mathbf{B}
@@ -320,7 +313,7 @@ $$
 \right).
 $$
 
-We therefore obtain the standard form
+由此得到标准形式
 
 $$
 \boxed{
@@ -338,11 +331,11 @@ $$
 \tag{12}
 $$
 
-The first term in Eq. (12) describes magnetic-energy exchange with the plasma through $\boldsymbol{E}\cdot\boldsymbol{J}$. The second is the outward Poynting flux through the boundary.
+式 (12) 的第一项描述磁能通过 $\boldsymbol{E}\cdot\boldsymbol{J}$ 与等离子体的交换。第二项是穿过边界向外的坡印廷通量。
 
-### Reduced-MHD Specialization
+### 约化 MHD 特化形式
 
-In reduced MHD,
+在约化 MHD 中，
 
 $$
 \partial_t\mathbf{A}
@@ -353,13 +346,13 @@ $$
 \hat{\mathbf e}_\phi.
 $$
 
-Also using the JOREK variable
+并利用 JOREK 变量
 
 $$
 j = -J_\phi R,
 $$
 
-the volume term of Eq. (10) becomes
+式 (10) 的体积分项变为
 
 $$
 \mathcal{V}_{\mathrm{mag}}
@@ -376,7 +369,7 @@ j\,\partial_t\psi
 \tag{13}
 $$
 
-The integrand can be written in terms of the evolved variables using the reduced-MHD poloidal-flux equation,
+利用约化 MHD 的极向磁通方程，可将被积函数用演化变量表示，
 
 $$
 j\,\partial_t\psi
@@ -392,9 +385,9 @@ F\frac{\partial u}{\partial\phi}
 \tag{14}
 $$
 
-Here, $j_S$ is the current source and $F=RB_\phi$. See the [derivation of the poloidal-flux equation](../physics/base_fluid_models/RMHD/expressions_and_derivations/psi_eq.html) for the sign and variable conventions.
+此处 $j_S$ 为电流源，$F=RB_\phi$。符号与变量约定的说明见[极向磁通方程的推导](../physics/base_fluid_models/RMHD/expressions_and_derivations/psi_eq.html)。
 
-This gives
+由此得到
 
 $$
 \mathcal{V}_{\mathrm{mag}}
@@ -428,7 +421,7 @@ $$
 \tag{15}
 $$
 
-The boundary flux is
+边界通量为
 
 $$
 \partial_t\mathbf{A}\times\mathbf{B}
@@ -445,7 +438,7 @@ $$
 \tag{16}
 $$
 
-Using the flux equation, the boundary flux becomes
+利用磁通方程，边界通量变为
 
 $$
 \partial_t\mathbf{A}\times\mathbf{B}
@@ -464,14 +457,14 @@ F\frac{\partial u}{\partial\phi}
 \tag{17}
 $$
 
-The first term can be shown to be
+可以证明，第一项为
 
 $$
 -\mathbf{v}_{\perp}^{\mathrm{pol}}
 B_{\mathrm{pol}}^2.
 $$
 
-Combining the volume contribution $\mathcal{V}_{\mathrm{mag}}$ from Eq. (15) with the boundary contribution from Eq. (16) gives the magnetic-energy balance without repeating the expanded volume terms:
+将式 (15) 的体积贡献 $\mathcal{V}_{\mathrm{mag}}$ 与式 (16) 的边界贡献合并，即得磁能平衡（不再重复展开后的体积分项）：
 
 $$
 \boxed{
@@ -488,25 +481,25 @@ $$
 \tag{18}
 $$
 
-### Diagnostic Labels
+### 诊断标签
 
-By running
+运行
 
 ```bash
 jorek_folder/util/plot_live_data.sh -q mag_energy_balance
 ```
 
-you can compare the different terms of Eq. (18) as functions of time.
+即可比较式 (18) 中各项随时间的变化。
 
-The diagnostic names map onto the derivation as follows:
+诊断名称与推导的对应关系如下：
 
-| Live-data label | Term in the magnetic-energy balance |
+| 实时数据标签 | 磁能平衡中的项 |
 |:---|:---|
-| `magSource` | The third term in Eq. (15), representing magnetic-energy input from the current source $j_S$. |
-| `Ohmic` | The second term in Eq. (15), representing resistive loss of magnetic energy. |
-| `JxB.v` | The sum of the first and fourth terms in Eq. (15), representing magnetic-to-kinetic energy transfer. |
-| `Poynting` | The surface integral in Eq. (18), representing magnetic energy crossing the domain boundary. |
-| `dWmagdt` | The left-hand side of Eq. (18), $\partial_t W$. |
-| `sum all...` | The sum `magSource + Ohmic + JxB.v + Poynting`, i.e. the complete right-hand side of Eq. (18). |
+| `magSource` | 式 (15) 的第三项，表示电流源 $j_S$ 输入的磁能。 |
+| `Ohmic` | 式 (15) 的第二项，表示磁能的电阻性损失。 |
+| `JxB.v` | 式 (15) 中第一项与第四项之和，表示磁能向动能的转移。 |
+| `Poynting` | 式 (18) 中的面积分，表示穿过计算域边界的磁能。 |
+| `dWmagdt` | 式 (18) 的左端，$\partial_t W$。 |
+| `sum all...` | `magSource + Ohmic + JxB.v + Poynting` 之和，即式 (18) 完整的右端。 |
 
-For a closed balance, `dWmagdt` and `sum all...` should agree within the temporal, spatial, and diagnostic-integration accuracy. A systematic difference indicates a missing physical term, an inconsistent coefficient, an unaccounted boundary contribution, or insufficient numerical accuracy.
+若平衡闭合，`dWmagdt` 与 `sum all...` 应在时间、空间与诊断积分精度内一致。系统性偏差表明缺少某个物理项、系数不一致、存在未计入的边界贡献，或数值精度不足。

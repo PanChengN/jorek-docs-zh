@@ -7,53 +7,46 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 附录：平行动量方程的推导
 
-原文页面：[Derivation of the Parallel Momentum Equation](https://iterorganization.github.io/JOREK/physics/base_fluid_models/RMHD/expressions_and_derivations/velocity_equation.html)　·　源文件：`physics/base_fluid_models/RMHD/expressions_and_derivations/velocity_equation.md`
-</div>
+动量方程的平行投影通过将算子 $\nabla\phi \cdot (\dots)$ 作用于动量方程得到。
 
-# Appendix: Derivation of the Parallel Momentum Equation
-
-The parallel projection of the momentum equation is obtained by applying the operator $\nabla\phi \cdot (\dots)$ onto the momentum equation. 
-
-The starting point is the momentum equation:
+出发点是动量方程：
 
 $$\begin{equation}
 \rho \left( \frac{\partial \mathbf{v}}{\partial t} + \mathbf{v} \cdot \nabla \mathbf{v} \right) = \mathbf{j} \times \mathbf{B} - \nabla p + \mu \nabla^2 \mathbf{v}
 \end{equation}$$
 
-Projecting this in the parallel direction by multiplying with $F_0 \nabla\phi$, and assuming $F \approx F_0$ (constant), we analyze the terms.
+将其乘以 $F_0 \nabla\phi$ 沿平行方向投影，并假定 $F \approx F_0$（常数），下面逐项分析。
 
-### Time Derivative Term
+### 时间导数项
 
-The time derivative of the velocity $\mathbf{v} = \mathbf{v}_{pol} + v_{||} \mathbf{B}$ projected onto $F_0 \nabla\phi$ gives:
+速度 $\mathbf{v} = \mathbf{v}_{pol} + v_{||} \mathbf{B}$ 的时间导数投影到 $F_0 \nabla\phi$ 上给出：
 
 $$\begin{equation*}
 F_0 \nabla\phi \cdot \rho \frac{\partial \mathbf{v}}{\partial t} \approx \rho \frac{\partial v_{||}}{\partial t}
 \end{equation*}$$
 
-### Advection Term
+### 对流项
 
-The advection term $\rho (\mathbf{v} \cdot \nabla \mathbf{v})$ projected onto $F_0 \nabla\phi$ is expanded as:
+对流项 $\rho (\mathbf{v} \cdot \nabla \mathbf{v})$ 投影到 $F_0 \nabla\phi$ 上展开为：
 
 $$\begin{equation*}
 F_0 \nabla\phi \cdot \rho (\mathbf{v} \cdot \nabla \mathbf{v}) = - R \rho \left[ u, v_{||} \right] + \frac{1}{R} \rho v_{||} \left[ \psi, v_{||} \right] - \frac{F_0}{R^2} \rho v_{||} \partial_3 v_{||}
 \end{equation*}$$
 
-### Force Terms
+### 力项
 
-The $\mathbf{j} \times \mathbf{B}$ term and pressure gradient $\nabla p$ terms are projected as:
+$\mathbf{j} \times \mathbf{B}$ 项与压强梯度 $\nabla p$ 项的投影为：
 
 $$\begin{align*}
 F_0 \nabla\phi \cdot (\mathbf{j} \times \mathbf{B}) &= - \frac{1}{2R^2} \frac{\partial}{\partial \phi} \left| \nabla \psi \right|^2 \\
 - F_0 \nabla\phi \cdot \nabla p &= - \frac{\partial p}{\partial \phi}
 \end{align*}$$
 
-### Combined Equation
+### 合并后的方程
 
-Combining these parts, we obtain the parallel momentum equation in the form used in JOREK:
+将上述各部分合并，即得 JOREK 中所用的平行动量方程形式：
 
 $$\begin{equation*}\begin{split}
 \rho \frac{\partial v_{\parallel}}{\partial t} = 
@@ -62,4 +55,4 @@ $$\begin{equation*}\begin{split}
   & - \frac{1}{2R^2} \frac{1}{F_0} \frac{\partial}{\partial \phi} \left| \nabla \psi\right|^2 - \frac{1}{F_0} \frac{\partial p}{\partial \phi}
 \end{split}\end{equation*}$$
 
-This equation describes the evolution of the parallel velocity component in the reduced MHD limit.
+该方程描述约化 MHD 极限下平行速度分量的演化。

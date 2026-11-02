@@ -9,13 +9,6 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 控制器与执行器
 
-原文页面：[Controllers and Actuators](https://iterorganization.github.io/JOREK/howto/physics_options/controllers_and_actuators.html)　·　源文件：`howto/physics_options/controllers_and_actuators.md`
-</div>
-
-# Controllers and Actuators
-
-Configuration of simulation controllers and externally applied actuators.
+仿真控制器与外部施加的执行器的配置。

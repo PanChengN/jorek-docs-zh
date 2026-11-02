@@ -7,35 +7,28 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 修正负密度与负温度
 
-原文页面：[Correct Negative Densities / Temperatures](https://iterorganization.github.io/JOREK/howto/corr_neg.html)　·　源文件：`howto/corr_neg.md`
-</div>
+负密度或负温度在用于 $T^{-3/2}$ 这类表达式时会引发浮点异常。因此，JOREK 提供平滑修正函数，为不能接受负值输入的计算提供正值。
 
-# Correcting Negative Densities and Temperatures
+> **警告：** 该修正是一种数值变通手段，而非物理上的解决方案。负密度或负温度通常表明存在分辨率不足、时间步过大、源或边界层解析不足、非线性求解器未充分收敛之类的问题。应始终首先排查该问题。修正只能避免部分无效求值，并不能使底层解变得物理上合理。
 
-Negative densities or temperatures can cause floating-point exceptions when they are used in expressions such as $T^{-3/2}$. JOREK therefore provides smooth correction functions that can supply a positive value to calculations which cannot accept a negative input.
+这些函数实现在 `models/corr_neg.f90` 与 `models/corr_neg_include.f90` 中：
 
-> **Warning:** This correction is a numerical workaround, not a physical solution. Negative density or temperature usually indicates a problem such as insufficient resolution, an excessive time step, poorly resolved sources or boundary layers, or a nonlinear solver that has not converged adequately. Always investigate that problem first. The correction prevents some invalid evaluations; it does not make the underlying solution physical.
+- `corr_neg_temp` 对所传入的温度进行修正。
+- `corr_neg_dens` 对所传入的密度进行修正。
 
-The functions are implemented in `models/corr_neg.f90` and `models/corr_neg_include.f90`:
-
-- `corr_neg_temp` corrects a temperature supplied to it.
-- `corr_neg_dens` corrects a density supplied to it.
-
-For example, code which requires a positive temperature can use
+例如，要求温度为正的代码可以使用
 
 ```fortran
 corr_neg_temp(T0)**(-1.5d0)
 ```
 
-The correction returns a separate value. It does **not** clip or overwrite the evolved temperature or density field. Consequently, a run can still contain negative values even though selected coefficients are evaluated using corrected ones.
+修正返回的是一个独立的值。它**不会**截断或覆盖演化的温度场或密度场。因此，即使某些系数是用修正值计算的，计算过程中的场仍可能包含负值。
 
-## Shape of the smooth correction
+## 平滑修正的形状
 
-For an input value $x$, the correction used by both functions is
+对输入值 $x$，两个函数使用的修正为
 
 $$
 f(x) =
@@ -45,80 +38,80 @@ L_1 + L_2 \exp\left(\dfrac{x-(L_1+L_2)}{L_2}\right), & x < L_1 + L_2,
 \end{cases}
 $$
 
-where
+其中
 
 $$
 L_1=c_1x_{\min}, \qquad L_2=c_2x_{\min}.
 $$
 
-Here $x_{\min}$ is the temperature or density correction scale, and $c_1$ and $c_2$ are the corresponding correction coefficients. This description replaces the old plot:
+此处 $x_{\min}$ 为温度或密度的修正尺度，$c_1$ 与 $c_2$ 为相应的修正系数。以下文字说明取代了原先的图：
 
-- Above $L_1+L_2$, the value is unchanged.
-- Below that point, the corrected value bends smoothly away from the original value.
-- For increasingly negative input, the corrected value approaches $L_1$.
-- The value and its first derivative are continuous at the transition.
+- 在 $L_1+L_2$ 以上，取值不变。
+- 在该点以下，修正值从原值平滑地偏离。
+- 随着输入越来越负，修正值趋近 $L_1$。
+- 该值及其一阶导数在过渡处连续。
 
-The default coefficients are $c_1=c_2=0.5$. With these defaults, the correction starts at $x=x_{\min}$ and approaches $x_{\min}/2$ for very negative input. The first coefficient therefore controls the asymptotic lower value, while the second controls the width of the transition. In normal use, keep the second coefficient positive; changing these coefficients should be done only after checking the resulting correction shape.
+默认系数为 $c_1=c_2=0.5$。采用这些默认值时，修正从 $x=x_{\min}$ 开始，并在输入极负时趋近 $x_{\min}/2$。因此，第一个系数控制渐近下界值，第二个系数控制过渡的宽度。常规使用中应保持第二个系数为正；只有在检查了所得修正的形状之后，才应改动这些系数。
 
-The input parameters are named `corr_neg_temp_coef` and `corr_neg_dens_coef`:
+输入参数名称为 `corr_neg_temp_coef` 与 `corr_neg_dens_coef`：
 
 ```fortran
 corr_neg_temp_coef = 0.5d0, 0.5d0
 corr_neg_dens_coef = 0.5d0, 0.5d0
 ```
 
-Within the source code, a call can override the input coefficients:
+在源代码中，调用时可以覆盖输入的系数：
 
 ```fortran
 corr_neg_temp(T0, (/ 0.5d0, 0.5d0 /))
 ```
 
-An overload with a third argument can also supply a local correction scale instead of the global one:
+带第三个参数的重载版本还可以提供局部修正尺度，以替代全局尺度：
 
 ```fortran
 corr_neg_temp(T0, (/ 0.5d0, 0.5d0 /), local_T_min)
 ```
 
-## Choosing the correction scales
+## 选择修正尺度
 
-Set positive correction scales explicitly in the input file using `T_min_neg` and `rho_min_neg`. For example:
+在输入文件中用 `T_min_neg` 与 `rho_min_neg` 显式设定正的修正尺度。例如：
 
 ```fortran
 T_min_neg   = 4.02d-4 ! 2.01d-5 * central_density * Tmin_eV
 rho_min_neg = 1.d-3
 ```
 
-For `central_density = 1`, the temperature value in this example corresponds to `Tmin_eV = 20`. Both parameters are in JOREK units.
+对 `central_density = 1`，本例中的温度值对应 `Tmin_eV = 20`。两个参数均使用 JOREK 单位。
 
-If `T_min_neg` or `rho_min_neg` remains negative, JOREK instead uses the lower equilibrium-profile value, `T_1` or `rho_1`, as the respective correction scale and prints a warning. Explicit positive values are preferable because they express a deliberate, physics-based choice rather than depending on the initialization profiles.
+若 `T_min_neg` 或 `rho_min_neg` 仍为负，JOREK 改用平衡剖面的下界值 `T_1` 或 `rho_1` 作为相应的修正尺度，并打印警告。显式给出正值更为可取，因为这表达了有意的、基于物理的选择，而不是依赖初始化剖面。
 
-`T_min_neg` and `rho_min_neg` are independent of `T_min` and `rho_min`. The `_min_neg` parameters define the scales of the smooth correction described above. The latter parameters are separate lower limits used in selected calculations, including temperature-dependent coefficients such as parallel heat conductivity and viscosity.
+`T_min_neg` 与 `rho_min_neg` 独立于 `T_min` 与 `rho_min`。`_min_neg` 参数定义上文所述平滑修正的尺度。后者则是用于若干计算中的独立下限，包括平行热导率与黏性等依赖温度的系数。
 
-## Enhanced diffusion below a threshold
+## 阈值以下的增强扩散
 
-Another way to remove a localized negative excursion is to increase the heat or particle diffusion in the affected region. These controls are different from `corr_neg_temp` and `corr_neg_dens`: they change transport coefficients in the evolution equations rather than only supplying corrected values to coefficient calculations.
+消除局部负向偏离的另一种方式是在受影响区域提高热扩散或粒子扩散。这些控制项与 `corr_neg_temp`、`corr_neg_dens` 不同：它们改变演化方程中的输运系数，而不只是为系数计算提供修正值。
 
-Unlike `implicit_heat_source`, these transport terms do not create energy or particles locally:
+与 `implicit_heat_source` 不同，这些输运项不会在局部产生能量或粒子：
 
-- Heat conduction redistributes thermal energy and is globally energy-conserving, apart from heat transported through the domain boundary and the usual discretization error.
-- Particle diffusion redistributes particles and conserves the corresponding particle inventory, apart from boundary fluxes. Because density is coupled to the other equations, its effect on the complete energy balance should nevertheless be monitored.
+- 热传导重新分布热能，除通过区域边界输运的热量以及通常的离散误差外，全局能量守恒。
+- 粒子扩散重新分布粒子，除边界通量外保持相应的粒子总量守恒。由于密度与其他方程耦合，仍应监测其对完整能量平衡的影响。
 
-Enhanced transport can therefore be preferable to adding artificial heat. It can still alter the physical solution substantially, especially by increasing losses through an open boundary.
+因此，增强输运可能优于添加人工热源。但它仍可能显著改变物理解，尤其是通过增加开放边界上的损失。
 
-> **Convergence warning:** The activation is a sharp conditional switch, not a smoothly varying coefficient. The threshold crossing itself is not treated implicitly in the Jacobian. During time iterations, a point can repeatedly move across the threshold and alternate between the normal and replacement coefficients. Large coefficient jumps can therefore make solver convergence extremely slow. Increase these coefficients cautiously and check time-step and resolution sensitivity.
+> **收敛警告：** 该启用是一个陡峭的条件开关，而不是平滑变化的系数。跨越阈值这一行为本身在雅可比矩阵中未被隐式处理。在时间迭代过程中，某一点可能反复穿越阈值，在正常系数与替代系数之间来回切换。因此，系数的大幅跳变会使求解器收敛变得极其缓慢。应谨慎增大这些系数，并检查对时间步与分辨率的敏感性。
 
-The configured value **replaces** the normal local coefficient below its threshold; it is not added to it. It only enhances diffusion if it is larger than the coefficient that would otherwise be used at that location.
+在阈值以下，配置的取值会**替换**正常的局部系数，而不是叠加到其上。只有当它大于该位置原本会使用的系数时，才会增强扩散。
 
-### Heat diffusion for a one-temperature model
+### 单温度模型的热扩散
 
-| Parameter | Default | Function |
+| 参数 | 默认值 | 作用 |
 |:---|---:|:---|
-| `ZK_prof_neg_thresh` | `0.d0` | Activate the perpendicular replacement when $T$ is below this value. |
-| `ZK_prof_neg` | `1.d-5` | Replacement perpendicular heat-diffusion coefficient. |
-| `ZK_par_neg_thresh` | `0.d0` | Activate the parallel replacement when $T$ is below this value. |
-| `ZK_par_neg` | `1.d-3` | Replacement parallel heat-diffusion coefficient. |
+| `ZK_prof_neg_thresh` | `0.d0` | 当 $T$ 低于此值时启用垂直替代系数。 |
+| `ZK_prof_neg` | `1.d-5` | 替代的垂直热扩散系数。 |
+| `ZK_par_neg_thresh` | `0.d0` | 当 $T$ 低于此值时启用平行替代系数。 |
+| `ZK_par_neg` | `1.d-3` | 替代的平行热扩散系数。 |
 
-For example:
+例如：
 
 ```fortran
 ZK_prof_neg_thresh = 0.d0
@@ -127,66 +120,66 @@ ZK_par_neg_thresh  = 0.d0
 ZK_par_neg          = 1.d-3
 ```
 
-With zero thresholds, the replacement is selected only where the raw temperature is negative. A small positive threshold activates it before the temperature reaches zero, but also modifies a larger part of the physical low-temperature region.
+阈值取零时，只有在原始温度为负的位置才会选用替代系数。取小的正阈值可让它在温度降到零之前就生效，但同时也会改变物理低温区域中更大的部分。
 
-In model 600, `ZK_par_neg` overrides the normal constant or temperature-dependent parallel conductivity below `ZK_par_neg_thresh`. When `use_zkperp_times_density = .true.`, the perpendicular replacement follows the same density scaling as the ordinary perpendicular coefficient.
+在 model 600 中，`ZK_par_neg` 在低于 `ZK_par_neg_thresh` 时覆盖正常的常数或温度相关平行热导率。当 `use_zkperp_times_density = .true.` 时，垂直替代系数遵循与常规垂直系数相同的密度标度。
 
-### Heat diffusion for a two-temperature model
+### 双温度模型的热扩散
 
-The two-temperature formulation provides independent controls for ions and electrons:
+双温度表述为离子与电子提供独立的控制项：
 
-| Species and direction | Activation threshold | Replacement coefficient | Defaults |
+| 粒子种类与方向 | 启用阈值 | 替代系数 | 默认值 |
 |:---|:---|:---|:---|
-| Ion, perpendicular | `ZK_i_prof_neg_thresh` | `ZK_i_prof_neg` | `0.d0`, `1.d-5` |
-| Ion, parallel | `ZK_i_par_neg_thresh` | `ZK_i_par_neg` | `0.d0`, `1.d-3` |
-| Electron, perpendicular | `ZK_e_prof_neg_thresh` | `ZK_e_prof_neg` | `0.d0`, `1.d-5` |
-| Electron, parallel | `ZK_e_par_neg_thresh` | `ZK_e_par_neg` | `0.d0`, `1.d-3` |
+| 离子，垂直 | `ZK_i_prof_neg_thresh` | `ZK_i_prof_neg` | `0.d0`, `1.d-5` |
+| 离子，平行 | `ZK_i_par_neg_thresh` | `ZK_i_par_neg` | `0.d0`, `1.d-3` |
+| 电子，垂直 | `ZK_e_prof_neg_thresh` | `ZK_e_prof_neg` | `0.d0`, `1.d-5` |
+| 电子，平行 | `ZK_e_par_neg_thresh` | `ZK_e_par_neg` | `0.d0`, `1.d-3` |
 
-Each threshold is compared with its own raw species temperature. For example, a negative electron temperature activates only the electron replacements; it does not automatically change the ion coefficients.
+每个阈值都与其自身粒子种类的原始温度比较。例如，电子温度为负只会启用电子替代系数，不会自动改变离子系数。
 
-### Particle diffusion for low or negative density
+### 低密度或负密度下的粒子扩散
 
-`D_prof_neg` is the analogous replacement for density diffusion. Despite appearing alongside the negative-temperature controls, it is activated by density thresholds, not by temperature.
+`D_prof_neg` 是密度扩散的类似替代系数。尽管它与负温度控制项列在一起，但它由密度阈值而非温度触发。
 
-| Parameter | Default | Model-600 behavior |
+| 参数 | 默认值 | 在 model-600 中的行为 |
 |:---|---:|:---|
-| `D_prof_neg` | `1.d-5` | Replacement particle-diffusion coefficient. For an activated species, it replaces both the local perpendicular and parallel coefficients. |
-| `D_prof_neg_thresh` | `0.d0` | Activate for the background-species density when $\rho-\rho_{\mathrm{imp}}$ is below this threshold. Without impurities, this reduces to the evolved density. |
-| `D_prof_imp_neg_thresh` | `-1.d3` | Activate `D_prof_neg` for the impurity density below this threshold. The very negative default disables this safeguard in ordinary runs because it can cause convergence problems near zero impurity density. |
-| `D_prof_tot_neg_thresh` | `0.d0` | Activate `D_prof_neg` for both background and impurity transport when the total evolved density is below this threshold, provided the background-species condition has not already activated. |
-| `D_imp_extra_neg` | `1.d-6` | Replacement diffusion coefficient for the additional impurity/neutral-density transport channels available in the relevant extended models. |
-| `D_imp_extra_neg_thresh` | `-1.d3` | Activation threshold for `D_imp_extra_neg`; its very negative default normally disables it. |
+| `D_prof_neg` | `1.d-5` | 替代的粒子扩散系数。对已启用的粒子种类，它同时替换局部的垂直与平行系数。 |
+| `D_prof_neg_thresh` | `0.d0` | 当背景粒子种类的密度 $\rho-\rho_{\mathrm{imp}}$ 低于此阈值时启用。无杂质时，这退化为演化密度。 |
+| `D_prof_imp_neg_thresh` | `-1.d3` | 当杂质密度低于此阈值时对杂质密度启用 `D_prof_neg`。该默认值极负，因此在常规计算中关闭了这一保护措施，因为它在杂质密度接近零时可能引起收敛问题。 |
+| `D_prof_tot_neg_thresh` | `0.d0` | 当总演化密度低于此阈值时，对背景与杂质输运同时启用 `D_prof_neg`，前提是背景粒子种类的条件尚未触发。 |
+| `D_imp_extra_neg` | `1.d-6` | 相关扩展模型中可用的附加杂质／中性粒子密度输运通道的替代扩散系数。 |
+| `D_imp_extra_neg_thresh` | `-1.d3` | `D_imp_extra_neg` 的启用阈值；其极负的默认值通常关闭该项。 |
 
-The exact density represented by the impurity variable differs between extended models, so check the selected model before using the impurity thresholds. In particular, activating a correction as soon as an impurity density crosses zero can cause the coefficient to switch repeatedly while an initially absent impurity species oscillates around zero.
+杂质变量所代表的确切密度在不同扩展模型之间并不相同，因此在使用杂质阈值前应先确认所选模型。特别是，一旦杂质密度跨越零就启用修正，会使系数反复切换——当初始并不存在的杂质粒子种类在零附近振荡时尤其如此。
 
-### Recommended use
+### 使用建议
 
-Start with the default zero temperature or background-density thresholds, and choose replacement coefficients by comparing them with the normal local transport coefficients. Then:
+先采用默认的零温度阈值或零背景密度阈值，并通过与正常局部输运系数比较来选定替代系数。然后：
 
-1. Check whether the negative region shrinks through redistribution rather than simply moving to a boundary.
-2. Monitor boundary heat and particle fluxes; conservative diffusion can still increase energy or particle loss from the computational domain.
-3. Monitor nonlinear iteration counts. If convergence deteriorates, reduce the jump between the ordinary and replacement coefficients or reduce the time step.
-4. Repeat with smaller replacement coefficients and thresholds closer to zero to establish that the physical conclusions do not depend on this safeguard.
+1. 检查负值区域是否通过重新分布而缩小，而不是仅仅移动到边界。
+2. 监测边界热通量与粒子通量；守恒型扩散仍可能增加计算域中的能量或粒子损失。
+3. 监测非线性迭代次数。若收敛变差，减小常规系数与替代系数之间的跳变，或减小时间步。
+4. 用更小的替代系数和更接近零的阈值重复计算，以确认物理结论不依赖于这一保护措施。
 
-## Implicit heat source in model 600
+## model 600 中的隐式热源
 
-Model 600 also provides `implicit_heat_source`. This is different from merely evaluating a coefficient with `corr_neg_temp`: it adds a positive term directly to the temperature equation wherever the temperature is below the selected threshold.
+Model 600 还提供 `implicit_heat_source`。它与仅用 `corr_neg_temp` 计算某个系数不同：它在温度低于所选阈值的位置直接向温度方程添加一个正项。
 
-> **Severe warning — this source can hide real numerical or physical problems and can completely break energy conservation.** It injects thermal energy without a compensating loss elsewhere. A run may appear stable only because this artificial source masks negative-temperature excursions. Do not enable it as a substitute for resolving time-step, mesh, transport, source, boundary-condition, or solver-convergence problems. Results involving energy balances are not trustworthy unless the injected energy has been explicitly measured and shown to be negligible.
+> **严重警告——该源可能掩盖真实的数值或物理问题，并可能完全破坏能量守恒。** 它注入热能，却在别处没有相应的损失来补偿。计算看似稳定，可能只是因为这一人工源掩盖了负温度偏离。不要用它来代替解决时间步、网格、输运、源、边界条件或求解器收敛问题。除非注入的能量已被显式测量并证明可忽略，否则涉及能量平衡的结果不可信。
 
-The default setting disables the source:
+默认设置关闭该源：
 
 ```fortran
 implicit_heat_source = 0.d0
 ```
 
-Setting it to `1.d0` fully enables the implemented stabilization:
+将其设为 `1.d0` 可完全启用已实现的稳定化：
 
 ```fortran
 implicit_heat_source = 1.d0 ! Emergency numerical stabilization only
 ```
 
-For the one-temperature formulation, define $T_*=\texttt{T_min_neg}$. Apart from the weak-form and normalization factors, the added source has the shape
+对单温度表述，定义 $T_*=\texttt{T_min_neg}$。除弱形式与归一化因子外，所添加的源具有如下形式
 
 $$
 S_{\mathrm{impl}}(T) = a(\gamma-1)\left[
@@ -196,13 +189,13 @@ S_{\mathrm{impl}}(T) = a(\gamma-1)\left[
 \right],
 $$
 
-where $a=\texttt{implicit_heat_source}$. The term is zero for $T>T_* $. It is included consistently in the nonlinear residual and its Jacobian, which is why it is called *implicit*; that does not make it a physical or energy-conserving source.
+其中 $a=\texttt{implicit_heat_source}$。当 $T>T_*$ 时该项为零。该项被一致地包含在非线性残差及其雅可比矩阵中，这正是它被称为*隐式*的原因；但这并不使它成为物理的或能量守恒的源。
 
-In the two-temperature formulation, the same expression is applied separately to $T_i$ and $T_e$, using $T_*=\texttt{T_min_neg}/2$ for each species.
+在双温度表述中，同一表达式分别作用于 $T_i$ 与 $T_e$，对每种粒子取 $T_*=\texttt{T_min_neg}/2$。
 
-Before considering this source, first try to remove the negative-temperature excursions by reducing the time step, checking nonlinear convergence, improving spatial resolution, and reviewing physical sources, boundary conditions, and transport or stabilization coefficients. If the source is temporarily required for diagnosis or recovery:
+在考虑使用该源之前，应先尝试通过减小时间步、检查非线性收敛、提高空间分辨率，以及复核物理源、边界条件与输运或稳定化系数来消除负温度偏离。若出于诊断或恢复目的临时需要该源：
 
-1. Record the value used and why it was needed.
-2. Inspect the model-600 RHS terms `T_Eq__impl_heating`, `Ti_Eq__implicit_heating`, and `Te_Eq__implicit_heating`; see [Plotting Separate Equation Terms in VTK](../diagnostics/plot_rhs_terms.html).
-3. Quantify the artificial energy input and report it with any energy balance.
-4. Repeat the run while reducing `implicit_heat_source` toward zero, and do not rely on conclusions that disappear when the source is removed.
+1. 记录所用取值以及需要它的原因。
+2. 检查 model-600 的 RHS 项 `T_Eq__impl_heating`、`Ti_Eq__implicit_heating` 与 `Te_Eq__implicit_heating`；参见 [在 VTK 中绘制各方程分项](../diagnostics/plot_rhs_terms.html)。
+3. 量化人工输入的能量，并在任何能量平衡报告中一并给出。
+4. 逐步将 `implicit_heat_source` 减小到零并重复计算；不要依赖在去掉该源后即消失的结论。

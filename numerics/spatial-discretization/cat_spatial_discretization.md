@@ -8,15 +8,8 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+### JOREK 中的空间离散
 
-原文页面：[Spatial Discretization](https://iterorganization.github.io/JOREK/numerics/spatial-discretization/cat_spatial_discretization.html)　·　源文件：`numerics/spatial-discretization/cat_spatial_discretization.md`
-</div>
-
-### Spatial discretization in JOREK
-
-Start with [Introduction to spatial discretization](introduction.md). The page [Poloidal discretization](poloidal-discretization.md) gives a much more detailed explanation of the discretization on the poloidal plane, pinpointing also _why_ the particular formulation used has been chosen (i.e. which are the advantages).  
-There is also an introduction to Bezier curves and surfaces at [this page](introduction-to-bezier.md).  
-Finally, in the [Spatial discretization and mesh](spatial-discretization-and-mesh.md) a brief description of how Bezier finite elements are used when building the poloidal mesh.
+请从[空间离散引言](introduction.md)开始。[极向离散](poloidal-discretization.md) 一页更详细地讲解极向平面上的离散，并指出_为什么_选用这一特定表述（即其优势何在）。  
+贝塞尔曲线与曲面的引言见[本页](introduction-to-bezier.md)。  
+最后，[空间离散与网格](spatial-discretization-and-mesh.md) 简要说明了构造极向网格时如何使用贝塞尔有限元。

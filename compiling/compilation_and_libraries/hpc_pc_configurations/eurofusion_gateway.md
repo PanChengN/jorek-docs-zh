@@ -7,49 +7,42 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+## 网关独立集群的硬件资源
 
-原文页面：[EUROfusion Gateway](https://iterorganization.github.io/JOREK/compiling/compilation_and_libraries/hpc_pc_configurations/eurofusion_gateway.html)　·　源文件：`compiling/compilation_and_libraries/hpc_pc_configurations/eurofusion_gateway.md`
-</div>
+9 个虚拟节点，包含以下 Gateway 用户服务器：
 
-## The Hardware resources of the Gateway independent cluster
-
-9 virtual nodes including the following Gateway user servers:
-
-- ITM MySQL database `itmcatalog`: `itmmysql1.eufus.eu`
+- ITM MySQL 数据库 `itmcatalog`：`itmmysql1.eufus.eu`
 - `gforge.eufus.eu`
 - `portal.eufus.eu`
 - `www.eufus.eu`
 - `ticket.eufus.eu`
-- 1 node `x3550 M5` with FC HBA as AFS file server of cell `eufus.eu`
-- 1 node `x3550 M5` with FC HBA as login node and spare of AFS server
-- 4 nodes `thinkSystem SD530` as login nodes with advanced graphics adapter NVIDIA K80
-- 16 nodes `thinkSystem SD530` as compute nodes with 192 GB of RAM
-- 8 nodes `thinkSystem SD530` as compute nodes with 384 GB of RAM
-- 10 TB of AFS file server storage area
-- 15 PB of backup storage area for AFS/GPFS
-- 600 TB of MARCONI GSS as high-performance storage area
+- 1 个带 FC HBA 的 `x3550 M5` 节点，作为 `eufus.eu` 单元的 AFS 文件服务器
+- 1 个带 FC HBA 的 `x3550 M5` 节点，作为登录节点并兼作 AFS 服务器备用
+- 4 个 `thinkSystem SD530` 节点，作为配备 NVIDIA K80 高级图形适配器的登录节点
+- 16 个 `thinkSystem SD530` 节点，作为具有 192 GB 内存的计算节点
+- 8 个 `thinkSystem SD530` 节点，作为具有 384 GB 内存的计算节点
+- 10 TB 的 AFS 文件服务器存储区
+- 15 PB 的 AFS/GPFS 备份存储区
+- 600 TB 的 MARCONI GSS 高性能存储区
 
-The `thinkSystem SD530` node is based on 2 × 24-core Intel Xeon 8160 (SkyLake) processors at 2.10 GHz.
+`thinkSystem SD530` 节点基于 2 颗主频 2.10 GHz 的 24 核 Intel Xeon 8160（SkyLake）处理器。
 
-## Accessing the system
+## 访问系统
 
-- The following link describes **how to get access** to the Gateway machine: <https://wiki.eufus.eu/doku.php>
-- See also the material of a mini CodeCamp:
-  - [here](https://box.pionier.net.pl/d/6a7d79934c2b4a4db7e2/) (Password: `miniC0d3C4mp5`)
-  - [here](https://docs.psnc.pl/pages/viewpage.action?pageId=70884347)
+- 以下链接说明了**如何获取** Gateway 机器的访问权限：<https://wiki.eufus.eu/doku.php>
+- 另见一次 mini CodeCamp 的资料：
+  - [此处](https://box.pionier.net.pl/d/6a7d79934c2b4a4db7e2/)（密码：`miniC0d3C4mp5`）
+  - [此处](https://docs.psnc.pl/pages/viewpage.action?pageId=70884347)
 
-The machine can then be accessed with an SSH client:
+随后即可用 SSH 客户端访问该机器：
 
 ```bash
 ssh -CXY <username>@login.eufus.eu
 ```
 
-## Compiling JOREK
+## 编译 JOREK
 
-The following modules need to be loaded, for example by including them in `~/.bashrc_profile`:
+需要加载以下模块，例如将它们写入 `~/.bashrc_profile`：
 
 ```bash
 module purge
@@ -63,7 +56,7 @@ module load zlib/1.2.8--gnu--6.1.0
 module load hdf5/1.8.17--intelmpi--2017--binary
 ```
 
-The `Makefile.inc` for compiling JOREK is as follows:
+用于编译 JOREK 的 `Makefile.inc` 如下：
 
 ```bash
 # --- Select physics model
@@ -156,9 +149,9 @@ HDF5INCLUDE = $(HDF5_HOME)/include
 HDF5LIB     =-L$(HDF5_HOME)/lib -lhdf5hl_fortran -lhdf5_hl -lhdf5_fortran -lhdf5 -L$(SZIP_LIB) -lsz -lz
 ```
 
-## Submitting jobs
+## 提交作业
 
-Example batch job submission script:
+批处理作业提交脚本示例：
 
 ```bash
 #!/bin/bash

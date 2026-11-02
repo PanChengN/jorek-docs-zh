@@ -7,23 +7,16 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 在无法访问 Intel-MKL 依赖库的情况下编译 JOREK 及其依赖
 
-原文页面：[Compile without Intel MKL](https://iterorganization.github.io/JOREK/compiling/compilation_and_libraries/compiling_wo_mkl.html)　·　源文件：`compiling/compilation_and_libraries/compiling_wo_mkl.md`
-</div>
+当 ScaLAPACK 之类的依赖库不由支持团队提供时，用 GNU 编译器编译 JOREK 并不完全直接。下面给出一种可行做法。
 
-# Compiling JOREK and its dependencies without access to Intel-MKL libraries
+此处假设：
 
-It is not entirely straightforward to compile JOREK with GNU compilers when dependencies like ScaLAPACK are not provided by the support team. Here is one possible approach.
-
-We assume:
-
-- you have access to a relatively recent GNU compiler, e.g. 7.5
-- you have access to CMake
-- you may want to compile older versions of SCOTCH and PASTIX, for which the latest version of OpenMPI (4.0) does not work
-- you are working in the directory:
+- 你有较新的 GNU 编译器，例如 7.5
+- 你有 CMake
+- 你可能需要编译较旧版本的 SCOTCH 与 PASTIX，最新版 OpenMPI（4.0）无法用于这些版本
+- 你在下列目录下工作：
 
 ```text
 /home/user/lib/
@@ -31,15 +24,15 @@ We assume:
 
 ## HDF5
 
-First, you need to compile the HDF5 libraries.
+首先需要编译 HDF5 依赖库。
 
-You will need to download the code from:
+需从下列地址下载源码：
 
 - <https://www.hdfgroup.org/downloads/hdf5/source-code/>
 
-Do not try to use the code from the HDF Git repository; this does not work properly for the Fortran libraries.
+不要尝试使用 HDF Git 仓库中的代码；它对 Fortran 依赖库不能正常工作。
 
-Once you have unpacked the HDF5 tarball, do the following:
+解包 HDF5 tar 包后，执行以下操作：
 
 ```bash
 cd ./hdf5/
@@ -51,11 +44,11 @@ make -j8 install
 
 ## OpenMPI
 
-Next, download the OpenMPI sources from:
+接下来从下列地址下载 OpenMPI 源码：
 
 - <https://www.open-mpi.org/software/ompi/v3.0/>
 
-Unpack the tarball, then run:
+解包 tar 包，然后运行：
 
 ```bash
 cd ./openmpi
@@ -69,7 +62,7 @@ export PATH=/home/user/lib/openmpi/install/bin:$PATH
 
 ## OpenBLAS
 
-Next, build the OpenBLAS library:
+接下来构建 OpenBLAS 依赖库：
 
 ```bash
 git clone https://github.com/xianyi/OpenBLAS.git
@@ -86,7 +79,7 @@ make -j8 install
 
 ## LAPACK
 
-Next, build the LAPACK library:
+接下来构建 LAPACK 依赖库：
 
 ```bash
 git clone https://github.com/Reference-LAPACK/lapack.git
@@ -97,9 +90,8 @@ make -j8
 make -j8 install
 ```
 
-## ScaLAPACK
-
-Next, build the ScaLAPACK library:
+## ScaLAPACK {#scalapack}
+接下来构建 ScaLAPACK 依赖库：
 
 ```bash
 git clone https://github.com/Reference-ScaLAPACK/scalapack.git
@@ -112,20 +104,20 @@ make -j8 install
 
 ## PASTIX-5
 
-SCOTCH compilation is straightforward once you have set `PATH` and `LD_LIBRARY_PATH` to include the OpenMPI compilers.
+只要把 `PATH` 与 `LD_LIBRARY_PATH` 设置为包含 OpenMPI 的编译器，SCOTCH 的编译就很直接。
 
-For the PASTIX solver, you will need to have the following inside `config.in`:
+对 PASTIX 求解器，需在 `config.in` 中包含以下内容：
 
 ```makefile
 BLAS_HOME=/home/user/lib/scalapack/install/lib
 BLASLIB = -L$(BLAS_HOME) -lscalapack
 ```
 
-Note: this may not even be required, as long as linking is done properly in JOREK.
+注意：只要在 JOREK 中正确完成链接，这一项可能根本不需要。
 
 ## JOREK
 
-For JOREK, you will need to use these lines instead of the usual MKL settings in your `Makefile.inc`:
+对 JOREK，需在 `Makefile.inc` 中用以下行代替通常的 MKL 设置：
 
 ```makefile
 SCA_HOME  = /home/user/lib/scalapack/install

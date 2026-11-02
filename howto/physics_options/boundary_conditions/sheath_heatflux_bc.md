@@ -7,29 +7,21 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 鞘层热流边界条件
 
-原文页面：[Run with Sheath Heat-Flux BC](https://iterorganization.github.io/JOREK/howto/physics_options/boundary_conditions/sheath_heatflux_bc.html)　·　源文件：`howto/physics_options/boundary_conditions/sheath_heatflux_bc.md`
-</div>
+本页涵盖：
 
-# Sheath Heat-Flux Boundary Conditions
+- [选择在何处施加鞘层边界条件](#choosing-the-boundaries)；
+- [单温度鞘层条件及其实现](#one-temperature-models)；
+- [双温度模型中的电子与离子鞘层条件](#two-temperature-models)；
+- [掠入射磁力线的处理](#treatment-at-grazing-angles)。
 
-This page covers:
+相关的 [$v_\parallel$ 边界条件平滑](./vpar_smooth.md)可用于平滑掠射角附近的 Mach=1 平行速度条件。
 
-- [choosing where to apply the sheath boundary conditions](#choosing-the-boundaries);
-- [the one-temperature sheath condition and its implementation](#one-temperature-models);
-- [the electron and ion sheath conditions for two-temperature models](#two-temperature-models);
-- [the treatment of grazing-incidence field lines](#treatment-at-grazing-angles).
+## 选择边界 {#choosing-the-boundaries}
+借助 `bcs` 结构，可以在任意网格中对选定的边界类型施加鞘层边界条件。边界类型索引与完整的选择规则见[选择边界条件](./choose_boundary_conditions.md)。
 
-The related [$v_\parallel$ boundary-condition smoothing](./vpar_smooth.md) can be used to smooth the Mach-one parallel-velocity condition near grazing angles.
-
-## Choosing the boundaries
-
-The sheath boundary conditions can be applied to selected boundary types in any grid by using the `bcs` structure. See [Choose Boundary Conditions](./choose_boundary_conditions.md) for the boundary-type indices and the complete selection rules.
-
-For example, to apply the one-temperature sheath heat-flux condition on boundary type `i`, use:
+例如，要在边界类型 `i` 上施加单温度鞘层热流条件，可使用：
 
 ```fortran
 bc_natural_open      = .true. ! Enable boundary-integral calls
@@ -38,13 +30,12 @@ bcs(i)%natural%T     = .true.
 gamma_stangeby       = 8.d0
 ```
 
-Replace `i` with each boundary-type index on which the condition should be imposed. The settings must be written separately for every selected boundary type; `bcs(:)` cannot be used. For separate ion and electron temperatures, select `bcs(i)%natural%Ti` and `bcs(i)%natural%Te` instead, as described [below](#two-temperature-models).
+把 `i` 替换为需要施加该条件的每个边界类型索引。对每个选定的边界类型都必须单独写出这些设置；不能使用 `bcs(:)`。若离子与电子温度分开演化，则应按[下文](#two-temperature-models)所述改用 `bcs(i)%natural%Ti` 与 `bcs(i)%natural%Te`。
 
-## One-temperature models
+## 单温度模型 {#one-temperature-models}
+本节适用于模型 303、333 和 500，以及以单温度运行的模型 600。
 
-This section applies to models 303, 333 and 500, and to model 600 when it is run with a single temperature.
-
-In most boundary types, the temperature is fixed at the boundary by default (Dirichlet B.C.). Instead, you can impose the normal heat flux (to the boundary) to be
+在大多数边界类型中，温度默认在边界上固定（Dirichlet 边界条件）。也可以改为把（流向边界的）法向热流设为
 
 $$
 \begin{align*}
@@ -52,13 +43,13 @@ $$
 \end{align*}
 $$
 
-which is given by P. Stangeby, *The Plasma Boundary of Magnetic Fusion Devices* (2000), Chapter 2, Equation 2.94. Typical values of $\gamma_{sh}$ are 7–8 for $T_e=T_i$.
+该式见 P. Stangeby，*The Plasma Boundary of Magnetic Fusion Devices*（2000），第 2 章式 2.94。当 $T_e=T_i$ 时，$\gamma_{sh}$ 的典型值为 7–8。
 
-### How the condition is implemented
+### 该条件的实现方式
 
-The user-facing `gamma_stangeby` is converted internally into the coefficient $\gamma_{sh}^{JOREK}$ used in the natural boundary condition. The conversion follows from matching the heat flux represented by the JOREK energy equation to the Stangeby heat flux.
+用户设置的 `gamma_stangeby` 在内部被转换为 Natural 边界条件中使用的系数 $\gamma_{sh}^{JOREK}$。该转换由 JOREK 能量方程所代表的热流与 Stangeby 热流的匹配得到。
 
-In JOREK, the implemented natural B.C. is 
+在 JOREK 中，实现的 Natural 边界条件为
 
 $$
 \begin{align*}
@@ -66,7 +57,7 @@ $$
 \end{align*}
 $$
 
-where $T=T_i+T_e$. The total kinetic and thermal MHD heat flux (see Ideal MHD or Goedbloed books) is
+其中 $T=T_i+T_e$。总的动能与热能 MHD 热流（见 Ideal MHD 或 Goedbloed 的著作）为
 
 $$
 \begin{align*}
@@ -74,7 +65,7 @@ $$
 \end{align*}
 $$
 
-For $T_i=T_e$, one has $T=2T_e$. At the sheath entrance, $v^2=c_s^2=\gamma k_BT/m_i$, so that
+当 $T_i=T_e$ 时有 $T=2T_e$。在鞘层入口处，$v^2=c_s^2=\gamma k_BT/m_i$，因此
 
 $$
 \begin{align*}
@@ -82,7 +73,7 @@ $$
 \end{align*}
 $$
 
-Substituting the coded boundary condition into the MHD heat flux therefore gives
+将代码中实现的边界条件代入 MHD 热流，得到
 
 $$
 \begin{align*}
@@ -95,7 +86,7 @@ $$
 \end{align*}
 $$
 
-The Stangeby expression, written using the JOREK temperature, is
+用 JOREK 温度写出的 Stangeby 表达式为
 
 $$
 \begin{align*}
@@ -105,7 +96,7 @@ $$
 \end{align*}
 $$
 
-Equating the two expressions yields the conversion implemented in the code:
+令两式相等，即得代码中实现的转换：
 
 $$
 \begin{align*}
@@ -113,13 +104,12 @@ $$
 \end{align*}
 $$
 
-For example, $\gamma=5/3$ and `gamma_stangeby = 8.d0` give $\gamma_{sh}^{JOREK}=1.44$. The internal coefficient can also be supplied directly through `gamma_sheath`, but `gamma_stangeby` expresses the physical sheath-transmission coefficient and is normally the clearer input.
+例如，$\gamma=5/3$ 与 `gamma_stangeby = 8.d0` 给出 $\gamma_{sh}^{JOREK}=1.44$。也可以直接通过 `gamma_sheath` 给出内部系数，但 `gamma_stangeby` 表示的是物理上的鞘层传输系数，通常更便于理解。
 
-## Two-temperature models
+## 双温度模型 {#two-temperature-models}
+本节适用于分别演化离子与电子温度的模型 600。
 
-This section applies to model 600 when separate ion and electron temperatures are evolved. 
-
-Select the natural boundary condition independently for each temperature on every desired boundary type, following [Choose Boundary Conditions](./choose_boundary_conditions.md). For example:
+按[选择边界条件](./choose_boundary_conditions.md)所述，在每个所需的边界类型上分别对每种温度选择 Natural 边界条件。例如：
 
 ```fortran
 bc_natural_open      = .true.
@@ -131,7 +121,7 @@ gamma_e_stangeby     = 5.d0  ! Stangeby book end of section 2.8
 gamma_i_stangeby     = 3.d0  ! Stangeby book end of section 2.8
 ```
 
-The physical electron and ion sheath heat fluxes are written separately as
+物理的电子与离子鞘层热流分别写为
 
 $$
 \begin{align*}
@@ -142,7 +132,7 @@ $$
 \end{align*}
 $$
 
-JOREK implements the conductive parts through
+JOREK 通过下式实现其传导部分
 
 $$
 \begin{align*}
@@ -153,9 +143,9 @@ $$
 \end{align*}
 $$
 
-### Electron coefficient
+### 电子系数
 
-The electron energy flux contains conductive and convective contributions,
+电子能流包含传导与对流两部分的贡献，
 
 $$
 \begin{align*}
@@ -168,7 +158,7 @@ $$
 \end{align*}
 $$
 
-Matching this expression to $\gamma_{sh,e}n_e k_BT_e\mathbf{v}_\parallel\cdot\mathbf{n}$ gives
+将该式与 $\gamma_{sh,e}n_e k_BT_e\mathbf{v}_\parallel\cdot\mathbf{n}$ 匹配，得到
 
 
 $$
@@ -177,11 +167,11 @@ $$
 \end{align*}
 $$
 
-This is the conversion from `gamma_e_stangeby` to the internal `gamma_sheath_e`.
+这就是从 `gamma_e_stangeby` 到内部 `gamma_sheath_e` 的转换。
 
-### Ion coefficient
+### 离子系数
 
-The ion energy flux also carries the bulk kinetic energy:
+离子能流还携带整体动能：
 
 $$
 \begin{align*}
@@ -193,7 +183,7 @@ $$
 \end{align*}
 $$
 
-Under the same $T_i=T_e$ sheath assumption, $v^2=c_s^2=\gamma k_B(T_i+T_e)/m_i=2\gamma k_BT_i/m_i$. Hence
+在同样的 $T_i=T_e$ 鞘层假定下，$v^2=c_s^2=\gamma k_B(T_i+T_e)/m_i=2\gamma k_BT_i/m_i$。因此
 
 $$
 \begin{align*}
@@ -201,7 +191,7 @@ $$
 \end{align*}
 $$
 
-and substitution of the coded boundary condition gives
+代入代码中实现的边界条件得到
 
 $$
 \begin{align*}
@@ -214,7 +204,7 @@ $$
 \end{align*}
 $$
 
-Matching this expression to the physical ion sheath heat flux gives
+将该式与物理的离子鞘层热流匹配，得到
 
 $$
 \begin{align*}
@@ -222,11 +212,10 @@ $$
 \end{align*}
 $$
 
-This is the conversion from `gamma_i_stangeby` to the internal `gamma_sheath_i`. The extra $\gamma$ term compared with the electron expression comes from the ion kinetic-energy flux.
+这就是从 `gamma_i_stangeby` 到内部 `gamma_sheath_i` 的转换。与电子表达式相比多出的 $\gamma$ 项来自离子动能流。
 
-## Treatment at grazing angles
-
-As shown in the Stangeby equation at the top of the page, the heat flux vanishes in situations where $v_\parallel=0$. These situations may occur when magnetic field lines are totally parallel to the wall (grazing angles). In those cases, artificial energy accumulation may occur, which is unphysical. For that, you can use a minimum heat flux, which is purely diffusive and is chosen as
+## 掠射角处的处理 {#treatment-at-grazing-angles}
+如本页开头的 Stangeby 公式所示，当 $v_\parallel=0$ 时热流为零。当磁力线完全平行于壁面（掠射角）时可能出现这种情况。此时可能发生人为的能量堆积，这是非物理的。为此可以使用一个最小热流，它完全是扩散性的，取为
 
 $$
 \begin{align*}
@@ -234,7 +223,7 @@ $$
 \end{align*}
 $$
 
-where the sound speed $c_s$ is calculated using the temperature directly (not $v_\parallel$). Note that the total heat flux now has an extra contribution due to this minimum heat flux:
+其中声速 $c_s$ 直接由温度计算（而非由 $v_\parallel$）。注意此时总热流因该最小热流而多出一项贡献：
 
 $$
 \begin{align*}
@@ -242,13 +231,13 @@ $$
 \end{align*}
 $$
 
-You can select the value of $\theta_{min}$ from the JOREK input file by setting
+可以在 JOREK 输入文件中通过以下设置选择 $\theta_{min}$ 的取值
 
 ```fortran
 min_sheath_angle = 1 ! Example of 1 degree (not in radians!)
 ```
 
-**Important:** In order to calculate these fluxes, your grid resolution or $\kappa_\perp$ must be sufficiently large to resolve the numerical gradients imposed by the boundary condition. Note also that, by default, this treatment is applied to the particle flux:
+**重要：** 为计算这些通量，网格分辨率或 $\kappa_\perp$ 必须足够大，以分辨边界条件所施加的数值梯度。另请注意，默认情况下该处理也施加于粒子通量：
 
 $$
 \begin{align*}
@@ -256,7 +245,7 @@ $$
 \end{align*}
 $$
 
-where
+其中
 
 $$
 \begin{align*}
@@ -264,6 +253,6 @@ $$
 \end{align*}
 $$
 
-This approach was used in the paper below:
+该方法曾用于以下论文：
 
 1. [F. J. Artola et al., 2021, *Plasma Physics and Controlled Fusion* **63**, 064004](https://iopscience.iop.org/article/10.1088/1361-6587/abf620)

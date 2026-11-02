@@ -7,49 +7,42 @@ layout: default
 render_with_liquid: false
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
+# 如何使用新经典系数剖面运行 JOREK
 
-原文页面：[Run with Neoclassical Effects](https://iterorganization.github.io/JOREK/howto/physics_options/physical_terms/neo.html)　·　源文件：`howto/physics_options/physical_terms/neo.md`
-</div>
+## 1. 计算新经典系数剖面
 
-# How to run JOREK with neoclassical coefficient profiles
+### 1.1. 获取用于计算系数的 JOREK 数据
 
-## 1. Calculate neoclassical coefficient profiles
+以 `neo=.false.` 运行 JOREK 平衡，会生成以下文件：
 
-### 1.1. Obtain JOREK data for calculating the coefficients
+- `qprofile.dat`，由 `qprofile` 子程序计算，包含归一化极向磁通 $\psi_{N,\mathrm{pol}}$ 与安全因子 $q(\psi_N)$。
+- `T_rho_profiles.dat`，由 `equilibrium` 子程序计算，以 JOREK 单位给出 $T(\psi_N)$ 与 $\rho(\psi_N)$。
 
-Running the JOREK equilibrium with `neo=.false.` produces the following files:
+新经典系数的计算需要：
 
-- `qprofile.dat`, calculated in the `qprofile` subroutine, contains the normalized poloidal flux $\psi_{N,\mathrm{pol}}$ and the safety factor $q(\psi_N)$.
-- `T_rho_profiles.dat`, calculated in the `equilibrium` subroutine, contains $T(\psi_N)$ and $\rho(\psi_N)$ in JOREK units.
+- 归一化极向磁通 $\psi_N$；
+- 安全因子 $q(\psi_N)$；
+- 电子温度 $T_e(\psi_N)$；
+- 电子密度 $N_e(\psi_N)$。
 
-The neoclassical-coefficient calculation requires:
+在 JOREK 中，极向磁通及相应的安全因子剖面由 `qprofile` 子程序计算，该子程序由 `equilibrium` 调用并写出 `qprofile.dat`。依赖 $\psi$ 的温度与密度剖面必须与 $q(\psi_N)$ 具有相同的点数。`equilibrium` 子程序将这些剖面写入 ASCII 文件 `T_rho_profiles.dat`。
 
-- the normalized poloidal flux $\psi_N$;
-- the safety factor $q(\psi_N)$;
-- the electron temperature $T_e(\psi_N)$;
-- the electron density $N_e(\psi_N)$.
+为使剖面更干净，请从 `qprofile.dat` 和 `T_rho_profiles.dat` 中删除分界面以外的所有点。
 
-In JOREK, the poloidal flux and corresponding safety-factor profile are calculated by the `qprofile` subroutine, which is called from `equilibrium` and writes `qprofile.dat`. The $\psi$-dependent temperature and density profiles must have the same number of points as $q(\psi_N)$. The `equilibrium` subroutine writes these profiles to the ASCII file `T_rho_profiles.dat`.
+### 1.2. 运行 `neoclassical_program`
 
-For cleaner profiles, remove all points outside the separatrix from both `qprofile.dat` and `T_rho_profiles.dat`.
+该程序及其专用 Makefile 位于 `util/neoclass_program/`。该工具不由 JOREK 顶层 Makefile 构建。
 
-### 1.2. Run `neoclassical_program`
+#### 准备输入文件
 
-The program and its dedicated Makefile are located in `util/neoclass_program/`. This utility is not built by JOREK's top-level Makefile.
+`neoclassical_program` 的 namelist 输入必须指定：
 
-#### Prepare the input file
+- 以 $10^{20}\,\mathrm{m}^{-3}$ 为单位的中心密度；
+- 以特斯拉为单位的磁场 $B_t$；
+- 大半径 $R_0$ 与小半径 $a_\mathrm{min}$；
+- 包含安全因子剖面与温度—密度剖面的文件。
 
-The namelist input for `neoclassical_program` must specify:
-
-- the central density in units of $10^{20}\,\mathrm{m}^{-3}$;
-- the magnetic field $B_t$ in tesla;
-- the major radius $R_0$ and minor radius $a_\mathrm{min}$;
-- the files containing the safety-factor and temperature-density profiles.
-
-For example, for ITER-like parameters:
+例如，对类 ITER 参数：
 
 ```fortran
 &in1
@@ -62,37 +55,37 @@ For example, for ITER-like parameters:
 /
 ```
 
-The utility directory contains the example files `qprofile_ITER2.dat` and `Te_ne_profiles_ITER.dat`. For a new JOREK case, replace these names with the paths to the corresponding `qprofile.dat` and `T_rho_profiles.dat` files, or copy those files into the utility's working directory. Both profile files must contain the same number of lines.
+该工具目录中包含示例文件 `qprofile_ITER2.dat` 与 `Te_ne_profiles_ITER.dat`。对新的 JOREK 算例，请把这些文件名替换为相应 `qprofile.dat` 与 `T_rho_profiles.dat` 文件的路径，或将这些文件复制到该工具的工作目录中。两个剖面文件必须具有相同的行数。
 
-#### Compile `neoclassical_program`
+#### 编译 `neoclassical_program`
 
-The program requires BLAS. Its Makefile currently defaults to the Intel Fortran compiler and Intel MKL, using `MKLROOT`; adapt `FC`, `BLAS_HOME`, and `BLASLIB` if your system uses a different compiler or BLAS implementation. Compile from the utility directory:
+该程序需要 BLAS。其 Makefile 目前默认使用 Intel Fortran 编译器与 Intel MKL，并通过 `MKLROOT` 定位；若系统使用其他编译器或 BLAS 实现，请相应调整 `FC`、`BLAS_HOME` 和 `BLASLIB`。在该工具目录中编译：
 
 ```bash
 cd util/neoclass_program
 make neoclassical_program
 ```
 
-#### Run `neoclassical_program`
+#### 运行 `neoclassical_program`
 
 ```bash
 ./neoclassical_program < input_neo_ITER
 ```
 
-The program generates `neoclass_coef.dat`, which contains the normalized poloidal flux $\psi_N$, the neoclassical friction coefficient $\mu_{i,\mathrm{neo}}$, and the neoclassical heat-flux coefficient $k_i$ in JOREK units.
+该程序生成 `neoclass_coef.dat`，其中以 JOREK 单位给出归一化极向磁通 $\psi_N$、新经典摩擦系数 $\mu_{i,\mathrm{neo}}$ 以及新经典热流系数 $k_i$。
 
-### 1.3. Use the coefficient profiles in JOREK
+### 1.3. 在 JOREK 中使用系数剖面
 
-Add the following parameters to the JOREK input file:
+在 JOREK 输入文件中添加以下参数：
 
 ```fortran
 neo      = .t.
 neo_file = 'neoclass_coef.dat'
 ```
 
-## 2. Alternative: constant neoclassical coefficients
+## 2. 替代方案：常数新经典系数
 
-Instead of using profiles, constant values can be used for $\mu_{i,\mathrm{neo}}$ and $k_i$. In this case, set typical coefficients in the JOREK input file:
+也可以不使用剖面，而直接为 $\mu_{i,\mathrm{neo}}$ 与 $k_i$ 取常数值。此时在 JOREK 输入文件中设置典型系数：
 
 ```fortran
 neo           = .t.

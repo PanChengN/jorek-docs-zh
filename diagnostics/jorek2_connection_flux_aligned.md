@@ -5,34 +5,28 @@ render_with_liquid: false
 parent: "General"
 ---
 
-<!-- untranslated-notice -->
-<div class="warning" markdown="1">
-**本页尚未翻译**，以下为 JOREK 官方英文原文。
-
-原文页面：[Jorek2_connection_flux_aligned](https://iterorganization.github.io/JOREK/diagnostics/jorek2_connection_flux_aligned.html)　·　源文件：`diagnostics/jorek2_connection_flux_aligned.md`
-</div>
-
 ## Jorek2_connection_flux_aligned
 
-#### Overview
-Several implementations of jorek2_connection exist in JOREK already, producing output for field lines in VTK format. This diagnostic is a  modification that produces flux surface averaged connection lengths - defined as the distance a field line travels before striking a given boundary, normally the wall. In such a way, it can be used to create radially averaged $\Psi_N-t$ plots to assess ergodicity and parallel transport.
+#### 概述
+JOREK 中已有若干 jorek2_connection 的实现，可输出 VTK 格式的磁力线结果。本诊断是其中一个修改版本，它输出按磁面平均的连接长度——定义为磁力线在撞击给定边界（通常为壁面）之前所走过的距离。这样便可用于生成沿径向平均的 $\Psi_N-t$ 图，以评估遍历性与平行输运。
 
-#### Running the code
-The code is run as
+#### 运行代码
+运行方式为
 
   ```
   mpirun -np X jorek2_connection_flux_aligned < ./input_file
   ```
  
-#### Output
+#### 输出
 
-The output produces:
-- connections.txt: Individual field line data for the connection length.
-- strikes.txt: Final location of individual field lines in (R, Z, phi). The initial temperature and normalised poloidal flux are saved as a measure of the start point. The connection length is recorded as well as a boolean, in_domain, that defines whether the field line has struck the defined boundary.
-- poinc_R-Z.dat/poinc_rho-theta.dat: Poincares based on field line tracing. By experience, it is better to use jorek2_poincare for poincares because the number of field lines necessary for statistically significant connection length data is too large for a good poincare plot.
+输出生成：
 
-#### Program settings
-A connect.nml file in the run directory is used to set the parameters for the routine:
+- connections.txt：连接长度的单条磁力线数据。
+- strikes.txt：各条磁力线在 (R, Z, phi) 中的最终位置。初始温度与归一化极向磁通被保存下来，作为起点的度量。同时记录连接长度以及一个布尔量 in_domain，它表示该磁力线是否已撞到所定义的边界。
+- poinc_R-Z.dat/poinc_rho-theta.dat：基于磁力线追踪的庞加莱图。经验表明，庞加莱图最好使用 jorek2_poincare 生成，因为要得到统计上显著的连接长度数据所需的磁力线条数太多，难以画出好的庞加莱图。
+
+#### 程序设置
+算例目录中的 connect.nml 文件用于为该例程设置参数：
   &connect_params
    n_turns     = 150                          ! number of toroidal turns to follow a fieldline
    n_phi       = 1000                         ! number of steps per toroidal turn
