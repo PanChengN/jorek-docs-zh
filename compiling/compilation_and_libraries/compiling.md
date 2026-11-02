@@ -18,10 +18,10 @@ render_with_liquid: false
 
 ## 专题指南
 
-- [在 macOS 上编译](/JOREK/compiling/compilation_and_libraries/hpc_pc_configurations/macos.html)
-- [编译 MUMPS（+METIS）](/JOREK/compiling/compilation_and_libraries/compiling_mumps.html)
-- [以 64 位整数编译](/JOREK/compiling/compilation_and_libraries/compiling_int64.html)
-- [不使用 Intel MKL 编译全部依赖库](/JOREK/compiling/compilation_and_libraries/compiling_wo_mkl.html)
+- [在 macOS 上编译](./hpc_pc_configurations/macos.md)
+- [编译 MUMPS（+METIS）](./compiling_mumps.md)
+- [以 64 位整数编译](./compiling_int64.md)
+- [不使用 Intel MKL 编译全部依赖库](./compiling_wo_mkl.md)
 
 ## SCOTCH
 

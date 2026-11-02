@@ -40,7 +40,7 @@ brew install hdf5 --with-fortran --with-mpi
 export PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
 ```
 
-- Compile SCOTCH ([see the main compilation guide](/JOREK/compiling/compilation_and_libraries/compiling.html)) with:
+- Compile SCOTCH ([see the main compilation guide](../compiling.md)) with:
 
 ```makefile
 EXE=
@@ -66,7 +66,7 @@ RANLIB= ranlib
 YACC= bison -pscotchyy -y -b y
 ```
 
-- Compile PaStiX ([see the main compilation guide](/JOREK/compiling/compilation_and_libraries/compiling.html)) with:
+- Compile PaStiX ([see the main compilation guide](../compiling.md)) with:
 
 ```makefile
 HOSTARCH    = i686_mac
@@ -282,7 +282,7 @@ CCFDEB    := $(CCFDEB) $(CCTYPES) $(CCPASTIX)
 # Uncomment if y
 ```
 
-- Compile JOREK ([see the main compilation guide](/JOREK/compiling/compilation_and_libraries/compiling.html)) using:
+- Compile JOREK ([see the main compilation guide](../compiling.md)) using:
 
 ```bash
 CC=gcc-7 make -j8

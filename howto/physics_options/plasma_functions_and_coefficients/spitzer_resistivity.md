@@ -55,7 +55,7 @@ $$
     \left(T_{e0}[\mathrm{keV}]\right)^{-3/2}\;\Omega\,\mathrm{m}.
 $$
 
-you will need to convert it to JOREK units using the [normalization](/JOREK/physics/normalization.md). For convenience, in the logfile you will find
+you will need to convert it to JOREK units using the [normalization](../../../physics/normalization.md). For convenience, in the logfile you will find
 
 ```text
 eta_Spitzer (not input parameter; printed for reference in JOREK units)

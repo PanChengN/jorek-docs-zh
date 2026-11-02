@@ -33,7 +33,7 @@ Features include:
 
 ## Usage
 
-This tool is implemented in the [interactive diagnostic tool `jorek2_postproc`](/JOREK/howto/introduction_to_jorek_diagnostics.html#jorek2_postproc). See that page for compilation and general usage instructions.
+This tool is implemented in the [interactive diagnostic tool `jorek2_postproc`](../howto/introduction_to_jorek_diagnostics.md#jorek2_postproc). See that page for compilation and general usage instructions.
 
 Unlike most `jorek2_postproc` diagnostics, `RHS_terms_vtk` cannot be run interactively. Create a post-processing script with the following structure:
 

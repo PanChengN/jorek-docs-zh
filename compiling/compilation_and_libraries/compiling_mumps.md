@@ -132,7 +132,7 @@ SCALAP  = -llapack -L$(BLACS_DIR) /home/daan/source/scalapack-2.0.2/libscalapack
 ```
 
 - To use SCOTCH ordering, set `LSCOTCHDIR` to scotch with `esmumps`
-  - For SCOTCH compilation, see the [main compilation guide](/JOREK/compiling/compilation_and_libraries/compiling.html)
+  - For SCOTCH compilation, see the [main compilation guide](./compiling.md)
   - See [this page](http://mumps.enseeiht.fr/index.php?page=faq#2) for information on SCOTCH ordering
 - To use METIS ordering, set `LMETISDIR` and `IMETIS` to the appropriate paths and uncomment `LMETIS`
   - For METIS compilation, see above

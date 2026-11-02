@@ -54,7 +54,7 @@ You must provide the following two HDF5 files in your simulation folder:
 - **`wall_to_load.h5`**: The wall on which field-line tracing will be performed and the fluxes calculated.
 - **`wall.h5`**: The wall with which field lines intersect. Normally, this includes the structures around the loaded wall as well as the loaded structure itself.
 
-The format of these HDF5 files is explained in the [particle wall-load documentation](/JOREK/howto/particles_wall_load.html).
+The format of these HDF5 files is explained in the [particle wall-load documentation](../howto/particles_wall_load.md).
 
 ## Important Things to Know
 
@@ -62,7 +62,7 @@ The format of these HDF5 files is explained in the [particle wall-load documenta
 - Be careful with the ordering of the wall triangles: the code assumes that their normals point towards the plasma.
 - `l_par_min` is hardcoded. You may want to adapt it to your tokamak; you need to recompile after changing the code. You may also want to check the other hardcoded parameters near the beginning of the code.
 - The code assumes that the fluxes are parallel to the magnetic field lines. Important perpendicular contributions are therefore not taken into account.
-- The calculation of the parallel heat flux depends on the `qpar_tot` expression of `jorek2_postproc`, which you can inspect in `diagnostics/new_diag/mod_expression.f90`. It is the sum of the kinetic and thermal heat fluxes of the plasma ions and electrons, as shown in the [MHD sheath heat-flux documentation](/JOREK/howto/physics_options/boundary_conditions/sheath_heatflux_bc.html).
+- The calculation of the parallel heat flux depends on the `qpar_tot` expression of `jorek2_postproc`, which you can inspect in `diagnostics/new_diag/mod_expression.f90`. It is the sum of the kinetic and thermal heat fluxes of the plasma ions and electrons, as shown in the [MHD sheath heat-flux documentation](../howto/physics_options/boundary_conditions/sheath_heatflux_bc.md).
 
   **Check that the grid resolution is adequate for the chosen parallel and perpendicular heat-diffusion coefficients.** Otherwise, sharp boundary gradients—for example, those resulting from a parallel-conduction coefficient that is too small—may not be resolved, and the calculated parallel heat flux may be completely wrong.
 

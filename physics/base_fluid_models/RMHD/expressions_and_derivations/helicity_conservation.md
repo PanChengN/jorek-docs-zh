@@ -44,7 +44,7 @@ $$
 \end{equation*}
 $$
 
-which corresponds to the expression for $\mathbf{B}$ (see [JOREK Reduced MHD Models](/JOREK/physics/base_fluid_models/RMHD/rmhd_model.html)), and
+which corresponds to the expression for $\mathbf{B}$ (see [JOREK Reduced MHD Models](../rmhd_model.md)), and
 
 $$
 \begin{equation*}

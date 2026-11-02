@@ -23,7 +23,7 @@ Note that on top of the models described below, **multiple switches are availabl
 
 ## [Reduced MHD](reduced_mhd.md): 
 
-__model 600__ is the workhorse for reduced MHD as it allows users to combine the different physics ($v_\parallel$, separate $T_e$ and $T_i$, fluid neutrals, fluid impurities, ...) they wish to keep in their simulations at [hard-coded parameters](/JOREK/compiling/compilation_and_libraries/hard-coded_parameters.html) time. The variables that are always present in __model 600__ are:
+__model 600__ is the workhorse for reduced MHD as it allows users to combine the different physics ($v_\parallel$, separate $T_e$ and $T_i$, fluid neutrals, fluid impurities, ...) they wish to keep in their simulations at [hard-coded parameters](../../compiling/compilation_and_libraries/hard-coded_parameters.md) time. The variables that are always present in __model 600__ are:
 
 | Variable | Symbol | variable number | 
 | --- | --- | --- |

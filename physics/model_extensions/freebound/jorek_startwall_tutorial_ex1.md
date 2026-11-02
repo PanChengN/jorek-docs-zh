@@ -18,7 +18,7 @@ render_with_liquid: false
 
 This tutorial shows how to run a small JOREK simulation coupled to STARWALL. It uses the `model600/intear_freebnd` tearing-mode case and replaces the ideal conducting boundary condition with the response of a simple resistive wall.
 
-Before starting, you should be able to compile and run JOREK as described in [Running JOREK for the first time](/JOREK/howto/running_jorek_for_the_first_time.html). You also need a compiled STARWALL executable; follow [Getting the STARWALL source code and compiling it](running_STARWALL.html#getting-the-source-code) rather than using a machine-specific configuration copied from this tutorial.
+Before starting, you should be able to compile and run JOREK as described in [Running JOREK for the first time](../../../howto/running_jorek_for_the_first_time.md). You also need a compiled STARWALL executable; follow [Getting the STARWALL source code and compiling it](running_STARWALL.html#getting-the-source-code) rather than using a machine-specific configuration copied from this tutorial.
 
 The coupling is prepared in three stages:
 
@@ -164,7 +164,7 @@ Near the beginning of `logfile_jorek`, the `STARWALL RESPONSE INFORMATION` block
 i_tor = 2 (n=1 cos), 3 (n=1 sin)
 ```
 
-JOREK writes `wallcurr.XXXXXX.vtk` at the interval controlled by `nout`. These files contain the wall-current stream function and can be opened with ParaView or VisIt. General diagnostic and plotting instructions are available in [Introduction to JOREK diagnostics](/JOREK/howto/introduction_to_jorek_diagnostics.html).
+JOREK writes `wallcurr.XXXXXX.vtk` at the interval controlled by `nout`. These files contain the wall-current stream function and can be opened with ParaView or VisIt. General diagnostic and plotting instructions are available in [Introduction to JOREK diagnostics](../../../howto/introduction_to_jorek_diagnostics.md).
 
 To study the physical effect of the wall:
 
