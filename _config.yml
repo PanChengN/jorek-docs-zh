@@ -21,7 +21,7 @@ kramdown:
     mdash: "---"
     ndash: "--"
 
-footer_content: "JOREK 文档中文版 · 原文版权归 JOREK 团队所有"
+footer_content: "JOREK 文档中文版（非官方译本）· 原文版权归 JOREK 团队所有 · LGPL-3.0"
 
 aux_links:
   "JOREK Website":

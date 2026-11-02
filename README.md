@@ -75,7 +75,18 @@ python3 tools/sync_upstream.py --report
 
 见 [TRANSLATING.md](TRANSLATING.md)。核心要求：先读 `i18n/glossary.md`，命令与参数不得翻译，公式逐字符保留，删掉页首提示块。
 
-## 许可证
+## 版权与许可
 
-- 本站译文与构建脚本：CC BY-SA 4.0
-- 原文与所有官方素材（`_includes/`、`_sass/`、`assets/`、页面正文）：LGPL-3.0，版权归 JOREK 团队
+本站是 JOREK 官方文档的**中文译本（衍生作品）**。原作品以 LGPL-3.0 发布，因此依其条款，**本站整体同样以 GNU Lesser General Public License v3.0 发布**——不得改用与之不兼容的许可。
+
+| 文件 | 作用 |
+|---|---|
+| [`COPYING.LESSER`](COPYING.LESSER) | LGPL-3.0 全文 |
+| [`COPYING`](COPYING) | LGPL-3.0 引用的 GPL-3.0 全文 |
+| [`NOTICE.md`](NOTICE.md) | 原文版权归属、修改声明（LGPL-3.0 §5）、非官方声明、商标与引用要求 |
+| [`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md) | 第三方组件许可声明 |
+| [`CITATION.cff`](CITATION.cff) | 原作者与推荐引用信息 |
+
+**原文版权归 JOREK 开发团队所有。** 本站为非官方社区译本，未经 JOREK 团队审阅或认可；技术内容以[英文原站](https://iterorganization.github.io/JOREK/)为准。
+
+在 LGPL-3.0 条款下，任何人可自由使用、修改、再分发本站内容，但须保留上述声明与许可证文本、标明修改，并以同一许可分发。

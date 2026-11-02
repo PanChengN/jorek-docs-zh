@@ -185,7 +185,7 @@ def write_config(dry: bool) -> None:
                       'theme: just-the-docs')
     out = out.replace('  - jekyll-remote-theme\n', '')
     out = out.replace('footer_content: "JOREK Documentation"',
-                      'footer_content: "JOREK 文档中文版 · 原文版权归 JOREK 团队所有"')
+                      'footer_content: "JOREK 文档中文版（非官方译本）· 原文版权归 JOREK 团队所有 · LGPL-3.0"')
     out = out.replace('back_to_top_text: "Back to top"', 'back_to_top_text: "返回顶部"')
     # 关键：上游的 url/baseurl 指向官方站点，必须换成中文站自己的，
     # 否则所有导航链接都会带上 /JOREK 前缀而失效。
