@@ -211,10 +211,10 @@ $$
 
 $$
 \begin{align}
-&\texttt{element%size(k,1)} \rightarrow 1  \\
-&\texttt{element%size(k,2)} \rightarrow d_{u,k} \\
-&\texttt{element%size(k,3)} \rightarrow d_{v,k} \\
-&\texttt{element%size(k,4)} \rightarrow d_{u,k} d_{v,k} 
+&\mathtt{element\%size(k,1)} \rightarrow 1  \\
+&\mathtt{element\%size(k,2)} \rightarrow d_{u,k} \\
+&\mathtt{element\%size(k,3)} \rightarrow d_{v,k} \\
+&\mathtt{element\%size(k,4)} \rightarrow d_{u,k} d_{v,k} 
 \end{align}
 $$
 
@@ -268,10 +268,10 @@ $\texttt{H(k,j,i_G,j_G)} b_{k,j}$ at Gaussian point $(i_G,j_G) \tag{8}$
 
 $$
 \begin{align}
-&\texttt{node%values(l,1,\nu)} \rightarrow p_k  \\
-&\texttt{node%values(l,2,\nu)} \rightarrow u_k  \\
-&\texttt{node%values(l,3,\nu)} \rightarrow v_k  \\
-&\texttt{node%values(l,4,\nu)} \rightarrow w_k 
+&\mathtt{node\%values(l,1,\nu)} \rightarrow p_k  \\
+&\mathtt{node\%values(l,2,\nu)} \rightarrow u_k  \\
+&\mathtt{node\%values(l,3,\nu)} \rightarrow v_k  \\
+&\mathtt{node\%values(l,4,\nu)} \rightarrow w_k 
 \end{align}
 $$
 
@@ -279,10 +279,10 @@ $$
 
 $$
 \begin{align}
- &\texttt{node%x(1,\mu)} \rightarrow p_k  \\
- &\texttt{node%x(2,\mu)} \rightarrow u_k  \\
- &\texttt{node%x(3,\mu)} \rightarrow v_k  \\
- &\texttt{node%x(4,\mu)} \rightarrow w_k 
+ &\mathtt{node\%x(1,\mu)} \rightarrow p_k  \\
+ &\mathtt{node\%x(2,\mu)} \rightarrow u_k  \\
+ &\mathtt{node\%x(3,\mu)} \rightarrow v_k  \\
+ &\mathtt{node\%x(4,\mu)} \rightarrow w_k 
 \end{align}
 $$
 
