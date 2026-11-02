@@ -1,0 +1,16 @@
+---
+title: "Grad-Shafranov 教程"
+nav_order: 3
+parent: "网格"
+layout: default
+render_with_liquid: false
+---
+
+<!-- untranslated-notice -->
+<div class="warning" markdown="1">
+**本页尚未翻译**，以下为 JOREK 官方英文原文。
+
+原文页面：[Grad-Shafranov Tutorial](https://iterorganization.github.io/JOREK/numerics/grids/GS_tutorial.html)　·　源文件：`numerics/grids/GS_tutorial.md`
+</div>
+
+*stub* 

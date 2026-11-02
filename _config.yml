@@ -1,0 +1,54 @@
+title: JOREK 中文文档
+description: JOREK 非线性扩展 MHD 代码中文文档（基于官方 Wiki 翻译）
+theme: just-the-docs
+
+url: "https://panchengn.github.io"
+baseurl: "/jorek-docs-zh"
+
+search_enabled: true
+
+# Default color scheme (custom, defined in _sass/color_schemes/).
+# A runtime dark/light toggle switches between "jorek_light" and "gruvbox_dark"
+# (see _includes/header_custom.html and _includes/head_custom.html).
+color_scheme: jorek_light
+
+heading_anchors: true
+
+markdown: kramdown
+kramdown:
+  smart_quotes: ["apos", "apos", "quot", "quot"]
+  typographic_symbols:
+    mdash: "---"
+    ndash: "--"
+
+footer_content: "JOREK 文档中文版 · 原文版权归 JOREK 团队所有"
+
+aux_links:
+  "JOREK Website":
+    - "https://www.jorek.eu"
+aux_links_new_tab: true
+
+back_to_top: true
+back_to_top_text: "返回顶部"
+
+plugins:
+  - jekyll-seo-tag
+  - jekyll-relative-links
+
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: "default"
+# ===== 中文站附加配置 =====
+lang: zh-CN
+exclude:
+  - tools
+  - i18n
+  - .venv
+  - Gemfile
+  - Gemfile.lock
+  - README.md
+  - TRANSLATING.md
+  - _site
+  - .git
